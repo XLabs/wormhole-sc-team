@@ -2,7 +2,19 @@
   "name": "@wormhole-foundation/contracts-ethereum",
   "version": "0.0.1",
   "devDependencies": {
-    "@openzeppelin/contracts": "^4.3.1"
+    "@chainsafe/truffle-plugin-abigen": "0.0.1",
+    "@openzeppelin/cli": "^2.8.2",
+    "@openzeppelin/contracts": "^4.3.1",
+    "@truffle/hdwallet-provider": "^1.7.0",
+    "@types/chai": "^4.3.5",
+    "@types/mocha": "^8.2.3",
+    "chai": "^4.3.7",
+    "mocha": "^8.4.0",
+    "truffle": "5.8.4",
+    "truffle-flattener": "^1.6.0",
+    "truffle-plugin-verify": "^0.5.11",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.5"
   },
   "scripts": {
     "build:forge": "forge build",
