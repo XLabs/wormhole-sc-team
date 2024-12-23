@@ -142,7 +142,7 @@
     },
     {
       "chainId": 35,
-      "updateGasOverhead": "8558639519"
+      "updateGasOverhead": "855863952"
     },
     {
       "chainId": 36,
@@ -158,11 +158,11 @@
     },
     {
       "chainId": 43,
-      "updateGasOverhead": "250932213172"
+      "updateGasOverhead": "250932213"
     },
     {
       "chainId": 45,
-      "updateGasOverhead": "2048415950"
+      "updateGasOverhead": "102420797"
     }
   ],
   "maximumBudgets": [
