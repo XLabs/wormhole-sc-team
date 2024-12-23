@@ -1,5 +1,6 @@
 {
   "guardianSetIndex": 4,
+  "operatingChains": [38],
   "description": "This file contains the chains against which all the scripts should run.",
   "chains": [
     {
@@ -41,7 +42,7 @@
       "description": "Klaytn",
       "evmNetworkId": 8217,
       "chainId": 13,
-      "rpc": "https://klaytn.blockpi.network/v1/rpc/public",
+      "rpc": "https://public-en.node.kaia.io",
       "wormholeAddress": "0x0C21603c4f3a6387e241c0091A7EA39E43E90bb7"
     },
     {
@@ -90,7 +91,7 @@
       "description": "Mantle",
       "evmNetworkId": 5000,
       "chainId": 35,
-      "rpc": "https://rpc.ankr.com/mantle",
+      "rpc": "https://rpc.mantle.xyz",
       "wormholeAddress": "0xbebdb6C8ddC678FfA9f8748f85C815C556Dd8ac6"
     },
     {
@@ -108,6 +109,13 @@
       "wormholeAddress": "0x194B123c5E96B9b2E49763619985790Dc241CAC0"
     },
     {
+	    "description": "Linea",
+	    "evmNetworkId": 59144,
+	    "chainId": 38,
+	    "rpc": "https://rpc.linea.build",
+	    "wormholeAddress": "0x0C56aebD76E6D9e4a1Ec5e94F4162B4CBbf77b32"
+    },
+    {
       "description": "Snax",
       "evmNetworkId": 2192,
       "chainId": 43,
@@ -118,7 +126,7 @@
       "description": "Worldchain",
       "evmNetworkId": 480,
       "chainId": 45,
-      "rpc": "https://worldchain-mainnet.g.alchemy.com/public",
+      "rpc": "https://sparkling-autumn-dinghy.worldchain-mainnet.quiknode.pro",
       "wormholeAddress": "0xcbcEe4e081464A15d8Ad5f58BB493954421eB506"
     }
   ]
