@@ -418,6 +418,10 @@
     {
       "address": "0xE1435A3231F91B9925a07af65C7726cfA2F04dbc",
       "chainId": 45
+    },
+    {
+      "address": "0xD7456983aF303D8811D0503631b6197C8a29248F",
+      "chainId": 38
     }
   ],
   "wormholeRelayerImplementations": [
