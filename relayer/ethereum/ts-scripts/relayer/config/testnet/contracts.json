@@ -61,6 +61,10 @@
     {
       "address": "0x7A0a53847776f7e94Cc35742971aCb2217b0Db81",
       "chainId": 10008
+    },
+    {
+      "address": "0xECa55749fe6AD6E655DcEdEd3C75102C653cf651",
+      "chainId": 39
     }
   ],
   "wormholeRelayers": [
@@ -123,6 +127,10 @@
     {
       "address": "0x362fca37E45fe1096b42021b543f462D49a5C8df",
       "chainId": 10008
+    },
+    {
+      "address": "0x362fca37E45fe1096b42021b543f462D49a5C8df",
+      "chainId": 39
     }
   ],
   "wormholeRelayerImplementations": [
@@ -185,6 +193,10 @@
     {
       "address": "0x00337a31aEE3Ed37f5D5FBF892031d0090Da2EeF",
       "chainId": 10008
+    },
+    {
+      "address": "0xceC913f7Db03ca677F779Ce918CF0c59D05D9217",
+      "chainId": 39
     }
   ],
   "mockIntegrations": [
@@ -227,6 +239,10 @@
     {
       "address": "0xa507Ff8D183D2BEcc9Ff9F82DFeF4b074e1d0E05",
       "chainId": 10008
+    },
+    {
+      "address": "0x4BD5B6F2d001D1547801F49270f2Df96Ab362b3C",
+      "chainId": 39
     }
   ],
   "create2Factories": [
@@ -289,18 +305,30 @@
     {
       "address": "0xe9918f582A972613aC5700d2346a97B8ebAd48a2",
       "chainId": 10008
+    },
+    {
+      "address": "0xe9918f582A972613aC5700d2346a97B8ebAd48a2",
+      "chainId": 39
     }
   ],
   "deliveryProviderImplementations": [
     {
       "address": "0x401d3A2ec0a071e2A8f8Fc9B4C69313C1a04540c",
       "chainId": 10008
+    },
+    {
+      "address": "0x7A0a53847776f7e94Cc35742971aCb2217b0Db81",
+      "chainId": 39
     }
   ],
   "deliveryProviderSetups": [
     {
       "address": "0xedd08D4363820603fb1B261F7667B8ee170c37a5",
       "chainId": 10008
+    },
+    {
+      "address": "0x00337a31aEE3Ed37f5D5FBF892031d0090Da2EeF",
+      "chainId": 39
     }
   ]
 }

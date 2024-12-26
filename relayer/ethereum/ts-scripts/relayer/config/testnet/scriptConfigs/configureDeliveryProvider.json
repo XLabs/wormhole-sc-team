@@ -26,6 +26,11 @@
       "updatePriceNative": "100000"
     },
     {
+      "chainId": 39,
+      "updatePriceGas": "10000000000",
+      "updatePriceNative": "100000"
+    },
+    {
       "chainId": 10002,
       "updatePriceGas": "30000000000",
       "updatePriceNative": "200000"
@@ -73,6 +78,10 @@
       "updateGasOverhead": "350000"
     },
     {
+      "chainId": 39,
+      "updateGasOverhead": "350000"
+    },
+    {
       "chainId": 10002,
       "updateGasOverhead": "350000"
     },
@@ -112,6 +121,10 @@
     },
     {
       "chainId": 16,
+      "updateMaximumBudget": "2000000000000000000"
+    },
+    {
+      "chainId": 39,
       "updateMaximumBudget": "2000000000000000000"
     },
     {
@@ -160,6 +173,10 @@
     },
     {
       "chainId": 16,
+      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+    },
+    {
+      "chainId": 39,
       "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
     },
     {
@@ -242,6 +259,10 @@
     },
     {
       "chainId": 37,
+      "isSupported": true
+    },
+    {
+      "chainId": 39,
       "isSupported": true
     },
     {
@@ -328,6 +349,10 @@
     },
     {
       "chainId": 37,
+      "supportedKeys": ["vaa"]
+    },
+    {
+      "chainId": 39,
       "supportedKeys": ["vaa"]
     },
     {

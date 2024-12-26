@@ -78,6 +78,13 @@ for chain in $chain_ids
             $create2_factory_address contracts/relayer/create2Factory/Create2Factory.sol:Create2Factory
         forge verify-contract --verifier oklink --verifier-url $xlayer_explorer_url --watch \
             $init_contract_address contracts/relayer/create2Factory/Create2Factory.sol:Init
+    else if test $chain -eq 39
+        set berachain_artio_verifier_url "https://api.routescan.io/v2/network/testnet/evm/80084/etherscan"
+
+        forge verify-contract --verifier custom --verifier-url $berachain_artio_verifier_url \
+            --watch $create2_factory_address contracts/relayer/create2Factory/Create2Factory.sol:Create2Factory
+        forge verify-contract --verifier custom --verifier-url $berachain_artio_verifier_url \
+            --watch $init_contract_address contracts/relayer/create2Factory/Create2Factory.sol:Init
     else
         forge verify-contract --watch \
             $create2_factory_address contracts/relayer/create2Factory/Create2Factory.sol:Create2Factory

@@ -2,12 +2,13 @@
   "guardianSetIndex": 0,
   "description": "This file contains the chains against which all the scripts should run.",
   "useLastRun": true,
+  "operatingChains": [39],
   "chains": [
     {
       "description": "BSC Testnet",
       "evmNetworkId": 97,
       "chainId": 4,
-      "rpc": "https://bsc-testnet.blockpi.network/v1/rpc/public",
+      "rpc": "https://data-seed-prebsc-2-s1.bnbchain.org:8545",
       "wormholeAddress": "0x68605AD7b15c732a30b1BbC62BE8F2A509D74b4D"
     },
     {
@@ -39,6 +40,13 @@
       "wormholeAddress": "0xa5B7D85a8f27dd7907dc8FdC21FA5657D5E2F901"
     },
     {
+      "description": "Berachain bArtio",
+      "evmNetworkId": 80084,
+      "chainId": 39,
+      "rpc": "https://bartio.rpc.berachain.com",
+      "wormholeAddress": "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"
+    },
+    {
       "description": "Ethereum Sepolia",
       "evmNetworkId": 11155111,
       "chainId": 10002,
@@ -49,7 +57,7 @@
       "description": "Arbitrum Sepolia",
       "evmNetworkId": 421614,
       "chainId": 10003,
-      "rpc": "https://sepolia-rollup.arbitrum.io/rpc",
+      "rpc": "https://api.zan.top/arb-sepolia",
       "wormholeAddress": "0x6b9C8671cdDC8dEab9c719bB87cBd3e782bA6a35"
     },
     {
@@ -70,7 +78,7 @@
       "description": "Monad Devnet",
       "evmNetworkId": 41454,
       "chainId": 10008,
-      "rpc": "https://devnet1.monad.xyz/rpc/your_api_key",
+      "rpc": "https://devnet1.monad.xyz/rpc/IqLeQXELOAhGolixSOVzq87hhCK3UeQK3NBwNTTN",
       "wormholeAddress": "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"
     }
   ]
