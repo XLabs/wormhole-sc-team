@@ -2,7 +2,6 @@
   "guardianSetIndex": 0,
   "description": "This file contains the chains against which all the scripts should run.",
   "useLastRun": true,
-  "operatingChains": [39],
   "chains": [
     {
       "description": "BSC Testnet",
@@ -47,6 +46,13 @@
       "wormholeAddress": "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"
     },
     {
+      "description": "Ink",
+      "evmNetworkId": 763373,
+      "chainId": 46,
+      "rpc": "https://rpc-gel-sepolia.inkonchain.com",
+      "wormholeAddress": "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"
+    },
+    {
       "description": "Ethereum Sepolia",
       "evmNetworkId": 11155111,
       "chainId": 10002,
@@ -57,7 +63,7 @@
       "description": "Arbitrum Sepolia",
       "evmNetworkId": 421614,
       "chainId": 10003,
-      "rpc": "https://api.zan.top/arb-sepolia",
+      "rpc": "https://arbitrum-sepolia-rpc.publicnode.com",
       "wormholeAddress": "0x6b9C8671cdDC8dEab9c719bB87cBd3e782bA6a35"
     },
     {
