@@ -2,7 +2,6 @@
   "guardianSetIndex": 0,
   "description": "This file contains the chains against which all the scripts should run.",
   "useLastRun": true,
-  "operatingChains": [10002, 10003, 10004, 10005, 10008],
   "chains": [
     {
       "description": "BSC Testnet",
