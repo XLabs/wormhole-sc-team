@@ -96,6 +96,42 @@ for chain in $chain_ids
             $setup_address contracts/relayer/deliveryProvider/DeliveryProviderSetup.sol:DeliveryProviderSetup
         forge verify-contract --verifier oklink --verifier-url $xlayer_explorer_url --watch \
             $proxy_address contracts/relayer/deliveryProvider/DeliveryProviderProxy.sol:DeliveryProviderProxy
+    else if test $chain -eq 39
+        set berachain_artio_verifier_url "https://api.routescan.io/v2/network/testnet/evm/80084/etherscan"
+
+        forge verify-contract --verifier custom --verifier-url $berachain_artio_verifier_url \
+            --watch $implementation_address contracts/relayer/deliveryProvider/DeliveryProviderImplementation.sol:DeliveryProviderImplementation
+        forge verify-contract --verifier custom --verifier-url $berachain_artio_verifier_url \
+            --watch $setup_address contracts/relayer/deliveryProvider/DeliveryProviderSetup.sol:DeliveryProviderSetup
+        forge verify-contract --verifier custom --verifier-url $berachain_artio_verifier_url \
+            --watch $proxy_address contracts/relayer/deliveryProvider/DeliveryProviderProxy.sol:DeliveryProviderProxy
+
+    else if test $chain -eq 44
+        set unichain_sepolia_explorer_url "https://unichain-sepolia.blockscout.com/api/"
+        set unichain_sepolia_rpc_url "https://unichain-sepolia.blockscout.com/api/eth-rpc"
+
+      forge verify-contract --verifier blockscout --verifier-url $unichain_sepolia_explorer_url --watch \
+            --rpc-url $unichain_sepolia_rpc_url \
+            $implementation_address contracts/relayer/deliveryProvider/DeliveryProviderImplementation.sol:DeliveryProviderImplementation
+        forge verify-contract --verifier blockscout --verifier-url $unichain_sepolia_explorer_url --watch \
+            --rpc-url $unichain_sepolia_rpc_url \
+            $setup_address contracts/relayer/deliveryProvider/DeliveryProviderSetup.sol:DeliveryProviderSetup
+         forge verify-contract --verifier blockscout --verifier-url $unichain_sepolia_explorer_url --watch \
+            --rpc-url $unichain_sepolia_rpc_url \
+            $proxy_address contracts/relayer/deliveryProvider/DeliveryProviderProxy.sol:DeliveryProviderProxy
+    else if test $chain -eq 46
+        set ink_sepolia_explorer_url "https://explorer-sepolia.inkonchain.com/api/"
+        set ink_sepolia_rpc_url "https://explorer-sepolia.inkonchain.com/api/eth-rpc"
+
+      forge verify-contract --verifier blockscout --verifier-url $ink_sepolia_explorer_url --watch \
+            --rpc-url $ink_sepolia_rpc_url \
+            $implementation_address contracts/relayer/deliveryProvider/DeliveryProviderImplementation.sol:DeliveryProviderImplementation
+        forge verify-contract --verifier blockscout --verifier-url $ink_sepolia_explorer_url --watch \
+            --rpc-url $ink_sepolia_rpc_url \
+            $setup_address contracts/relayer/deliveryProvider/DeliveryProviderSetup.sol:DeliveryProviderSetup
+         forge verify-contract --verifier blockscout --verifier-url $ink_sepolia_explorer_url --watch \
+            --rpc-url $ink_sepolia_rpc_url \
+            $proxy_address contracts/relayer/deliveryProvider/DeliveryProviderProxy.sol:DeliveryProviderProxy
     else
         forge verify-contract --watch \
             $implementation_address contracts/relayer/deliveryProvider/DeliveryProviderImplementation.sol:DeliveryProviderImplementation

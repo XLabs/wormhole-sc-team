@@ -2,6 +2,7 @@
   "guardianSetIndex": 0,
   "description": "This file contains the chains against which all the scripts should run.",
   "useLastRun": true,
+  "operatingChains": [10002, 10003, 10004, 10005, 10008],
   "chains": [
     {
       "description": "BSC Testnet",
@@ -43,6 +44,13 @@
       "evmNetworkId": 80084,
       "chainId": 39,
       "rpc": "https://bartio.rpc.berachain.com",
+      "wormholeAddress": "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"
+    },
+    {
+      "description": "Unichain Sepolia",
+      "evmNetworkId": 1301,
+      "chainId": 44,
+      "rpc": "https://sepolia.unichain.org",
       "wormholeAddress": "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"
     },
     {

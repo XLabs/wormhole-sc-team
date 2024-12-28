@@ -21,7 +21,7 @@ set contracts_file "ts-scripts/relayer/config/$ENV/contracts.json"
 
 set chain_ids (string split \n --no-empty -- (jq '.chains[] | .chainId' $chains_file))
 
-for chain in 46
+for chain in $chain_ids
     # Klaytn, Karura and Acala don't have a verification API yet
     if test 11 -le $chain && test $chain -le 13
         continue
@@ -70,6 +70,16 @@ for chain in 46
             $create2_factory_address contracts/relayer/create2Factory/Create2Factory.sol:Create2Factory
         forge verify-contract --verifier blockscout --verifier-url $monad_devnet_explorer_url --watch \
             --rpc-url $monad_devnet_rpc_url \
+            $init_contract_address contracts/relayer/create2Factory/Create2Factory.sol:Init
+    else if test $chain -eq 44
+        set unichain_sepolia_explorer_url "https://unichain-sepolia.blockscout.com/api/"
+        set unichain_sepolia_rpc_url "https://unichain-sepolia.blockscout.com/api/eth-rpc"
+
+        forge verify-contract --verifier blockscout --verifier-url $unichain_sepolia_explorer_url --watch \
+            --rpc-url $unichain_sepolia_rpc_url \
+            $create2_factory_address contracts/relayer/create2Factory/Create2Factory.sol:Create2Factory
+        forge verify-contract --verifier blockscout --verifier-url $unichain_sepolia_explorer_url --watch \
+            --rpc-url $unichain_sepolia_rpc_url \
             $init_contract_address contracts/relayer/create2Factory/Create2Factory.sol:Init
     else if test $chain -eq 46
         set ink_sepolia_explorer_url "https://explorer-sepolia.inkonchain.com/api/"

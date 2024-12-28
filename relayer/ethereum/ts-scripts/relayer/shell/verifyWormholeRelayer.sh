@@ -23,7 +23,7 @@ set contracts_file "ts-scripts/relayer/config/$ENV/contracts.json"
 
 set chain_ids (string split \n --no-empty -- (jq '.operatingChains[]' $chains_file))
 
-for chain in $chain_ids
+for chain in 39
     # Klaytn, Karura and Acala don't have a verification API yet
     if test 11 -le $chain && test $chain -le 13
         continue
@@ -62,6 +62,7 @@ for chain in $chain_ids
     # Celo has a verification API but it currently doesn't work with `forge verify-contract`
     # We print the compiler input to a file instead for manual verification
     if test $chain -eq 14
+
         forge verify-contract --watch --show-standard-json-input --constructor-args $init_contract_address \
             $proxy_address contracts/relayer/create2Factory/Create2Factory.sol:SimpleProxy > WormholeRelayerProxy.compiler-input.json
         forge verify-contract --watch --show-standard-json-input --constructor-args $wormhole_address \
@@ -70,28 +71,69 @@ for chain in $chain_ids
         echo "Please manually submit the compiler input files at celoscan.io"
         echo "- $implementation_address: WormholeRelayerImplementation.compiler-input.json"
         echo "- $proxy_address: WormholeRelayerProxy.compiler-input.json"
+
     else if test $chain -eq 35
+
         set mantle_explorer_url "https://explorer.mantle.xyz/api?module=contract&action=verify"
 
         forge verify-contract --verifier blockscout --verifier-url $mantle_explorer_url --watch \
             $proxy_address contracts/relayer/create2Factory/Create2Factory.sol:SimpleProxy
         forge verify-contract --verifier blockscout --verifier-url $mantle_explorer_url --watch \
             $implementation_address contracts/relayer/wormholeRelayer/WormholeRelayer.sol:WormholeRelayer
+
     else if test $chain -eq 37
+
         set xlayer_explorer_url "https://www.oklink.com/api/v5/explorer/contract/verify-source-code-plugin/XLAYER"
 
         forge verify-contract --verifier oklink --verifier-url $xlayer_explorer_url --watch \
             $proxy_address contracts/relayer/create2Factory/Create2Factory.sol:SimpleProxy
         forge verify-contract --verifier oklink --verifier-url $xlayer_explorer_url --watch \
             $implementation_address contracts/relayer/wormholeRelayer/WormholeRelayer.sol:WormholeRelayer
+
+    else if test $chain -eq 39
+
+        set berachain_artio_verifier_url "https://api.routescan.io/v2/network/testnet/evm/80084/etherscan"
+
+        forge verify-contract --verifier custom --verifier-url $berachain_artio_verifier_url \
+            --watch $proxy_address contracts/relayer/create2Factory/Create2Factory.sol:SimpleProxy
+        forge verify-contract --verifier custom --verifier-url $berachain_artio_verifier_url \
+            --watch $implementation_address contracts/relayer/wormholeRelayer/WormholeRelayer.sol:WormholeRelayer
+
     else if test $chain -eq 43
+
         set snaxchain_explorer_url "https://explorer.snaxchain.io/api?module=contract&action=verify"
 
         forge verify-contract --verifier blockscout --verifier-url $snaxchain_explorer_url --watch \
             $proxy_address contracts/relayer/create2Factory/Create2Factory.sol:SimpleProxy
         forge verify-contract --verifier blockscout --verifier-url $snaxchain_explorer_url --watch \
             $implementation_address contracts/relayer/wormholeRelayer/WormholeRelayer.sol:WormholeRelayer
+
+    else if test $chain -eq 44
+
+        set unichain_sepolia_explorer_url "https://unichain-sepolia.blockscout.com/api/"
+        set unichain_sepolia_rpc_url "https://unichain-sepolia.blockscout.com/api/eth-rpc"
+
+        forge verify-contract --verifier blockscout --verifier-url $unichain_sepolia_explorer_url --watch \
+            --rpc-url $unichain_sepolia_rpc_url \
+            $proxy_address contracts/relayer/create2Factory/Create2Factory.sol:SimpleProxy
+        forge verify-contract --verifier blockscout --verifier-url $unichain_sepolia_explorer_url --watch \
+            --rpc-url $unichain_sepolia_rpc_url \
+            $implementation_address contracts/relayer/wormholeRelayer/WormholeRelayer.sol:WormholeRelayer
+
+    else if test $chain -eq 46
+
+        set ink_sepolia_explorer_url "https://explorer-sepolia.inkonchain.com/api/"
+        set ink_sepolia_rpc_url "https://explorer-sepolia.inkonchain.com/api/eth-rpc"
+        
+        forge verify-contract --verifier blockscout --verifier-url $ink_sepolia_explorer_url --watch \
+            --rpc-url $ink_sepolia_rpc_url \
+            $proxy_address contracts/relayer/create2Factory/Create2Factory.sol:SimpleProxy
+        forge verify-contract --verifier blockscout --verifier-url $ink_sepolia_explorer_url --watch \
+            --rpc-url $ink_sepolia_rpc_url \
+            $implementation_address contracts/relayer/wormholeRelayer/WormholeRelayer.sol:WormholeRelayer
+
      else if test $chain -eq 10008
+
         set monad_devnet_explorer_url "https://brightstar-884.devnet1.monad.xyz/api/"
         set monad_devnet_rpc_url "https://brightstar-884.devnet1.monad.xyz/api/eth-rpc"
 

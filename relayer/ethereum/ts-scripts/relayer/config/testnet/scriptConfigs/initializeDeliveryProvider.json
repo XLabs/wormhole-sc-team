@@ -45,6 +45,10 @@
       "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
     },
     {
+      "chainId": 44,
+      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+    },
+    {
       "chainId": 46,
       "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
     },
@@ -142,6 +146,13 @@
     },
     {
       "chainId": 39,
+      "deliverGasOverhead": "350000",
+      "updatePriceGas": "30000000000",
+      "updatePriceNative": "200000",
+      "maximumBudget": "1000000000000000000"
+    },
+    {
+      "chainId": 44,
       "deliverGasOverhead": "350000",
       "updatePriceGas": "30000000000",
       "updatePriceNative": "200000",
