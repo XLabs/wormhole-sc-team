@@ -23,7 +23,7 @@ set contracts_file "ts-scripts/relayer/config/$ENV/contracts.json"
 
 set chain_ids (string split \n --no-empty -- (jq '.operatingChains[]' $chains_file))
 
-for chain in 39
+for chain in $chain_ids
     # Klaytn, Karura and Acala don't have a verification API yet
     if test 11 -le $chain && test $chain -le 13
         continue
