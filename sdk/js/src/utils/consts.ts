@@ -659,7 +659,7 @@ const TESTNET = {
   },
   seievm: {
     core: "0x07782FCe991dAb4DE7a3124032E534A0D059B4d8",
-    token_bridge: undefined,
+    token_bridge: "0x3Ff72741fd67D6AD0668d93B41a09248F4700560",
     nft_bridge: undefined,
   },
   unichain: {
