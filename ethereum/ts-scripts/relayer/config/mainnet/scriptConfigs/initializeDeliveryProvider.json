@@ -9,6 +9,10 @@
       "rewardAddress": "0x53207E216540125e322CdA8A693b0b89576DEb46"
     },
     {
+      "chainId": 40,
+      "rewardAddress": "0x53207E216540125e322CdA8A693b0b89576DEb46"
+    },
+    {
       "chainId": 43,
       "rewardAddress": "0x53207E216540125e322CdA8A693b0b89576DEb46"
     },
@@ -29,100 +33,100 @@
     {
       "chainId": 2,
       "deliverGasOverhead": "280000",
-      "updatePriceGas": "987000000",
-      "updatePriceNative": "2258000000",
-      "maximumBudget": "88573959255978800"
+      "updatePriceGas": "2683779290",
+      "updatePriceNative": "2573000000",
+      "maximumBudget": "77730275942479600"
     },
     {
       "chainId": 4,
       "deliverGasOverhead": "320000",
       "updatePriceGas": "1000000000",
-      "updatePriceNative": "600000000",
-      "maximumBudget": "333333333333333000"
+      "updatePriceNative": "671000000",
+      "maximumBudget": "298062593144560000"
     },
     {
       "chainId": 5,
       "deliverGasOverhead": "320000",
-      "updatePriceGas": "70540755646",
-      "updatePriceNative": "254000",
-      "maximumBudget": "787401574803150000000"
+      "updatePriceGas": "36354363690",
+      "updatePriceNative": "245100",
+      "maximumBudget": "815993472052224000000"
     },
     {
       "chainId": 6,
       "deliverGasOverhead": "320000",
-      "updatePriceGas": "2597877648",
-      "updatePriceNative": "22000000",
-      "maximumBudget": "9090909090909090000"
+      "updatePriceGas": "503917894",
+      "updatePriceNative": "24700000",
+      "maximumBudget": "8097165991902830000"
     },
     {
       "chainId": 10,
       "deliverGasOverhead": "320000",
-      "updatePriceGas": "1023923000",
-      "updatePriceNative": "570000",
-      "maximumBudget": "350877192982456000000"
+      "updatePriceGas": "1025043000",
+      "updatePriceNative": "590700",
+      "maximumBudget": "338581344167936000000"
     },
     {
       "chainId": 13,
       "deliverGasOverhead": "320000",
-      "updatePriceGas": "27775000000",
-      "updatePriceNative": "120000",
-      "maximumBudget": "1666666666666670000000"
+      "updatePriceGas": "27500000000",
+      "updatePriceNative": "118800",
+      "maximumBudget": "1683501683501680000000"
     },
     {
       "chainId": 14,
       "deliverGasOverhead": "320000",
-      "updatePriceGas": "50000000000",
-      "updatePriceNative": "382900",
-      "maximumBudget": "522329589971272000000"
+      "updatePriceGas": "25001000000",
+      "updatePriceNative": "396300",
+      "maximumBudget": "504668180671209000000"
     },
     {
       "chainId": 16,
       "deliverGasOverhead": "320000",
       "updatePriceGas": "31250000000",
-      "updatePriceNative": "105900",
-      "maximumBudget": "1888574126534470000000"
+      "updatePriceNative": "90000",
+      "maximumBudget": "2222222222222220000000"
     },
     {
       "chainId": 23,
-      "deliverGasOverhead": "442111134",
+      "deliverGasOverhead": "387985596",
       "updatePriceGas": "1001716",
-      "updatePriceNative": "2258000000",
-      "maximumBudget": "88573959255978800"
+      "updatePriceNative": "2573000000",
+      "maximumBudget": "77730275942479600"
     },
     {
       "chainId": 24,
-      "deliverGasOverhead": "442111134",
+      "deliverGasOverhead": "387985596",
       "updatePriceGas": "1001716",
-      "updatePriceNative": "2258000000",
-      "maximumBudget": "88573959255978800"
+      "updatePriceNative": "2573000000",
+      "maximumBudget": "77730275942479600"
     },
     {
       "chainId": 30,
-      "deliverGasOverhead": "442111134",
+      "deliverGasOverhead": "387985596",
       "updatePriceGas": "1001716",
-      "updatePriceNative": "2258000000",
-      "maximumBudget": "88573959255978800"
+      "updatePriceNative": "2573000000",
+      "maximumBudget": "77730275942479600"
     },
     {
       "chainId": 34,
-      "deliverGasOverhead": "442111134",
+      "deliverGasOverhead": "387985596",
       "updatePriceGas": "1001716",
-      "updatePriceNative": "2258000000",
-      "maximumBudget": "88573959255978800"
+      "updatePriceNative": "2573000000",
+      "maximumBudget": "77730275942479600"
     },
     {
       "chainId": 35,
-      "deliverGasOverhead": "450755015",
-      "updatePriceGas": "90000000",
-      "updatePriceNative": "739500",
-      "maximumBudget": "270453008789723000000"
+      "deliverGasOverhead": "2027027027",
+      "updatePriceGas": "20000000",
+      "updatePriceNative": "740000",
+      "maximumBudget": "270270270270270000000"
     },
     {
       "chainId": 36,
-      "deliverGasOverhead": "442111134",
+      "deliverGasOverhead": "387985596",
       "updatePriceGas": "1001716",
-      "updatePriceNative": "2258000000",
-      "maximumBudget": "88573959255978800"
+      "updatePriceNative": "2573000000",
+      "maximumBudget": "77730275942479600"
     },
     {
       "chainId": 37, 
@@ -133,45 +137,52 @@
     },
     {
       "chainId": 38, 
-      "deliverGasOverhead": "442111134",
+      "deliverGasOverhead": "387985596",
       "updatePriceGas": "1001716",
-      "updatePriceNative": "2258000000",
-      "maximumBudget": "88573959255978800"
+      "updatePriceNative": "2573000000",
+      "maximumBudget": "77730275942479600"
     },
     {
       "chainId": 39,
-      "deliverGasOverhead": "437242753",
+      "deliverGasOverhead": "934419093",
       "updatePriceGas": "10001716",
-      "updatePriceNative": "6860000",
-      "maximumBudget": "29154518950437300000"
+      "updatePriceNative": "3210000",
+      "maximumBudget": "62305295950155800000"
+    },
+    {
+      "chainId": 40,
+      "deliverGasOverhead": "37044234",
+      "updatePriceGas": "1126659199",
+      "updatePriceNative": "23960000",
+      "maximumBudget": "8347245409015030000"
     },
     {
       "chainId": 43,
-      "deliverGasOverhead": "442111134",
+      "deliverGasOverhead": "387985596",
       "updatePriceGas": "1001716",
-      "updatePriceNative": "2258000000",
-      "maximumBudget": "88573959255978800"
+      "updatePriceNative": "2573000000",
+      "maximumBudget": "77730275942479600"
     },
     {
       "chainId": 44,
-      "deliverGasOverhead": "442111134",
+      "deliverGasOverhead": "387985596",
       "updatePriceGas": "1001716",
-      "updatePriceNative": "2258000000",
-      "maximumBudget": "88573959255978800"
+      "updatePriceNative": "2573000000",
+      "maximumBudget": "77730275942479600"
     },
     {
       "chainId": 45,
-      "deliverGasOverhead": "442111134",
+      "deliverGasOverhead": "387985596",
       "updatePriceGas": "1001716",
-      "updatePriceNative": "2258000000",
-      "maximumBudget": "88573959255978800"
+      "updatePriceNative": "2573000000",
+      "maximumBudget": "77730275942479600"
     },
     {
       "chainId": 46,
-      "deliverGasOverhead": "442111134",
+      "deliverGasOverhead": "387985596",
       "updatePriceGas": "1001716",
-      "updatePriceNative": "2258000000",
-      "maximumBudget": "88573959255978800"
+      "updatePriceNative": "2573000000",
+      "maximumBudget": "77730275942479600"
     }
   ]
 }
