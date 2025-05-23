@@ -122,6 +122,13 @@
       "wormholeAddress": "0xCa1D5a146B03f6303baF59e5AD5615ae0b9d146D"
     },
     {
+      "description": "Seievm",
+      "evmNetworkId": 1329,
+      "chainId": 40,
+      "rpc": "https://evm-rpc.sei-apis.com",
+      "wormholeAddress": "0xCa1D5a146B03f6303baF59e5AD5615ae0b9d146D"
+    },
+    {
       "description": "Snax",
       "evmNetworkId": 2192,
       "chainId": 43,
