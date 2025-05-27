@@ -35,11 +35,11 @@ node_modules: package-lock.json
 forge_dependencies: lib/forge-std lib/openzeppelin-contracts
 
 lib/forge-std:
-	forge install foundry-rs/forge-std@v1.5.5 --no-git --no-commit
+	forge install foundry-rs/forge-std@v1.5.5 --no-git
 
 lib/openzeppelin-contracts:
 	# This commit hash corresponds to tag v4.9.1 at the time of writing
-	forge install openzeppelin/openzeppelin-contracts@281550b71c3df9a83e6b80ceefc700852c287570 --no-git --no-commit
+	forge install openzeppelin/openzeppelin-contracts@281550b71c3df9a83e6b80ceefc700852c287570 --no-git
 
 dependencies: node_modules forge_dependencies
 

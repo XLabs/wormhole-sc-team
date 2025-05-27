@@ -6,7 +6,7 @@ WORKDIR /home/node/app/ethereum
 RUN apt-get update && apt-get -y install \
   git make curl
 
-COPY --from=ghcr.io/foundry-rs/foundry:nightly-d9e51e4807b62f101221a2fd36076c502399dbf9@sha256:f3237e283abbacec56edf54c2e422c5fe4d3b444eb10203e1e6d7ee089b11c4d \
+COPY --from=ghcr.io/foundry-rs/foundry:v1.2.1 \
   /usr/local/bin/forge \
   /usr/local/bin/cast \
   /usr/local/bin/anvil \
