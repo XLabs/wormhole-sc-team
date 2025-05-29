@@ -39,13 +39,6 @@
       "wormholeAddress": "0xa5B7D85a8f27dd7907dc8FdC21FA5657D5E2F901"
     },
     {
-      "description": "Berachain bArtio",
-      "evmNetworkId": 80084,
-      "chainId": 39,
-      "rpc": "https://bartio.rpc.berachain.com",
-      "wormholeAddress": "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"
-    },
-    {
       "description": "SeiEVM",
       "evmNetworkId": 1328,
       "chainId": 40,
@@ -63,14 +56,14 @@
       "description": "Ink",
       "evmNetworkId": 763373,
       "chainId": 46,
-      "rpc": "https://rpc-gel-sepolia.inkonchain.com",
+      "rpc": "https://ink-sepolia.drpc.org",
       "wormholeAddress": "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"
     },
     {
       "description": "Monad Testnet",
       "evmNetworkId": 10143,
       "chainId": 48,
-      "rpc": "https://rpc.monad-testnet.category.xyz/rpc/api_key",
+      "rpc": "https://monad-testnet.drpc.org",
       "wormholeAddress": "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"
     },
     {
@@ -100,6 +93,13 @@
       "chainId": 10005,
       "rpc": "https://sepolia.optimism.io",
       "wormholeAddress": "0x31377888146f3253211EFEf5c676D41ECe7D58Fe"
+    },
+    {
+      "description": "Polygon Sepolia",
+      "evmNetworkId": 80002,
+      "chainId": 10007,
+      "rpc": "https://polygon-amoy-bor-rpc.publicnode.com",
+      "wormholeAddress": "0x6b9C8671cdDC8dEab9c719bB87cBd3e782bA6a35"
     }
   ]
 }
