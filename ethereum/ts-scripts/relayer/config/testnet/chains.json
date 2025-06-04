@@ -39,6 +39,13 @@
       "wormholeAddress": "0xa5B7D85a8f27dd7907dc8FdC21FA5657D5E2F901"
     },
     {
+      "description": "Berachain Bepolia",
+      "evmNetworkId": 80069,
+      "chainId": 39,
+      "rpc": "https://bepolia.rpc.berachain.com",
+      "wormholeAddress": "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"
+    },
+    {
       "description": "SeiEVM",
       "evmNetworkId": 1328,
       "chainId": 40,
