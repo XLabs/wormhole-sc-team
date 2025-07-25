@@ -94,13 +94,6 @@
       "wormholeAddress": "0xbebdb6C8ddC678FfA9f8748f85C815C556Dd8ac6"
     },
     {
-      "description": "Blast",
-      "evmNetworkId": 81457,
-      "chainId": 36,
-      "rpc": "https://rpc.blast.io",
-      "wormholeAddress": "0xbebdb6C8ddC678FfA9f8748f85C815C556Dd8ac6"
-    },
-    {
       "description": "XLayer",
       "evmNetworkId": 196,
       "chainId": 37,
@@ -129,13 +122,6 @@
       "wormholeAddress": "0xCa1D5a146B03f6303baF59e5AD5615ae0b9d146D"
     },
     {
-      "description": "Snax",
-      "evmNetworkId": 2192,
-      "chainId": 43,
-      "rpc": "https://mainnet.snaxchain.io",
-      "wormholeAddress": "0xc1BA3CC4bFE724A08FbbFbF64F8db196738665f4"
-    },
-    {
       "description": "Unichain",
       "evmNetworkId": 130,
       "chainId": 44,
@@ -155,6 +141,20 @@
       "chainId": 46,
       "rpc": "https://rpc-qnd.inkonchain.com",
       "wormholeAddress": "0xCa1D5a146B03f6303baF59e5AD5615ae0b9d146D"
+    },
+    {
+      "description": "Mezo",
+      "evmNetworkId": 31612,
+      "chainId": 50,
+      "rpc": "https://mainnet.mezo.public.validationcloud.io",
+      "wormholeAddress": "0xaBf89de706B583424328B54dD05a8fC986750Da8"
+    },
+    {
+      "description": "Plume",
+      "evmNetworkId": 98866,
+      "chainId": 55,
+      "rpc": "https://rpc.plume.org",
+      "wormholeAddress": "0xaBf89de706B583424328B54dD05a8fC986750Da8"
     }
   ]
 }
