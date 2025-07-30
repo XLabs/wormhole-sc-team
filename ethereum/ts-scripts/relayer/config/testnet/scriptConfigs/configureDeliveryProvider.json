@@ -402,10 +402,6 @@
       "isSupported": true
     },
     {
-      "chainId": 36,
-      "isSupported": true
-    },
-    {
       "chainId": 37,
       "isSupported": true
     },
@@ -415,10 +411,6 @@
     },
     {
       "chainId": 40,
-      "isSupported": true
-    },
-    {
-      "chainId": 43,
       "isSupported": true
     },
     {
@@ -508,10 +500,6 @@
       "supportedKeys": ["vaa"]
     },
     {
-      "chainId": 36,
-      "supportedKeys": ["vaa"]
-    },
-    {
       "chainId": 37,
       "supportedKeys": ["vaa"]
     },
@@ -521,10 +509,6 @@
     },
     {
       "chainId": 40,
-      "supportedKeys": ["vaa"]
-    },
-    {
-      "chainId": 43,
       "supportedKeys": ["vaa"]
     },
     {

@@ -148,6 +148,13 @@
       "chainId": 50,
       "rpc": "https://mainnet.mezo.public.validationcloud.io",
       "wormholeAddress": "0xaBf89de706B583424328B54dD05a8fC986750Da8"
+    },
+    {
+      "description": "Plume",
+      "evmNetworkId": 98866,
+      "chainId": 55,
+      "rpc": "https://rpc.plume.org",
+      "wormholeAddress": "0xaBf89de706B583424328B54dD05a8fC986750Da8"
     }
   ]
 }
