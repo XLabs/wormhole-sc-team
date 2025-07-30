@@ -155,6 +155,13 @@
       "chainId": 46,
       "rpc": "https://rpc-qnd.inkonchain.com",
       "wormholeAddress": "0xCa1D5a146B03f6303baF59e5AD5615ae0b9d146D"
+    },
+    {
+      "description": "Mezo",
+      "evmNetworkId": 31612,
+      "chainId": 50,
+      "rpc": "https://mainnet.mezo.public.validationcloud.io",
+      "wormholeAddress": "0xaBf89de706B583424328B54dD05a8fC986750Da8"
     }
   ]
 }
