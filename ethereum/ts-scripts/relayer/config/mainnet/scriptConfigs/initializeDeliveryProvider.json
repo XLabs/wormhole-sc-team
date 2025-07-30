@@ -126,13 +126,6 @@
       "maximumBudget": "330196466897804000000"
     },
     {
-      "chainId": 36,
-      "deliverGasOverhead": "319803137",
-      "updatePriceGas": "1265961",
-      "updatePriceNative": "2470000000",
-      "maximumBudget": "80971659919028300"
-    },
-    {
       "chainId": 37, 
       "deliverGasOverhead": "11322079",
       "updatePriceGas": "1770000000",
@@ -159,13 +152,6 @@
       "updatePriceGas": "1100142467",
       "updatePriceNative": "259300",
       "maximumBudget": "771307365985345000000"
-    },
-    {
-      "chainId": 43,
-      "deliverGasOverhead": "404756301",
-      "updatePriceGas": "1000252",
-      "updatePriceNative": "2470000000",
-      "maximumBudget": "80971659919028300"
     },
     {
       "chainId": 44,

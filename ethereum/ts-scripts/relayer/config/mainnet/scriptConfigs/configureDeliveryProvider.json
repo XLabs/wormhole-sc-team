@@ -66,11 +66,6 @@
       "updatePriceNative": "605700"
     },
     {
-      "chainId": 36,
-      "updatePriceGas": "1265961",
-      "updatePriceNative": "2470000000"
-    },
-    {
       "chainId": 37,
       "updatePriceGas": "1770000000",
       "updatePriceNative": "49900000"
@@ -89,11 +84,6 @@
       "chainId": 40,
       "updatePriceGas": "1100142467",
       "updatePriceNative": "259300"
-    },
-    {
-      "chainId": 43,
-      "updatePriceGas": "1000252",
-      "updatePriceNative": "2470000000"
     },
     {
       "chainId": 44,
@@ -170,10 +160,6 @@
       "updateGasOverhead": "2476473502"
     },
     {
-      "chainId": 36,
-      "updateGasOverhead": "319803137"
-    },
-    {
       "chainId": 37,
       "updateGasOverhead": "11322079"
     },
@@ -188,10 +174,6 @@
     {
       "chainId": 40,
       "updateGasOverhead": "2100000000"
-    },
-    {
-      "chainId": 43,
-      "updateGasOverhead": "404756301"
     },
     {
       "chainId": 44,
@@ -264,10 +246,6 @@
       "updateMaximumBudget": "330196466897804000000"
     },
     {
-      "chainId": 36,
-      "updateMaximumBudget": "80971659919028300"
-    },
-    {
       "chainId": 37,
       "updateMaximumBudget": "4008016032064130000"
     },
@@ -282,10 +260,6 @@
     {
       "chainId": 40,
       "updateMaximumBudget": "771307365985345000000"
-    },
-    {
-      "chainId": 43,
-      "updateMaximumBudget": "80971659919028300"
     },
     {
       "chainId": 44,
@@ -316,11 +290,6 @@
       "bufferDenominator": 100
     },
     {
-      "chainId": 36,
-      "buffer": 5,
-      "bufferDenominator": 100
-    },
-    {
       "chainId": 37,
       "buffer": 5,
       "bufferDenominator": 100
@@ -337,11 +306,6 @@
     },
     {
       "chainId": 40,
-      "buffer": 5,
-      "bufferDenominator": 100
-    },
-    {
-      "chainId": 43,
       "buffer": 5,
       "bufferDenominator": 100
     },
@@ -514,10 +478,6 @@
       "isSupported": true
     },
     {
-      "chainId": 36,
-      "isSupported": true
-    },
-    {
       "chainId": 37,
       "isSupported": true
     },
@@ -531,10 +491,6 @@
     },
     {
       "chainId": 40,
-      "isSupported": true
-    },
-    {
-      "chainId": 43,
       "isSupported": true
     },
     {
@@ -608,10 +564,6 @@
       "supportedKeys": ["vaa"]
     },
     {
-      "chainId": 36,
-      "supportedKeys": ["vaa"]
-    },
-    {
       "chainId": 37,
       "supportedKeys": ["vaa"]
     },
@@ -625,10 +577,6 @@
     },
     {
       "chainId": 40,
-      "supportedKeys": ["vaa"]
-    },
-    {
-      "chainId": 43,
       "supportedKeys": ["vaa"]
     },
     {
