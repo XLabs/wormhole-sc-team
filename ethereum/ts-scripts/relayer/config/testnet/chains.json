@@ -74,6 +74,13 @@
       "wormholeAddress": "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"
     },
     {
+      "description": "Mezo",
+      "evmNetworkId": 31611,
+      "chainId": 50,
+      "rpc": "https://mezo-testnet.drpc.org",
+      "wormholeAddress": "0x268557122Ffd64c85750d630b716471118F323c8"
+    },
+    {
       "description": "Ethereum Sepolia",
       "evmNetworkId": 11155111,
       "chainId": 10002,

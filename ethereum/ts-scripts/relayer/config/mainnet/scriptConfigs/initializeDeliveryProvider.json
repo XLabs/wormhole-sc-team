@@ -13,10 +13,6 @@
       "rewardAddress": "0x53207E216540125e322CdA8A693b0b89576DEb46"
     },
     {
-      "chainId": 43,
-      "rewardAddress": "0x53207E216540125e322CdA8A693b0b89576DEb46"
-    },
-    {
       "chainId": 44,
       "rewardAddress": "0x53207E216540125e322CdA8A693b0b89576DEb46"
     },
@@ -130,13 +126,6 @@
       "maximumBudget": "252079657171666000000"
     },
     {
-      "chainId": 36,
-      "deliverGasOverhead": "189894484",
-      "updatePriceGas": "1517603",
-      "updatePriceNative": "3470000000",
-      "maximumBudget": "57636887608069200"
-    },
-    {
       "chainId": 37, 
       "deliverGasOverhead": "10911075",
       "updatePriceGas": "1950000000",
@@ -163,13 +152,6 @@
       "updatePriceGas": "69440072576",
       "updatePriceNative": "350000",
       "maximumBudget": "571428571428572000000"
-    },
-    {
-      "chainId": 43,
-      "deliverGasOverhead": "288111834",
-      "updatePriceGas": "1000252",
-      "updatePriceNative": "3470000000",
-      "maximumBudget": "57636887608069200"
     },
     {
       "chainId": 44,
