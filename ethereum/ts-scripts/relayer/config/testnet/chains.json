@@ -81,6 +81,13 @@
       "wormholeAddress": "0x268557122Ffd64c85750d630b716471118F323c8"
     },
     {
+      "description": "XPRL-EVM",
+      "evmNetworkId": 1440000 ,
+      "chainId": 57,
+      "rpc": "https://rpc.xrplevm.org",
+      "wormholeAddress": "0xaBf89de706B583424328B54dD05a8fC986750Da8"
+    },
+    {
       "description": "Ethereum Sepolia",
       "evmNetworkId": 11155111,
       "chainId": 10002,
