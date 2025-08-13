@@ -63,7 +63,7 @@
       "description": "Ink",
       "evmNetworkId": 763373,
       "chainId": 46,
-      "rpc": "https://ink-sepolia.drpc.org",
+      "rpc": "https://rpc-gel-sepolia.inkonchain.com",
       "wormholeAddress": "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"
     },
     {
@@ -82,9 +82,9 @@
     },
     {
       "description": "XPRL-EVM",
-      "evmNetworkId": 1440000 ,
+      "evmNetworkId": 1449000,
       "chainId": 57,
-      "rpc": "https://rpc.xrplevm.org",
+      "rpc": "https://rpc.testnet.xrplevm.org",
       "wormholeAddress": "0xaBf89de706B583424328B54dD05a8fC986750Da8"
     },
     {
