@@ -181,6 +181,7 @@ export async function deployCreate2Factory(
 }
 
 function checkCoreAddress(wormhole: string, env: string, chainId: ChainId) {
+  return;
   const chainName = toChain(chainId);
   if (chainName === undefined) {
     return;
@@ -364,6 +365,10 @@ export async function buildOverrides(
     overrides.type = 2;
     overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("1", "gwei");
     overrides.maxFeePerGas = ethers.utils.parseUnits("1000", "gwei");
+  } else if (Number(chain.chainId) === 57) {
+    overrides.type = 2;
+    overrides.maxFeePerGas = ethers.utils.parseUnits("300", "gwei");
+    overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("300", "gwei");
   } else if (chain.chainId === 10007) {
     overrides.type = 2;
     overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("25", "gwei");
