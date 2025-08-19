@@ -18,6 +18,8 @@ import {
   getWormholeRelayer,
 } from "../helpers/env";
 
+import { toChain } from "@wormhole-foundation/sdk";
+
 const processName = "verifyWormholeRelayerDeployedByteCode";
 init();
 const operation = getOperationDescriptor();
@@ -74,7 +76,7 @@ Expected address: ${deployedImplementationAddress.address.toLowerCase()} ${chain
     }
 
     console.log(
-      `Verifying bytecode deployed at ${deployedImplementationAddress.address} on chain ${chain.chainId}...`,
+      `Verifying bytecode deployed at ${deployedImplementationAddress.address} on chain ${toChain(chain.chainId)} (${chain.chainId})...`,
     );
 
     let deployedBytecode: Buffer;
@@ -123,7 +125,7 @@ Expected address: ${deployedImplementationAddress.address.toLowerCase()} ${chain
       );
     } catch (error) {
       console.error(
-        `Failed to build bytecode for chain ${chain.chainId}. Error: ${stringifyError(error)}`,
+        `Failed to build bytecode for chain ${toChain(chain.chainId)} (${chain.chainId}). Error: ${stringifyError(error)}`,
       );
       continue;
     }
@@ -133,7 +135,7 @@ Expected address: ${deployedImplementationAddress.address.toLowerCase()} ${chain
     if (deployedCompilerVersion !== expectedCompilerVersion) {
       console.error(
         chalk.red(
-          `Bytecode verification failed for chain ${chain.chainId}! Expected the compiler version ${expectedCompilerVersion} but got ${deployedCompilerVersion}`,
+          `Bytecode verification failed for chain ${toChain(chain.chainId)} (${chain.chainId})! Expected the compiler version ${expectedCompilerVersion} but got ${deployedCompilerVersion}`,
         ),
       );
       continue;
@@ -147,7 +149,7 @@ Expected address: ${deployedImplementationAddress.address.toLowerCase()} ${chain
     if (deployedMetadataLength !== expectedMetadataLength) {
       console.error(
         chalk.red(
-          `Bytecode verification failed for chain ${chain.chainId}! Expected the compiler version ${expectedCompilerVersion} but got ${deployedCompilerVersion}`,
+          `Bytecode verification failed for chain ${toChain(chain.chainId)} (${chain.chainId})! Expected the compiler version ${expectedCompilerVersion} but got ${deployedCompilerVersion}`,
         ),
       );
       continue;
@@ -168,7 +170,7 @@ Expected address: ${deployedImplementationAddress.address.toLowerCase()} ${chain
     if (deployedBytecodeHash !== expectedBytecodeHash) {
       console.error(
         chalk.red(
-          `Bytecode verification failed for chain ${chain.chainId}! Expected hash ${expectedBytecodeHash} but got ${deployedBytecodeHash}`,
+          `Bytecode verification failed for chain ${toChain(chain.chainId)} (${chain.chainId})! Expected hash ${expectedBytecodeHash} but got ${deployedBytecodeHash}`,
         ),
       );
       continue;
@@ -176,7 +178,7 @@ Expected address: ${deployedImplementationAddress.address.toLowerCase()} ${chain
 
     console.log(
       chalk.green(
-        `Bytecode verified for chain ${chain.chainId} matches. Hash: ${deployedBytecodeHash}`,
+        `Bytecode verified for chain ${toChain(chain.chainId)} (${chain.chainId}) matches. Hash: ${deployedBytecodeHash}`,
       ),
     );
   }
