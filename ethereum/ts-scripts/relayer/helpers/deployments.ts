@@ -181,7 +181,6 @@ export async function deployCreate2Factory(
 }
 
 function checkCoreAddress(wormhole: string, env: string, chainId: ChainId) {
-  return;
   const chainName = toChain(chainId);
   if (chainName === undefined) {
     return;

@@ -89,7 +89,7 @@ async function run() {
 }
 
 function replaceAllImmutableReferencesBy0 (bytecode: Buffer, referencesByKey: Record<string, ImmutableReference[]>) {
-  let byteCodeWithImmutablesReplaced = Buffer.from(bytecode);
+  let byteCodeWithImmutablesReplaced: Buffer = Buffer.from(bytecode);
   for (const references of Object.values(referencesByKey)) {
     byteCodeWithImmutablesReplaced = replaceImmutableReferences(byteCodeWithImmutablesReplaced, references, Buffer.alloc(32));
   }

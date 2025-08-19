@@ -235,7 +235,7 @@ function buildByteCode(
   implementation: SolidityCompilerOutput,
   baseImplementation: SolidityCompilerOutput,
 ): Buffer {
-  let byteCodeWithImmutablesReplaced = Buffer.from(
+  let byteCodeWithImmutablesReplaced: Buffer = Buffer.from(
     strip0x(implementation.deployedBytecode.object),
     "hex",
   );
