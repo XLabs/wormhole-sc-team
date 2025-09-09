@@ -1,18 +1,14 @@
 import {
-  getNetworkInfo,
   Network as InjectiveNetwork,
 } from "@injectivelabs/networks";
 import {
   ChainGrpcWasmApi,
-  ChainGrpcAuthApi,
-  createTransaction,
   MsgExecuteContractCompat,
   Msgs,
   PrivateKey,
-  TxGrpcApi,
+  MsgBroadcasterWithPk,
 } from "@injectivelabs/sdk-ts";
-import { DEFAULT_STD_FEE, getStdFee } from "@injectivelabs/utils";
-import { fromUint8Array } from "js-base64";
+import { ChainId as InjectiveChainId } from "@injectivelabs/ts-types";
 import { NETWORKS } from "./consts";
 import { impossible, Payload } from "./vaa";
 import { transferFromInjective } from "@certusone/wormhole-sdk/lib/esm/token_bridge/injective";
@@ -40,11 +36,6 @@ export async function execute_injective(
     throw Error(`No ${network} key defined for Injective`);
   }
 
-  // const endPoint =
-  //   network === "Mainnet"
-  //     ? InjectiveNetwork.MainnetK8s
-  //     : InjectiveNetwork.TestnetK8s;
-
   const walletPK = PrivateKey.fromMnemonic(key);
   const walletInjAddr = walletPK.toBech32();
 
@@ -57,7 +48,7 @@ export async function execute_injective(
       target_contract = contracts.coreBridge(network, "Injective");
       action = "submit_v_a_a";
       execute_msg = {
-        vaa: fromUint8Array(vaa),
+        vaa: vaa.toString("base64"),
       };
       switch (payload.type) {
         case "GuardianSetUpgrade":
@@ -86,7 +77,7 @@ export async function execute_injective(
       target_contract = nftContract;
       action = "submit_vaa";
       execute_msg = {
-        data: fromUint8Array(vaa),
+        data: vaa.toString("base64"),
       };
       switch (payload.type) {
         case "ContractUpgrade":
@@ -115,7 +106,7 @@ export async function execute_injective(
       target_contract = tbContract;
       action = "submit_vaa";
       execute_msg = {
-        data: fromUint8Array(vaa),
+        data: vaa.toString("base64"),
       };
       switch (payload.type) {
         case "ContractUpgrade":
@@ -209,55 +200,30 @@ async function signAndSendTx(
     network === "MAINNET"
       ? InjectiveNetwork.Mainnet
       : InjectiveNetwork.TestnetK8s;
-  const networkInfo = getNetworkInfo(endPoint);
-  const walletPublicKey = walletPK.toPublicKey().toBase64();
-  console.log(`about to open grpc channel`);
-  const grpcAuth = new ChainGrpcAuthApi(networkInfo.grpc);
-  console.log(`grpc channel opened`);
-  const accountDetails = await grpcAuth.fetchAccount(walletPK.toBech32());
-  console.log(`accountDetails: ${inspect(accountDetails)}`);
-  // we append an `a` because the `getStdFee` function requires a character but does not specify what kind of unit it expects.
-  // TODO: figure out what did they mean by this and use appropriate suffix/unit
-  const gasLimit = parseInt(DEFAULT_STD_FEE.gas, 10) * 1;
-  console.log(`gasLimit: ${gasLimit}`);
-  const fee = getStdFee({gas: gasLimit, gasPrice: 160000000});
-  console.log(`fee: ${inspect(fee)}`);
-  const { signBytes, txRaw } = createTransaction({
-    message: msgs,
-    memo: "",
-    fee,
-    pubKey: walletPublicKey,
-    sequence: accountDetails.baseAccount.sequence,
-    accountNumber: accountDetails.baseAccount.accountNumber,
-    chainId: networkInfo.chainId,
+
+  const broadcaster = new MsgBroadcasterWithPk({
+    privateKey: walletPK,
+    network: endPoint,
+    chainId: InjectiveChainId.Mainnet,
+    endpoints: {
+      indexer: "https://sentry.exchange.grpc-web.injective.network:443",
+      grpc: "https://injective-grpc-web.publicnode.com",
+      rest: "https://injective-rest.publicnode.com",
+    },
   });
-  console.log("txRaw", txRaw);
 
-  // Sign transaction
-  console.log("sign transaction...");
-  const sig = await walletPK.sign(Buffer.from(signBytes));
+  const simulationResponse = await broadcaster.simulate({
+    msgs,
+  });
+  console.log(
+    `Transaction simulation response: ${JSON.stringify(
+      simulationResponse.gasInfo
+    )}`
+  );
 
-  // Append Signatures
-  txRaw.signatures = [sig];
-
-  // Simulate transaction
-  console.log("simulate transaction...");
-  const txService = new TxGrpcApi(networkInfo.grpc);
-  try {
-    const simulationResponse = await txService.simulate(txRaw);
-    console.log(
-      `Transaction simulation response: ${JSON.stringify(
-        simulationResponse.gasInfo
-      )}`
-    );
-  } catch (e) {
-    console.log("Failed to simulate:", e);
-    return;
-  }
-
-  // Broadcast transaction
-  console.log("broadcast transaction...");
-  const txResponse = await txService.broadcast(txRaw);
+  const txResponse = await broadcaster.broadcast({
+    msgs,
+  });
   console.log("txResponse", txResponse);
 
   if (txResponse.code !== 0) {

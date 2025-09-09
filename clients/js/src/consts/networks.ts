@@ -90,7 +90,7 @@ const Mainnet = {
     networkId: "mainnet",
   },
   Injective: {
-    rpc: "https://injective-rpc.publicnode.com:443",
+    rpc: "https://sentry.tm.injective.network:443",
     chain_id: "injective-1",
     key: getEnvVar("INJECTIVE_KEY"),
   },
