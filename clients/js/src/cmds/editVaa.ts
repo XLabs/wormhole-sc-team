@@ -234,7 +234,7 @@ export const handler = async (
 const getGuardianSet = async (
   network: Network,
   guardianSetIndex: number
-): Promise<string[]> => {
+): Promise<UniversalAddress[]> => {
   let n = NETWORKS[network].Ethereum;
   let contract_address = contracts.coreBridge(network, "Ethereum");
   if (contract_address === undefined) {
@@ -244,38 +244,33 @@ const getGuardianSet = async (
   const provider = new ethers.providers.JsonRpcProvider(n.rpc);
   const contract = Implementation__factory.connect(contract_address, provider);
   const result = await contract.getGuardianSet(guardianSetIndex);
-  return result[0];
+  if (result[0].length === 0) {
+    throw new Error(`Got zero guardians when querying guardian set ${guardianSetIndex} in Ethereum. Faulty RPC?`);
+  }
+  return result[0].map((address) => new UniversalAddress(address, platformToAddressFormat("Evm")));
 };
 
 // getSigsFromWormscanData reads the guardian address / signature pairs from the wormscan data
 // and generates an array of signature objects. It then sorts them into order by address.
 const getSigsFromWormscanData = (
-  wormscanData: any,
-  guardianSet: string[]
+  wormscanData: any[],
+  guardianSet: UniversalAddress[]
 ): Signature[] => {
-  let sigs: Signature[] = [];
-  for (let data in wormscanData) {
-    let guardianAddr = wormscanData[data].guardianAddr;
-    let gsi = -1;
-    
-    for (let idx = 0; idx < guardianSet.length; idx++) {
-      const normalizedGuardianFromSet = new UniversalAddress(guardianSet[idx], platformToAddressFormat("Evm"));
-      const normalizedGuardianAddr = new UniversalAddress(guardianAddr, platformToAddressFormat("Evm"));
+  const sigs: Signature[] = [];
+  for (const observation of wormscanData) {
+    const guardianAddr = observation.guardianAddr;
+    const normalizedGuardianAddr = new UniversalAddress(guardianAddr, platformToAddressFormat("Evm"));
+    const gsi = guardianSet.findIndex((guardian) => normalizedGuardianAddr.equals(guardian));
 
-      if (normalizedGuardianAddr.equals(normalizedGuardianFromSet)) {
-        gsi = idx;
-        break;
-      }
-    }
     if (gsi < 0) {
       console.warn(
         "Failed to look up guardian address " + guardianAddr + ". Skipping."
       );
       continue;
     }
-    let sig: Signature = {
+    const sig: Signature = {
       guardianSetIndex: gsi,
-      signature: Buffer.from(wormscanData[data].signature, "base64").toString(
+      signature: Buffer.from(observation.signature, "base64").toString(
         "hex"
       ),
     };
@@ -283,15 +278,5 @@ const getSigsFromWormscanData = (
     sigs.push(sig);
   }
 
-  return sigs.sort((s1, s2) => {
-    if (s1.guardianSetIndex > s2.guardianSetIndex) {
-      return 1;
-    }
-
-    if (s1.guardianSetIndex < s2.guardianSetIndex) {
-      return -1;
-    }
-
-    return 0;
-  });
+  return sigs.sort((s1, s2) => s1.guardianSetIndex - s2.guardianSetIndex);
 };
