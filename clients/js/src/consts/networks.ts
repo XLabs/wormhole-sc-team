@@ -310,7 +310,7 @@ const Testnet = {
     key: getEnvVar("TERRA_MNEMONIC_TESTNET"),
   },
   Ethereum: {
-    rpc: `https://rpc.ankr.com/eth_goerli`,
+    rpc: `https://0xrpc.io/sep`,
     key: getEnvVar("ETH_KEY_TESTNET"),
     chain_id: 5,
   },
@@ -453,7 +453,7 @@ const Testnet = {
     chain_id: 713715,
   },
   Sepolia: {
-    rpc: "https://rpc.ankr.com/eth_sepolia",
+    rpc: "https://0xrpc.io/sep",
     key: getEnvVar("ETH_KEY_TESTNET"),
     chain_id: 11155111,
   },
