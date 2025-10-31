@@ -17,6 +17,7 @@ import { Payload, VAA, parse, serialiseVAA } from "../../vaa";
 import { SuiRpcValidationError } from "./error";
 import { Network } from "@wormhole-foundation/sdk";
 import { isValidSuiAddress } from "../../sdk/sui";
+import { uint8ArrayToBCS } from "@certusone/wormhole-sdk/lib/cjs/sui";
 
 const UPGRADE_CAP_TYPE = "0x2::package::UpgradeCap";
 
@@ -377,7 +378,7 @@ export const registerChain = async (
     target: `${coreBridgePackageId}::vaa::parse_and_verify`,
     arguments: [
       tx.object(coreBridgeStateObjectId),
-      tx.pure([...vaa]),
+      tx.pure(uint8ArrayToBCS(Uint8Array.from(vaa))),
       tx.object(SUI_CLOCK_OBJECT_ID),
     ],
   });
