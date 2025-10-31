@@ -36,12 +36,12 @@ const Mainnet = {
     chain_id: 56,
   },
   Polygon: {
-    rpc: "https://rpc.ankr.com/polygon",
+    rpc: "https://polygon-rpc.com",
     key: getEnvVar("ETH_KEY"),
     chain_id: 137,
   },
   Avalanche: {
-    rpc: "https://rpc.ankr.com/avalanche",
+    rpc: "https://api.avax.network/ext/bc/C/rpc",
     key: getEnvVar("ETH_KEY"),
     chain_id: 43114,
   },
@@ -183,7 +183,7 @@ const Mainnet = {
     chain_id: 30,
   },
   Scroll: {
-    rpc: "https://rpc.ankr.com/scroll",
+    rpc: "https://rpc.scroll.io",
     key: getEnvVar("ETH_KEY"),
     chain_id: 534352,
   },
@@ -221,6 +221,26 @@ const Mainnet = {
     rpc: "https://evm-rpc.sei-apis.com",
     key: getEnvVar("ETH_KEY"),
     chain_id: 1329,
+  },
+  HyperEVM: {
+    rpc: "https://rpc.hyperliquid.xyz/evm",
+    key: getEnvVar("ETH_KEY"),
+    chain_id: 999,
+  },
+  Monad: {
+    rpc: undefined,
+    key: getEnvVar("ETH_KEY"),
+    chain_id: 143,
+  },
+  Mezo: {
+    rpc: "https://rpc-internal.mezo.org",
+    key: getEnvVar("ETH_KEY"),
+    chain_id: 31612,
+  },
+  XRPLEVM: {
+    rpc: "https://rpc.xrplevm.org",
+    key: getEnvVar("ETH_KEY"),
+    chain_id: 1440000,
   },
   Sepolia: {
     rpc: "",

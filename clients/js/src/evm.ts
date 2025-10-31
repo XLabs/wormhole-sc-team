@@ -298,6 +298,10 @@ async function getSigner(
       maxFeePerGas: feeData.maxFeePerGas?.mul(50) || undefined,
       maxPriorityFeePerGas: feeData.maxPriorityFeePerGas?.mul(50) || undefined,
     };
+  } else if (chain === "Celo") {
+    overrides.type = 2;
+    overrides.maxFeePerGas = ethers.utils.parseUnits("35", "gwei");
+    overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("0.001", "gwei");
   } else if (chain === "Klaytn" || chain === "Fantom") {
     overrides = { gasPrice: (await signer.getGasPrice()).toString() };
   } else if (chain === "Mantle") {
