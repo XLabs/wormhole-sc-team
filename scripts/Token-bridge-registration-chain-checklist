@@ -5,7 +5,6 @@
 [ ] polygon
 [ ] avalanche
 [2] algorand
-[ ] fantom
 [ ] klaytn
 [ ] celo
 [ ] near
@@ -18,20 +17,23 @@
 [ ] base
 [ ] sei
 [ ] scroll
-[ ] mantle
-[ ] x layer
 [ ] linea
 [ ] berachain
 [ ] seievm
 [ ] unichain
 [ ] worldchain
 [ ] ink
+[ ] hyperEVM
+[ ] Monad
+[ ] Mezo
+[ ] XRPLEvm
+
 
 # Need to use a special key
 [ ] wormchain TB
 [ ] wormchain Accountant
 
-# Notes:git p
+# Notes:
 # 1. Injective has GRPC problems in the worm-cli tool.
 # 2. Algorand core contracts storage space is exhausted, so no new registrations can be submitted.
 
@@ -52,8 +54,6 @@ worm submit --network mainnet --chain Avalanche "$SUBMIT_VAA"
 🕰️ https://snowtrace.io/tx/<txid>
 worm submit --network mainnet --chain Algorand "$SUBMIT_VAA"
 🕰️ https://explorer.perawallet.app/tx-group/<txid>
-worm submit --network mainnet --chain Fantom "$SUBMIT_VAA"
-🕰️ https://ftmscan.com/tx/<txid>
 worm submit --network mainnet --chain Klaytn --rpc https://rpc.ankr.com/klaytn "$SUBMIT_VAA"
 🕰️ https://kaiascan.io/tx/<txid>?tabId=internalTx&page=1
 worm submit --network mainnet --chain Celo "$SUBMIT_VAA"
@@ -78,13 +78,9 @@ worm submit --network mainnet --chain Arbitrum "$SUBMIT_VAA"
 worm submit --network mainnet --chain Base "$SUBMIT_VAA"
 🕰️ https://basescan.org/tx/<txid>
 worm submit --network mainnet --chain Sei "$SUBMIT_VAA"
-🕰️ https://www.seiscan.app/pacific-1/txs/<txid>
+🕰️ https://seistream.app/transactions/<txid>
 worm submit --network mainnet --chain Scroll "$SUBMIT_VAA"
 🕰️ https://scrollscan.com/tx/<txid>
-worm submit --network mainnet --chain Mantle "$SUBMIT_VAA" --rpc https://rpc.mantle.xyz
-🕰️ https://explorer.mantle.xyz/tx/<txid>
-worm submit --network mainnet --chain Xlayer "$SUBMIT_VAA"
-🕰️ https://www.oklink.com/xlayer/tx/<txid>
 worm submit --network mainnet --chain Linea "$SUBMIT_VAA"
 🕰️ https://lineascan.build/tx/<txid>
 worm submit --network mainnet --chain Berachain "$SUBMIT_VAA"
