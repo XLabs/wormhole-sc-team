@@ -4,12 +4,12 @@
 [ ] bsc
 [ ] polygon
 [ ] avalanche
-[2] algorand
+[1] algorand
 [ ] klaytn
 [ ] celo
 [ ] near
 [ ] moonbeam
-[1] injective
+[ ] injective
 [ ] sui
 [ ] aptos
 [ ] arbitrum
@@ -23,9 +23,7 @@
 [ ] unichain
 [ ] worldchain
 [ ] ink
-[ ] hyperEVM
 [ ] Monad
-[ ] Mezo
 [ ] XRPLEvm
 
 
@@ -34,8 +32,7 @@
 [ ] wormchain Accountant
 
 # Notes:
-# 1. Injective has GRPC problems in the worm-cli tool.
-# 2. Algorand core contracts storage space is exhausted, so no new registrations can be submitted.
+# 1. Algorand core contracts storage space is exhausted, so no new registrations can be submitted.
 
 # Replace $SUBMIT_VAA with the VAA you want to submit.
 # Replace 🕰️ with ✅ when done and the tx shows success in the block explorer
@@ -93,3 +90,7 @@ worm submit --network mainnet --chain Worldchain "$SUBMIT_VAA"
 🕰️ https://worldscan.org/tx/<txid>
 worm submit --network mainnet --chain Ink "$SUBMIT_VAA"
 🕰️ https://explorer.inkonchain.com/tx/<txid>
+worm submit --network mainnet --chain Monad "$SUBMIT_VAA"
+🕰️ https://mainnet-beta.monvision.io/tx/<txid>
+worm submit --network mainnet --chain XRPLEVM "$SUBMIT_VAA"
+🕰️ https://explorer.xrplevm.org/tx/<txid>
