@@ -309,7 +309,61 @@ async function getSigner(
       maxFeePerGas: ethers.utils.parseUnits("0.2", "gwei"),
       maxPriorityFeePerGas: 0,
     }
-  } 
+  } else if (chain === "Linea") {
+    overrides = {
+      type: 2,
+      maxFeePerGas: ethers.utils.parseUnits("0.042425711", "gwei"),
+      maxPriorityFeePerGas: ethers.utils.parseUnits("0.0424257", "gwei"),
+    }
+  } else if (chain === "Berachain") {
+    overrides = {
+      type: 2,
+      maxFeePerGas: ethers.utils.parseUnits("0.000005692", "gwei"),
+      maxPriorityFeePerGas: ethers.utils.parseUnits("0.000000593", "gwei"),
+    }
+  } else if (chain === "Unichain") {
+    overrides = {
+      type: 2,
+      maxFeePerGas: ethers.utils.parseUnits("0.0001", "gwei"),
+      maxPriorityFeePerGas: ethers.utils.parseUnits("0.000003561", "gwei"),
+    }
+  } else if (chain === "Worldchain") {
+    overrides = {
+      type: 2,
+      maxFeePerGas: ethers.utils.parseUnits("0.0001", "gwei"),
+      maxPriorityFeePerGas: ethers.utils.parseUnits("0.000071", "gwei"),
+    }
+  } else if (chain === "Ink") {
+    overrides = {
+      type: 2,
+      maxFeePerGas: ethers.utils.parseUnits("0.002", "gwei"),
+      maxPriorityFeePerGas: ethers.utils.parseUnits("0.000001005", "gwei"),
+    }
+  } else if (chain === "HyperEVM") {
+    overrides = {
+      type: 2,
+      maxFeePerGas: ethers.utils.parseUnits("150", "gwei"),
+      maxPriorityFeePerGas: ethers.utils.parseUnits("0.22", "gwei"),
+    }
+  } else if (chain === "Monad") {
+    overrides = {
+      type: 2,
+      maxFeePerGas: ethers.utils.parseUnits("50", "gwei"),
+      maxPriorityFeePerGas: ethers.utils.parseUnits("0", "gwei"),
+    }
+  } else if (chain === "Mezo") {
+    overrides = {
+      type: 0,
+      gasPrice: ethers.utils.parseUnits("0", "gwei"),
+      // gasPrice: ethers.utils.parseUnits("0.000000000001755", "gwei"),
+    }
+  } else if (chain === "XRPLEVM") {
+    overrides = {
+      type: 2,
+      maxFeePerGas: ethers.utils.parseUnits("250", "gwei"),
+      maxPriorityFeePerGas: ethers.utils.parseUnits("0.0001", "gwei"),
+    }
+  }
   return {
     signer,
     provider,
