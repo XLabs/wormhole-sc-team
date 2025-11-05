@@ -54,7 +54,7 @@ worm submit --network mainnet --chain Avalanche "$SUBMIT_VAA"
 🕰️ https://snowtrace.io/tx/<txid>
 worm submit --network mainnet --chain Algorand "$SUBMIT_VAA"
 🕰️ https://explorer.perawallet.app/tx-group/<txid>
-worm submit --network mainnet --chain Klaytn --rpc https://rpc.ankr.com/klaytn "$SUBMIT_VAA"
+worm submit --network mainnet --chain Klaytn "$SUBMIT_VAA"
 🕰️ https://kaiascan.io/tx/<txid>?tabId=internalTx&page=1
 worm submit --network mainnet --chain Celo "$SUBMIT_VAA"
 🕰️ https://celoscan.io/tx/<txid>
