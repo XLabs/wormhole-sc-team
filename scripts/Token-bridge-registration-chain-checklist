@@ -1,29 +1,31 @@
 # Token bridge registration chain checklist
-[ ] solana
-[ ] ethereum
-[ ] bsc
-[ ] polygon
-[ ] avalanche
-[1] algorand
-[ ] klaytn
-[ ] celo
-[ ] near
-[ ] moonbeam
-[ ] injective
-[ ] sui
-[ ] aptos
-[ ] arbitrum
-[ ] optimism
-[ ] base
-[ ] sei
-[ ] scroll
-[ ] linea
-[ ] berachain
-[ ] seievm
-[ ] unichain
-[ ] worldchain
-[ ] ink
+[ ] Solana
+[ ] Ethereum
+[ ] BSC
+[ ] Polygon
+[ ] Avalanche
+[1] Algorand
+[ ] Klaytn
+[ ] Celo
+[ ] Near
+[ ] Moonbeam
+[ ] Injective
+[ ] Sui
+[ ] Aptos
+[ ] Arbitrum
+[ ] Optimism
+[ ] Base
+[ ] Sei
+[ ] Scroll
+[ ] Linea
+[ ] Berachain
+[ ] Seievm
+[ ] Unichain
+[ ] Worldchain
+[ ] Ink
 [ ] Monad
+[2] Mezo
+[ ] Fogo
 [ ] XRPLEVM
 
 
@@ -33,6 +35,7 @@
 
 # Notes:
 # 1. Algorand core contracts storage space is exhausted, so no new registrations can be submitted.
+# 2. Mezo's TB is unused, do not register.
 
 # Replace $SUBMIT_VAA with the VAA you want to submit.
 # Replace 🕰️ with ✅ when done and the tx shows success in the block explorer
@@ -92,5 +95,7 @@ worm submit --network mainnet --chain Ink "$SUBMIT_VAA"
 🕰️ https://explorer.inkonchain.com/tx/<txid>
 worm submit --network mainnet --chain Monad "$SUBMIT_VAA"
 🕰️ https://mainnet-beta.monvision.io/tx/<txid>
+worm submit --network mainnet --chain Fogo "$SUBMIT_VAA"
+🕰️ https://explorer.fogo.io/tx/<txid>?cluster=mainnet-beta
 worm submit --network mainnet --chain XRPLEVM "$SUBMIT_VAA"
 🕰️ https://explorer.xrplevm.org/tx/<txid>
