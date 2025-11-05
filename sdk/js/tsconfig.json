@@ -11,6 +11,7 @@
     "allowJs": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
+    "inlineSourceMap": true,
     "lib": ["dom", "es5", "scripthost", "es2020.bigint"]
   },
   "include": ["src", "types"],
