@@ -6,7 +6,6 @@ import {
 } from "@solana/web3.js";
 import {
   ChainId,
-  CHAIN_ID_SOLANA,
   tryNativeToUint8Array,
 } from "../../../utils";
 import { deriveAddress, getAccountData } from "../../utils";
@@ -16,11 +15,6 @@ export function deriveEndpointKey(
   emitterChain: number | ChainId,
   emitterAddress: Buffer | Uint8Array | string
 ): PublicKey {
-  if (emitterChain == CHAIN_ID_SOLANA) {
-    throw new Error(
-      "emitterChain == CHAIN_ID_SOLANA cannot exist as foreign token bridge emitter"
-    );
-  }
   if (typeof emitterAddress == "string") {
     emitterAddress = tryNativeToUint8Array(
       emitterAddress,
