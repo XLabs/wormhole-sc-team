@@ -237,6 +237,10 @@ const Mainnet = {
     key: getEnvVar("ETH_KEY"),
     chain_id: 31612,
   },
+  Fogo: {
+    rpc: "https://mainnet.fogo.io",
+    key: getEnvVar("SOLANA_KEY"),
+  },
   XRPLEVM: {
     rpc: "https://rpc.xrplevm.org",
     key: getEnvVar("ETH_KEY"),

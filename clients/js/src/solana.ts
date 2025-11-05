@@ -17,7 +17,6 @@ import {
   createUpgradeContractInstruction as createWormholeUpgradeContractInstruction,
 } from "@certusone/wormhole-sdk/lib/esm/solana/wormhole";
 import * as web3s from "@solana/web3.js";
-import base58 from "bs58";
 import { NETWORKS } from "./consts";
 import { Payload, VAA, impossible } from "./vaa";
 import { getEmitterAddress } from "./emitter";
@@ -36,6 +35,7 @@ import {
   chains,
   contracts,
   platformToChains,
+  encoding
 } from "@wormhole-foundation/sdk-base";
 import { hexToUint8Array, tryNativeToUint8Array } from "./sdk/array";
 
@@ -59,7 +59,7 @@ export async function execute_solana(
   }
 
   const connection = setupConnection(rpc);
-  const from = web3s.Keypair.fromSecretKey(base58.decode(key));
+  const from = web3s.Keypair.fromSecretKey(encoding.b58.decode(key));
 
   const coreContract = contracts.coreBridge.get(network, chain);
   if (!coreContract) {
@@ -67,7 +67,7 @@ export async function execute_solana(
   }
 
   const nftContract = contracts.nftBridge.get(network, chain);
-  if (!nftContract) {
+  if (!nftContract && chain !== "Fogo") {
     throw new Error(`NFT bridge address not defined for ${chain} ${network}`);
   }
 
@@ -78,7 +78,7 @@ export async function execute_solana(
 
   const bridgeId = new web3s.PublicKey(coreContract);
   const tokenBridgeId = new web3s.PublicKey(tbContract);
-  const nftBridgeId = new web3s.PublicKey(nftContract);
+  const nftBridgeId = nftContract !== undefined ? new web3s.PublicKey(nftContract) : undefined;
 
   let ix: web3s.TransactionInstruction;
   switch (v.payload.module) {
@@ -249,7 +249,7 @@ export async function transferSolana(
   }
 
   const connection = setupConnection(rpc);
-  const keypair = web3s.Keypair.fromSecretKey(base58.decode(key));
+  const keypair = web3s.Keypair.fromSecretKey(encoding.b58.decode(key));
 
   const core = contracts.coreBridge.get(network, srcChain);
   if (!core) {

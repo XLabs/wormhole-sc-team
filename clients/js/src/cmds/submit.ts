@@ -165,7 +165,7 @@ async function executeSubmit(
     );
   } else if (chain === "Terra" || chain === "Terra2") {
     await execute_terra(parsedVaa.payload, buf, network, chain);
-  } else if (chain === "Solana" || chain === "Pythnet") {
+  } else if (chain === "Solana" || chain === "Pythnet" || chain === "Fogo") {
     await execute_solana(parsedVaa, buf, network, chain);
   } else if (chain === "Algorand") {
     await execute_algorand(
