@@ -348,7 +348,7 @@ async function getSigner(
   } else if (chain === "Monad") {
     overrides = {
       type: 2,
-      maxFeePerGas: ethers.utils.parseUnits("50", "gwei"),
+      maxFeePerGas: ethers.utils.parseUnits("100", "gwei"),
       maxPriorityFeePerGas: ethers.utils.parseUnits("0", "gwei"),
     }
   } else if (chain === "Mezo") {
