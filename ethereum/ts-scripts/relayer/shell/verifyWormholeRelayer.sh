@@ -143,14 +143,14 @@ for chain in $chain_ids
 
      else if test $chain -eq 48
 
-        set monad_devnet_explorer_url "https://explorer.monad-testnet.category.xyz/api/"
-        set monad_devnet_rpc_url "https://explorer.monad-testnet.category.xyz/api/eth-rpc"
+        set monad_mainnet_explorer_url "https://sourcify-api-monad.blockvision.org/"
+        set monad_mainnet_rpc_url "https://rpc.monad.xyz"
 
-        forge verify-contract --verifier blockscout --verifier-url $monad_devnet_explorer_url --watch \
-            --rpc-url $monad_devnet_rpc_url \
+        forge verify-contract --verifier sourcify --verifier-url $monad_mainnet_explorer_url --watch \
+            --rpc-url $monad_mainnet_rpc_url \
             $proxy_address contracts/relayer/create2Factory/Create2Factory.sol:SimpleProxy
-        forge verify-contract --verifier blockscout --verifier-url $monad_devnet_explorer_url --watch \
-            --rpc-url $monad_devnet_rpc_url \
+        forge verify-contract --verifier sourcify --verifier-url $monad_mainnet_explorer_url --watch \
+            --rpc-url $monad_mainnet_rpc_url \
             $implementation_address contracts/relayer/wormholeRelayer/WormholeRelayer.sol:WormholeRelayer
     else
         forge verify-contract --watch --constructor-args $init_contract_address \
