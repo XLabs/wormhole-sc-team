@@ -16,10 +16,14 @@ const operatingChains = getOperatingChains();
 async function run() {
   console.log(`Start! ${processName}`);
 
-  const emitters = allChains.map((chain) => ({
-    chainId: chain.chainId,
-    addr: nativeEthereumAddressToHex(getMockIntegrationAddress(chain)),
-  })) satisfies XAddressStruct[];
+  const emitters = allChains
+    .filter((chain) => {
+      return getMockIntegrationAddress(chain) !== undefined
+    })
+    .map((chain) => ({
+      chainId: chain.chainId,
+      addr: nativeEthereumAddressToHex(getMockIntegrationAddress(chain)!),
+    })) satisfies XAddressStruct[];
 
   const results = await Promise.allSettled(
     operatingChains.map(async (chain) =>

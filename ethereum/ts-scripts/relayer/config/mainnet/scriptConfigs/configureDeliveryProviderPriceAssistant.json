@@ -17,10 +17,6 @@
       "address": "0xE8af07A8Eff87B99B7C8C2c18ea95a1FE86D0ACD"
     },
     {
-      "chainId": 10,
-      "address": "0xE8af07A8Eff87B99B7C8C2c18ea95a1FE86D0ACD"
-    },
-    {
       "chainId": 13,
       "address": "0xE8af07A8Eff87B99B7C8C2c18ea95a1FE86D0ACD"
     },
@@ -49,14 +45,6 @@
       "address": "0xE8af07A8Eff87B99B7C8C2c18ea95a1FE86D0ACD"
     },
     {
-      "chainId": 35,
-      "address": "0xE8af07A8Eff87B99B7C8C2c18ea95a1FE86D0ACD"
-    },
-    {
-      "chainId": 37,
-      "address": "0xE8af07A8Eff87B99B7C8C2c18ea95a1FE86D0ACD"
-    },
-    {
       "chainId": 38,
       "address": "0xE8af07A8Eff87B99B7C8C2c18ea95a1FE86D0ACD"
     },
@@ -78,6 +66,10 @@
     },
     {
       "chainId": 46,
+      "address": "0xE8af07A8Eff87B99B7C8C2c18ea95a1FE86D0ACD"
+    },
+    {
+      "chainId": 48,
       "address": "0xE8af07A8Eff87B99B7C8C2c18ea95a1FE86D0ACD"
     },
     {

@@ -6,7 +6,7 @@
       "description": "Ethereum",
       "evmNetworkId": 1,
       "chainId": 2,
-      "rpc": "https://eth.llamarpc.com",
+      "rpc": "https://0xrpc.io/eth",
       "wormholeAddress": "0x98f3c9e6E3fAce36bAAd05FE09d375Ef1464288B"
     },
     {
@@ -29,13 +29,6 @@
       "chainId": 6,
       "rpc": "https://api.avax.network/ext/bc/C/rpc",
       "wormholeAddress": "0x54a8e5f9c4CbA08F9943965859F6c34eAF03E26c"
-    },
-    {
-      "description": "Fantom",
-      "evmNetworkId": 250,
-      "chainId": 10,
-      "rpc": "https://rpc3.fantom.network",
-      "wormholeAddress": "0x126783A6Cb203a3E35344528B26ca3a0489a1485"
     },
     {
       "description": "Klaytn",
@@ -62,7 +55,7 @@
       "description": "Arbitrum",
       "evmNetworkId": 42161,
       "chainId": 23,
-      "rpc": "https://arbitrum-one-rpc.publicnode.com",
+      "rpc": "https://api.zan.top/arb-one",
       "wormholeAddress": "0xa5f208e072434bC67592E4C49C1B991BA79BCA46"
     },
     {
@@ -76,7 +69,7 @@
       "description": "Base",
       "evmNetworkId": 8453,
       "chainId": 30,
-      "rpc": "https://base.llamarpc.com",
+      "rpc": "https://mainnet.base.org",
       "wormholeAddress": "0xbebdb6C8ddC678FfA9f8748f85C815C556Dd8ac6"
     },
     {
@@ -85,20 +78,6 @@
       "chainId": 34,
       "rpc": "https://rpc.scroll.io",
       "wormholeAddress": "0xbebdb6C8ddC678FfA9f8748f85C815C556Dd8ac6"
-    },
-    {
-      "description": "Mantle",
-      "evmNetworkId": 5000,
-      "chainId": 35,
-      "rpc": "https://rpc.mantle.xyz",
-      "wormholeAddress": "0xbebdb6C8ddC678FfA9f8748f85C815C556Dd8ac6"
-    },
-    {
-      "description": "XLayer",
-      "evmNetworkId": 196,
-      "chainId": 37,
-      "rpc": "https://xlayerrpc.okx.com",
-      "wormholeAddress": "0x194B123c5E96B9b2E49763619985790Dc241CAC0"
     },
     {
       "description": "Linea",
@@ -118,7 +97,7 @@
       "description": "Seievm",
       "evmNetworkId": 1329,
       "chainId": 40,
-      "rpc": "https://evm-rpc.sei-apis.com",
+      "rpc": "https://sei-evm-rpc.stakeme.pro",
       "wormholeAddress": "0xCa1D5a146B03f6303baF59e5AD5615ae0b9d146D"
     },
     {
@@ -141,6 +120,13 @@
       "chainId": 46,
       "rpc": "https://rpc-qnd.inkonchain.com",
       "wormholeAddress": "0xCa1D5a146B03f6303baF59e5AD5615ae0b9d146D"
+    },
+    {
+      "description": "Monad",
+      "evmNetworkId": 143,
+      "chainId": 48,
+      "rpc": "https://rpc.monad.xyz",
+      "wormholeAddress": "0x194B123c5E96B9b2E49763619985790Dc241CAC0"
     },
     {
       "description": "Mezo",
