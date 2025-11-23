@@ -324,7 +324,7 @@ export async function buildOverrides(
      overrides.type = 0;
 
      // Use 5 gwei for testnet (chainId 97), 1 otherwise.
-     overrides.gasPrice = ethers.utils.parseUnits(chain.evmNetworkId === 97 ? "5" : "1", "gwei");
+     overrides.gasPrice = ethers.utils.parseUnits(chain.evmNetworkId === 97 ? "5" : "0.05", "gwei");
   } else if (chain.chainId === 23) {
     // Arbitrum gas price feeds are excessive on public endpoints too apparently.
     overrides.type = 2;
@@ -343,8 +343,8 @@ export async function buildOverrides(
     overrides.maxPriorityFeePerGas = 0;
   } else if (chain.chainId === 40) {
     overrides.type = 2;
-    overrides.maxFeePerGas = ethers.utils.parseUnits("1.1", "gwei");
-    overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("1.1", "gwei");
+    overrides.maxFeePerGas = ethers.utils.parseUnits("15", "gwei");
+    overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("0", "gwei");
   } else if (chain.chainId === 44) {
     overrides.type = 2;
     overrides.maxFeePerGas = ethers.utils.parseUnits("0.001", "gwei");
@@ -359,7 +359,8 @@ export async function buildOverrides(
     overrides.maxFeePerGas = ethers.utils.parseUnits("0.001", "gwei");
   } else if (chain.chainId === 48) { 
     overrides.type = 2;
-    overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("2", "gwei");
+    overrides.maxFeePerGas = ethers.utils.parseUnits("100", "gwei");
+    overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("0", "gwei");
   }  else if (chain.chainId === 50) {
     overrides.type = 2;
     overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("0.03", "gwei");
@@ -368,7 +369,7 @@ export async function buildOverrides(
     overrides.type = 2;
     overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("1", "gwei");
     overrides.maxFeePerGas = ethers.utils.parseUnits("1000", "gwei");
-  } else if (Number(chain.chainId) === 57) {
+  } else if (chain.chainId === 57) {
     overrides.type = 2;
     overrides.maxFeePerGas = ethers.utils.parseUnits("300", "gwei");
     overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("300", "gwei");
