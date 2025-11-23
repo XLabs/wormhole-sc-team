@@ -40,9 +40,21 @@ async function run() {
   const implementationStorageSlot =
     "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc";
 
+  const chainLabelPad = operation.operatingChains
+    .map((chain) => buildChainLabel(chain).length)
+    .reduce((previous, current) => Math.max(previous, current), 0);
+
+  const implementation: SolidityCompilerOutput = JSON.parse(fs.readFileSync(WORMHOLE_RELAYER_SOLIDITY_COMPILER_OUTPUT, "utf8"));
+  const baseImplementation: SolidityCompilerOutput = JSON.parse(fs.readFileSync(WORMHOLE_RELAYER_BASE_SOLIDITY_COMPILER_OUTPUT, "utf8"));
+
   for (const chain of operation.operatingChains) {
     const provider = getProvider(chain);
     const proxy = await getWormholeRelayer(chain, provider);
+    const chainLabel = buildChainLabel(chain).padEnd(chainLabelPad);
+
+    function log(msg: string) {
+      console.log(`${chainLabel}: ${msg}`);
+    }
 
     const deployedImplementationAddress = expectedImplementationAddresses.find(
       (deploy) => {
@@ -51,7 +63,7 @@ async function run() {
     );
 
     if (deployedImplementationAddress === undefined) {
-      console.error(
+      log(
         "Failed to find implementation address for chain " + chain.chainId,
       );
       continue;
@@ -67,7 +79,7 @@ async function run() {
       actualAddress.toLowerCase() !==
       deployedImplementationAddress.address.toLowerCase()
     ) {
-      console.error(
+      log(
         `Implementation address in proxy does not match expected address.
 Actual address: ${actualAddress.toLowerCase()}
 Expected address: ${deployedImplementationAddress.address.toLowerCase()} ${chain.chainId}`,
@@ -75,9 +87,7 @@ Expected address: ${deployedImplementationAddress.address.toLowerCase()} ${chain
       continue;
     }
 
-    console.log(
-      `Verifying bytecode deployed at ${deployedImplementationAddress.address} on chain ${toChain(chain.chainId)} (${chain.chainId})...`,
-    );
+    log(`Verifying bytecode deployed at ${deployedImplementationAddress.address}`);
 
     let deployedBytecode: Buffer;
     try {
@@ -86,32 +96,8 @@ Expected address: ${deployedImplementationAddress.address.toLowerCase()} ${chain
         "hex",
       );
     } catch (error) {
-      console.error(
-        `Failed to retrieve deployed contract from chain scanner. Error: ${stringifyError(error)}`,
-      );
-      continue;
-    }
-
-    let implementation: SolidityCompilerOutput;
-    try {
-      implementation = JSON.parse(
-        fs.readFileSync(WORMHOLE_RELAYER_SOLIDITY_COMPILER_OUTPUT, "utf8"),
-      );
-    } catch (error) {
-      console.error(
-        `Failed to read WormholeRelayer contract data. Error: ${stringifyError(error)}`,
-      );
-      continue;
-    }
-
-    let baseImplementation: SolidityCompilerOutput;
-    try {
-      baseImplementation = JSON.parse(
-        fs.readFileSync(WORMHOLE_RELAYER_BASE_SOLIDITY_COMPILER_OUTPUT, "utf8"),
-      );
-    } catch (error) {
-      console.error(
-        `Failed to read WormholeRelayerBase contract data. Error: ${stringifyError(error)}`,
+      log(
+        `Failed to retrieve deployed contract from RPC. Error: ${stringifyError(error)}`,
       );
       continue;
     }
@@ -124,18 +110,16 @@ Expected address: ${deployedImplementationAddress.address.toLowerCase()} ${chain
         baseImplementation,
       );
     } catch (error) {
-      console.error(
-        `Failed to build bytecode for chain ${toChain(chain.chainId)} (${chain.chainId}). Error: ${stringifyError(error)}`,
-      );
+      log(`Failed to build bytecode. Error: ${stringifyError(error)}`);
       continue;
     }
 
     const deployedCompilerVersion = inferCompilerVersion(deployedBytecode);
     const expectedCompilerVersion = inferCompilerVersion(expectedBytecode);
     if (deployedCompilerVersion !== expectedCompilerVersion) {
-      console.error(
+      log(
         chalk.red(
-          `Bytecode verification failed for chain ${toChain(chain.chainId)} (${chain.chainId})! Expected the compiler version ${expectedCompilerVersion} but got ${deployedCompilerVersion}`,
+          `Bytecode verification failed! Expected the compiler version ${expectedCompilerVersion} but got ${deployedCompilerVersion}`,
         ),
       );
       continue;
@@ -147,9 +131,9 @@ Expected address: ${deployedImplementationAddress.address.toLowerCase()} ${chain
 
     // We'll check that their sizes are the same because we don't expect variation in the metadata section format.
     if (deployedMetadataLength !== expectedMetadataLength) {
-      console.error(
+      log(
         chalk.red(
-          `Bytecode verification failed for chain ${toChain(chain.chainId)} (${chain.chainId})! Expected the compiler version ${expectedCompilerVersion} but got ${deployedCompilerVersion}`,
+          `Bytecode verification failed! Expected the compiler version ${expectedCompilerVersion} but got ${deployedCompilerVersion}`,
         ),
       );
       continue;
@@ -157,30 +141,26 @@ Expected address: ${deployedImplementationAddress.address.toLowerCase()} ${chain
 
     const deployedBytecodeTrimmed = deployedBytecode.subarray(
       0,
-      deployedMetadataLength + METADATA_LENGTH,
+      deployedBytecode.length - (deployedMetadataLength + METADATA_LENGTH),
     );
     const expectedBytecodeTrimmed = expectedBytecode.subarray(
       0,
-      expectedMetadataLength + METADATA_LENGTH,
+      expectedBytecode.length - (expectedMetadataLength + METADATA_LENGTH),
     );
 
     const deployedBytecodeHash = sha256sum(deployedBytecodeTrimmed);
     const expectedBytecodeHash = sha256sum(expectedBytecodeTrimmed);
 
     if (deployedBytecodeHash !== expectedBytecodeHash) {
-      console.error(
+      log(
         chalk.red(
-          `Bytecode verification failed for chain ${toChain(chain.chainId)} (${chain.chainId})! Expected hash ${expectedBytecodeHash} but got ${deployedBytecodeHash}`,
+          `Bytecode verification failed! Expected hash ${expectedBytecodeHash} but got ${deployedBytecodeHash}`,
         ),
       );
       continue;
     }
 
-    console.log(
-      chalk.green(
-        `Bytecode verified for chain ${toChain(chain.chainId)} (${chain.chainId}) matches. Hash: ${deployedBytecodeHash}`,
-      ),
-    );
+    log(chalk.green(`Bytecode matches. Hash: ${deployedBytecodeHash}`));
   }
 }
 
@@ -378,6 +358,10 @@ function stringifyError(error: unknown): string {
   }
 
   return inspect(error);
+}
+
+function buildChainLabel(chain: ChainInfo) {
+  return `${toChain(chain.chainId)} (${chain.chainId})`;
 }
 
 run().then(() => console.log("Done! " + processName));
