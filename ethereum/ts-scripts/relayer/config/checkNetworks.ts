@@ -4,7 +4,6 @@ import {
   init,
   loadChains,
 } from "../helpers/env";
-import { readFileSync, writeFileSync } from "fs";
 import { toChain } from "@wormhole-foundation/sdk-base";
 
 const processName = "checkNetworks";
