@@ -1,3 +1,7 @@
+import { ethers } from "ethers";
+import { ChainId, getContracts, toChain } from "@wormhole-foundation/sdk";
+import { inspect } from "util";
+
 import {
   DeliveryProviderProxy__factory,
   DeliveryProviderSetup__factory,
@@ -18,9 +22,8 @@ import {
   getProvider,
   getCreate2FactoryAddress,
 } from "./env";
-import { ethers } from "ethers";
 import { wait } from "./utils";
-import { ChainId, getContracts, toChain } from "@wormhole-foundation/sdk";
+
 
 export const setupContractSalt = Buffer.from("0xSetup");
 export const proxyContractSalt = Buffer.from("0xGenericRelayer");
@@ -153,8 +156,9 @@ export async function deployCreate2Factory(
           const factoryCreationTxid = "0xfd6551a91a2e9f423285a2e86f7f480341a658dda1ff1d8bc9167b2b7ec77caa";
           const ethFactoryAddress = getCreate2FactoryAddress(ethChain);
           const factoryReceipt = await ethChainProvider.getTransactionReceipt(factoryCreationTxid);
-          if (factoryReceipt.contractAddress !== ethFactoryAddress) {
-            throw new Error("Wrong txid for the transaction that created the Create2Factory in Ethereum mainnet.");
+          if (factoryReceipt?.contractAddress !== ethFactoryAddress) {
+            throw new Error(`Wrong txid for the transaction that created the Create2Factory in Ethereum mainnet.
+Ethereum factory receipt: ${inspect(factoryReceipt, {depth: 3})}`);
           }
           const ethFactoryTx = await ethChainProvider.getTransaction(factoryCreationTxid);
 

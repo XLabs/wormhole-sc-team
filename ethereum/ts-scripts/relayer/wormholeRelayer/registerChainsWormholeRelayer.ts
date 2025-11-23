@@ -99,7 +99,7 @@ async function register(
       // We skip chains that are already registered.
       // Note that reregistrations aren't allowed.
       
-      console.log(`SR at ${chainToRegister} already registered in chain ${chain.chainId}`);
+      console.log(`SR at chain ${chainToRegister} already registered in chain ${chain.chainId}`);
       continue;
     }
 
@@ -112,6 +112,7 @@ async function register(
       overrides,
     );
     const receipt = await tx.wait();
+    console.log(`Registered SR from chain ${chainToRegister} in chain ${chain.chainId}`);
 
     if (receipt.status !== 1) {
       throw new Error(

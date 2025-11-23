@@ -392,16 +392,10 @@ export async function getWormholeRelayer(
   );
 }
 
-export function getMockIntegrationAddress(chain: ChainInfo): string {
+export function getMockIntegrationAddress(chain: ChainInfo): string | undefined {
   const thisMock = loadMockIntegrations().find(
     (x) => x.chainId == chain.chainId,
   )?.address;
-  if (!thisMock) {
-    throw new Error(
-      "Failed to find a mock integration contract address on chain " +
-        chain.chainId,
-    );
-  }
   return thisMock;
 }
 
@@ -410,6 +404,12 @@ export async function getMockIntegration(
   provider?: ethers.providers.StaticJsonRpcProvider,
 ): Promise<MockRelayerIntegration> {
   const thisIntegration = getMockIntegrationAddress(chain);
+  if (!thisIntegration) {
+    throw new Error(
+      "Failed to find a mock integration contract address on chain " +
+        chain.chainId,
+    );
+  }
   const contract = MockRelayerIntegration__factory.connect(
     thisIntegration,
     provider || (await getSigner(chain)),
@@ -501,7 +501,7 @@ function syncContractsJson(newContracts: Partial<ContractsJson>) {
   const path = `./ts-scripts/relayer/config/${env}/contracts.json`;
   const contractsFile = fs.readFileSync(path, "utf8");
   const contracts: ContractsJson = JSON.parse(contractsFile);
-  console.log(`Old:\n${contractsFile}`);
+  // console.log(`Old:\n${contractsFile}`);
   // This reads the contracts file over and over many times.
   // TODO: Read once and load all addresses from there.
   contracts.create2Factories = loadCreate2Factories();
@@ -521,6 +521,7 @@ function syncContractsJson(newContracts: Partial<ContractsJson>) {
   }
 
   const newStr = JSON.stringify(contracts, undefined, 2);
-  console.log(`New:\n${newStr}`);
+  // console.log(`New:\n${newStr}`);
   fs.writeFileSync(path, newStr);
+  console.log(`Updated ${path} file`);
 }
