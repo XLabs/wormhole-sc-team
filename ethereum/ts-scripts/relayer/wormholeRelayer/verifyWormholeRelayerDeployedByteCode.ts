@@ -141,11 +141,11 @@ Expected address: ${deployedImplementationAddress.address.toLowerCase()} ${chain
 
     const deployedBytecodeTrimmed = deployedBytecode.subarray(
       0,
-      deployedMetadataLength + METADATA_LENGTH,
+      deployedBytecode.length - (deployedMetadataLength + METADATA_LENGTH),
     );
     const expectedBytecodeTrimmed = expectedBytecode.subarray(
       0,
-      expectedMetadataLength + METADATA_LENGTH,
+      expectedBytecode.length - (expectedMetadataLength + METADATA_LENGTH),
     );
 
     const deployedBytecodeHash = sha256sum(deployedBytecodeTrimmed);
