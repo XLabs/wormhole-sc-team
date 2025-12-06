@@ -104,7 +104,7 @@
       "description": "Unichain",
       "evmNetworkId": 130,
       "chainId": 44,
-      "rpc": "https://unichain-rpc.publicnode.com",
+      "rpc": "https://rpc.poolz.finance/unichain",
       "wormholeAddress": "0xCa1D5a146B03f6303baF59e5AD5615ae0b9d146D"
     },
     {
