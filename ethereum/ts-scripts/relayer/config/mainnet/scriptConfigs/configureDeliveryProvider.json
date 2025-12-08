@@ -410,6 +410,10 @@
     {
       "chainId": 55,
       "rewardAddress": "0x53207E216540125e322CdA8A693b0b89576DEb46"
+    },
+    {
+      "chainId": 57,
+      "rewardAddress": "0x53207E216540125e322CdA8A693b0b89576DEb46"
     }
   ],
   "supportedChains": [
