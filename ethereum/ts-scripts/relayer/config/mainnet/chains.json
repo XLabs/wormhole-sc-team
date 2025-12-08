@@ -34,7 +34,7 @@
       "description": "Klaytn",
       "evmNetworkId": 8217,
       "chainId": 13,
-      "rpc": "https://klaytn.api.onfinality.io/public",
+      "rpc": "https://kaia.blockpi.network/v1/rpc/public",
       "wormholeAddress": "0x0C21603c4f3a6387e241c0091A7EA39E43E90bb7"
     },
     {
@@ -55,7 +55,7 @@
       "description": "Arbitrum",
       "evmNetworkId": 42161,
       "chainId": 23,
-      "rpc": "https://api.zan.top/arb-one",
+      "rpc": "https://public-arb-mainnet.fastnode.io",
       "wormholeAddress": "0xa5f208e072434bC67592E4C49C1B991BA79BCA46"
     },
     {
