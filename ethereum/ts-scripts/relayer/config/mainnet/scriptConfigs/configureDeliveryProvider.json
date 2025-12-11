@@ -277,8 +277,58 @@
       "chainId": 57,
       "updateMaximumBudget": "103626943005181000000"
     }
-  ],  
+  ],
   "conversionBuffers": [
+    {
+      "chainId": 2,
+      "buffer": 10,
+      "bufferDenominator": 100
+    },
+    {
+      "chainId": 4,
+      "buffer": 10,
+      "bufferDenominator": 100
+    },
+    {
+      "chainId": 5,
+      "buffer": 10,
+      "bufferDenominator": 100
+    },
+    {
+      "chainId": 6,
+      "buffer": 10,
+      "bufferDenominator": 100
+    },
+    {
+      "chainId": 13,
+      "buffer": 10,
+      "bufferDenominator": 100
+    },
+    {
+      "chainId": 14,
+      "buffer": 10,
+      "bufferDenominator": 100
+    },
+    {
+      "chainId": 16,
+      "buffer": 10,
+      "bufferDenominator": 100
+    },
+    {
+      "chainId": 23,
+      "buffer": 10,
+      "bufferDenominator": 100
+    },
+    {
+      "chainId": 24,
+      "buffer": 10,
+      "bufferDenominator": 100
+    },
+    {
+      "chainId": 30,
+      "buffer": 10,
+      "bufferDenominator": 100
+    },
     {
       "chainId": 34,
       "buffer": 10,
@@ -326,6 +376,11 @@
     },
     {
       "chainId": 55,
+      "buffer": 10,
+      "bufferDenominator": 100
+    },
+    {
+      "chainId": 57,
       "buffer": 10,
       "bufferDenominator": 100
     }
