@@ -228,7 +228,7 @@ const Mainnet = {
     chain_id: 999,
   },
   Monad: {
-    rpc: undefined,
+    rpc: "https://rpc.monad.xyz",
     key: getEnvVar("ETH_KEY"),
     chain_id: 143,
   },
