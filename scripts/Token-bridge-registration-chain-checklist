@@ -27,6 +27,7 @@
 [2] Mezo
 [ ] Fogo
 [ ] XRPLEVM
+[ ] MegaETH
 
 
 # Need to use a special key
@@ -99,3 +100,5 @@ worm submit --network mainnet --chain Fogo "$SUBMIT_VAA"
 🕰️ https://explorer.fogo.io/tx/<txid>?cluster=mainnet-beta
 worm submit --network mainnet --chain XRPLEVM "$SUBMIT_VAA"
 🕰️ https://explorer.xrplevm.org/tx/<txid>
+worm submit --network mainnet --chain MegaETH "$SUBMIT_VAA"
+🕰️ ??
