@@ -1,10 +1,12 @@
 {
   "extends": "../config/tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "./ts-build"
+    "outDir": "./ts-build",
+    "resolveJsonModule": true
   },
   "include": ["evm", "guardian", "vaatool"],
   "references": [
-    { "path": "../peer-lib" }
+    { "path": "../peer-lib" },
+    { "path": "../../src/solana" }
   ]
 }
