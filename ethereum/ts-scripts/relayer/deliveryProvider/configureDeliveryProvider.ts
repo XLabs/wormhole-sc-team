@@ -80,8 +80,8 @@ interface SupportedChain {
 
 const vaaBit = 0n;
 const cctpBit = 1n;
-const vaaKey = 2n << vaaBit;
-const cctpKey = 2n << cctpBit;
+const vaaKey = 1n << vaaBit;
+const cctpKey = 1n << cctpBit;
 
 const zeroAddress = "0x0000000000000000000000000000000000000000";
 const whZeroAddress =
@@ -478,10 +478,10 @@ function generateBitmap(keys: string[]): bigint {
   return bitmap;
 }
 
-function supportedKeyDescription(i: bigint): "vaa" | "cctp" {
+function supportedKeyDescription(i: bigint): "vaa" | "cctp" | `Unknown message key bit ${bigint}` {
   if (i === vaaBit) return "vaa";
   else if (i === cctpBit) return "cctp";
-  else throw new Error(`Unknown message key bit ${i}`);
+  else return `Unknown message key bit ${i}`;
 }
 
 run().then(() => console.log(`Done! ${processName}`));
