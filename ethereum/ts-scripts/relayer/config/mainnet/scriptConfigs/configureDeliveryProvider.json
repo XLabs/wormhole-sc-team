@@ -632,15 +632,15 @@
     },
     {
       "chainId": 45,
-      "supportedKeys": ["vaa"]
+      "supportedKeys": ["vaa", "cctp"]
     },
     {
       "chainId": 46,
-      "supportedKeys": ["vaa"]
+      "supportedKeys": ["vaa", "cctp"]
     },
     {
       "chainId": 48,
-      "supportedKeys": ["vaa"]
+      "supportedKeys": ["vaa", "cctp"]
     },
     {
       "chainId": 50,
@@ -648,7 +648,7 @@
     },
     {
       "chainId": 55,
-      "supportedKeys": ["vaa"]
+      "supportedKeys": ["vaa", "cctp"]
     },
     {
       "chainId": 57,
