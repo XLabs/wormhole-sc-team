@@ -55,7 +55,7 @@
       "description": "Arbitrum",
       "evmNetworkId": 42161,
       "chainId": 23,
-      "rpc": "https://public-arb-mainnet.fastnode.io",
+      "rpc": "https://arbitrum-one-rpc.publicnode.com",
       "wormholeAddress": "0xa5f208e072434bC67592E4C49C1B991BA79BCA46"
     },
     {
@@ -104,7 +104,7 @@
       "description": "Unichain",
       "evmNetworkId": 130,
       "chainId": 44,
-      "rpc": "https://rpc.poolz.finance/unichain",
+      "rpc": "https://unichain.drpc.org",
       "wormholeAddress": "0xCa1D5a146B03f6303baF59e5AD5615ae0b9d146D"
     },
     {
