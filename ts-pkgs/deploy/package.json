@@ -10,6 +10,8 @@
   "license": "Apache-2.0",
   "description": "",
   "dependencies": {
+    "@coral-xyz/anchor": "^0.31.1",
+    "@solana/web3.js": "^1.98.4",
     "@wormhole-foundation/sdk": "^4.5.0",
     "@xlabs-xyz/peer-lib": "workspace:*",
     "viem": "^2.41.2",
