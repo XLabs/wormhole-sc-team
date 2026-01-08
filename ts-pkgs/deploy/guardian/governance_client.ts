@@ -1,21 +1,22 @@
 import fs from "fs";
-import { createWalletClient, defineChain, http, isHex, encodePacked, Hex } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
-import { waitForTransactionReceipt } from "viem/actions";
-import { Connection, Keypair, PublicKey, sendAndConfirmTransaction, Transaction } from "@solana/web3.js";
+import { ethers } from "ethers";
+import type { Signer as EthersSigner } from "ethers";
+import { Connection, Keypair, PublicKey, sendAndConfirmTransaction, Transaction, type Signer } from "@solana/web3.js";
 import { Program, AnchorProvider, Wallet } from "@coral-xyz/anchor";
 import yargs, { type Argv } from "yargs";
 import { hideBin } from 'yargs/helpers';
 import { parseGuardianKey, errorMsg, errorStack } from '@xlabs-xyz/peer-lib';
+import * as TransportNodeHid from "@ledgerhq/hw-transport-node-hid";
+import * as SolanaApp from "@ledgerhq/hw-app-solana";
 
 import type { VerificationV2 } from "../../../src/solana/target/types/verification_v2.js";
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const idl = require("../../../src/solana/target/idl/verification_v2.json");
+// Import IDL - copied to build output during build step
+import idlJson from "./verification_v2.json" with { type: "json" };
+const idl = idlJson as VerificationV2;
 
 // Default contract address for WormholeVerifier
 const DEFAULT_EVM_CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000"; // TODO: Update with actual deployed address
-const DEFAULT_SOLANA_PROGRAM_ID = "GbFfTqMqKDgAMRH8VmDmoLTdvDd1853TnkkEwpydv3J6";
+const DEFAULT_SOLANA_PROGRAM_ID = "GbFfTqMqKDgAMRH8VmDmoLTdvDd1853TnkkEwpydv3J6"; // TODO: Get it from the IDL file
 
 const UPDATE_SET_SHARD_ID = 0;
 const UPDATE_APPEND_SCHNORR_KEY = 1;
@@ -42,6 +43,7 @@ type EvmArgs = BaseArgs & {
   chain: "evm";
   chainId: number;
   limit: number;
+  ledger?: boolean;
 } & ({
   command: "set_shard_id";
   guardianMessage: string;
@@ -59,42 +61,43 @@ type SolanaArgs = BaseArgs & {
   signatureSet: string;
   newKeyIndex: number;
   oldKeyIndex?: number;
+  ledger?: boolean;
 }
 
 type Args = EvmArgs | SolanaArgs;
 
 // TODO: Use binary-layout for these
-function encodeSetShardId(guardianMessage: Buffer): Hex {
+export function encodeSetShardId(guardianMessage: Buffer): string {
   // set_shard_id: opcode (1 byte) + guardian message data
-  return encodePacked(
+  return ethers.solidityPacked(
     ['uint8', 'bytes'],
     [UPDATE_SET_SHARD_ID, `0x${guardianMessage.toString('hex')}`]
   );
 }
 
-function encodeAppendSchnorrKey(vaa: Buffer): Hex {
+export function encodeAppendSchnorrKey(vaa: Buffer): string {
   // append_schnorr_KEY: opcode (1 byte) + vaa length (2 bytes) + vaa data
-  return encodePacked(
+  return ethers.solidityPacked(
     ['uint8', 'uint16', 'bytes'],
     [UPDATE_APPEND_SCHNORR_KEY, vaa.length, `0x${vaa.toString('hex')}`]
   );
 }
 
-function encodePullMultisigKeyData(limit: number): `0x${string}` {
+export function encodePullMultisigKeyData(limit: number): string {
   // PULL_MULTISIG_KEY_DATA: opcode (1 byte) + limit (4 bytes)
-  return encodePacked(
+  return ethers.solidityPacked(
     ['uint8', 'uint32'],
     [UPDATE_PULL_MULTISIG_KEY_DATA, limit]
   );
 }
 
-function encodeUpdate(args: EvmArgs, dataBytes: Buffer): `0x${string}` {
+export function encodeUpdate(args: EvmArgs, dataBytes: Buffer): string {
   if (args.command === "append_schnorr") {
     const pullData = encodePullMultisigKeyData(args.limit);
     const appendData = encodeAppendSchnorrKey(dataBytes);
     console.log(`Prepared pull_multisigs with limit ${args.limit}`);
     console.log(`Prepared append_schnorr with ${dataBytes.length} bytes of data`);
-    return encodePacked(['bytes', 'bytes'], [pullData, appendData]);
+    return ethers.solidityPacked(['bytes', 'bytes'], [pullData, appendData]);
   } else if (args.command === "set_shard_id") {
     console.log(`Prepared set_shard_id with ${dataBytes.length} bytes of data`);
     return encodeSetShardId(dataBytes);
@@ -120,46 +123,238 @@ function deriveLatestKeyPda(programId: PublicKey): PublicKey {
   return pda;
 }
 
-async function executeEvmTransaction(args: EvmArgs, dataBytes: Buffer): Promise<void> {
-  let signerKey: Hex;
-  try {
-    const signerFile = fs.readFileSync(args.signer, 'utf-8');
-    const keyBytes = parseGuardianKey(signerFile);
-    signerKey = `0x${Buffer.from(keyBytes).toString('hex')}`;
-  } catch (error) {
-    console.error(`Failed to parse signer file: ${errorMsg(error)}`);
-    process.exit(1);
+// ============================================================================
+// Signer Classes
+// ============================================================================
+
+// EVM file-based signer
+class EvmSigner {
+  private wallet: ethers.Wallet;
+  
+  constructor(signerPath: string, provider: ethers.Provider) {
+    try {
+      const signerFile = fs.readFileSync(signerPath, 'utf-8');
+      const keyBytes = parseGuardianKey(signerFile);
+      const signerKey = `0x${Buffer.from(keyBytes).toString('hex')}`;
+      this.wallet = new ethers.Wallet(signerKey, provider);
+      console.log(`Using file-based EVM signer: ${this.wallet.address}`);
+    } catch (error) {
+      console.error(`Failed to parse EVM signer file: ${errorMsg(error)}`);
+      throw error;
+    }
+  }
+  
+  getAddress(): string {
+    return this.wallet.address;
+  }
+  
+  getSigner(): ethers.Wallet {
+    return this.wallet;
+  }
+}
+
+// EVM Ledger signer
+class EvmLedgerSigner {
+  private ledgerSigner: EthersSigner;
+  
+  private constructor(ledgerSigner: EthersSigner) {
+    this.ledgerSigner = ledgerSigner;
+  }
+  
+  static async create(provider: ethers.Provider): Promise<EvmLedgerSigner> {
+    try {
+      // Dynamic import using Function constructor to prevent vite from analyzing it
+      const importLedger = new Function('specifier', 'return import(specifier)');
+      const ledgerModule = await importLedger("@xlabs-xyz/ledger-ethers-signer");
+      const LedgerSigner = ledgerModule.LedgerSigner || (ledgerModule as any).default?.LedgerSigner || (ledgerModule as any).default;
+      const ledgerSigner = new LedgerSigner(provider, "hid");
+      const address = await ledgerSigner.getAddress();
+      console.log(`Using Ledger EVM signer: ${address}`);
+      return new EvmLedgerSigner(ledgerSigner);
+    } catch (error) {
+      console.error(`Failed to initialize Ledger: ${errorMsg(error)}`);
+      console.error('Make sure your Ledger device is connected and the Ethereum app is open.');
+      throw error;
+    }
+  }
+  
+  async getAddress(): Promise<string> {
+    return await this.ledgerSigner.getAddress();
+  }
+  
+  getSigner(): EthersSigner {
+    return this.ledgerSigner;
+  }
+}
+
+// Solana file-based signer
+class SolanaSigner implements Signer {
+  publicKey: PublicKey;
+  secretKey: Uint8Array;
+  private keypair: Keypair;
+  
+  constructor(signerPath: string) {
+    try {
+      const signerFile = fs.readFileSync(signerPath, 'utf-8');
+      const keyBytes = parseGuardianKey(signerFile);
+      
+      // Solana Keypair.fromSecretKey expects 64 bytes (32-byte seed + 32-byte public key)
+      // If we have 32 bytes, we need to derive the Ed25519 keypair
+      // If we have 64 bytes, we can use it directly
+      if (keyBytes.length === 32) {
+        this.keypair = Keypair.fromSeed(keyBytes);
+      } else if (keyBytes.length === 64) {
+        this.keypair = Keypair.fromSecretKey(keyBytes);
+      } else {
+        throw new Error(`Invalid key length: expected 32 or 64 bytes, got ${keyBytes.length}`);
+      }
+      
+      this.publicKey = this.keypair.publicKey;
+      this.secretKey = this.keypair.secretKey;
+      console.log(`Using file-based Solana signer: ${this.publicKey.toBase58()}`);
+    } catch (error) {
+      console.error(`Failed to parse Solana signer file: ${errorMsg(error)}`);
+      throw error;
+    }
+  }
+  
+  getKeypair(): Keypair {
+    return this.keypair;
+  }
+  
+  async signTransaction(tx: Transaction): Promise<Transaction> {
+    tx.partialSign(this.keypair);
+    return tx;
+  }
+  
+  async signAllTransactions(txs: Transaction[]): Promise<Transaction[]> {
+    return txs.map(tx => {
+      tx.partialSign(this.keypair);
+      return tx;
+    });
+  }
+}
+
+// Solana Ledger signer
+class SolanaLedgerSigner implements Signer {
+  publicKey: PublicKey;
+  secretKey: Uint8Array; // Required by Signer interface, but not used for Ledger
+  private solanaApp: SolanaApp.default;
+  private derivationPath: number[];
+
+  private constructor(solanaApp: SolanaApp.default, publicKey: PublicKey, derivationPath: number[] = [44, 501, 0, 0]) {
+    this.solanaApp = solanaApp;
+    this.publicKey = publicKey;
+    this.derivationPath = derivationPath;
+    this.secretKey = new Uint8Array(64); // Dummy secret key - not used for Ledger
+  }
+  
+  static async create(): Promise<SolanaLedgerSigner> {
+    try {
+      // Initialize Ledger transport
+      // Note: Ledger packages use complex ESM exports that TypeScript struggles with
+      // @ts-ignore - Runtime behavior is correct despite type errors
+      const Transport = TransportNodeHid.default || TransportNodeHid;
+      // @ts-ignore
+      const transport = await Transport.create();
+      // @ts-ignore
+      const Solana = SolanaApp.default || SolanaApp;
+      // @ts-ignore
+      const solanaApp = new Solana(transport);
+      
+      // Get public key from Ledger (using default derivation path)
+      // Derivation path format: "44'/501'/0'/0'" for Solana
+      const derivationPath = [44, 501, 0, 0]; // Standard Solana derivation path
+      const derivationPathStr = derivationPath.map((n, i) => i < 2 ? `${n}'` : n.toString()).join('/');
+      const { publicKey } = await solanaApp.getPublicKey(derivationPathStr);
+      
+      const ledgerPublicKey = new PublicKey(publicKey);
+      console.log(`Using Ledger Solana signer: ${ledgerPublicKey.toBase58()}`);
+      
+      return new SolanaLedgerSigner(solanaApp, ledgerPublicKey, derivationPath);
+    } catch (error) {
+      console.error(`Failed to initialize Ledger: ${errorMsg(error)}`);
+      console.error('Make sure your Ledger device is connected and the Solana app is open.');
+      throw error;
+    }
   }
 
-  const account = privateKeyToAccount(signerKey);
-  console.log(`Using signer address: ${account.address}`);
+  async signTransaction(tx: Transaction): Promise<Transaction> {
+    // Serialize the transaction
+    const message = tx.serializeMessage();
+    
+    // Convert derivation path to string format (e.g., "44'/501'/0'/0'")
+    const derivationPathStr = this.derivationPath.map((n, i) => i < 2 ? `${n}'` : n.toString()).join('/');
+    
+    // Sign with Ledger
+    const result = await this.solanaApp.signTransaction(derivationPathStr, message);
+    
+    // Ledger returns { signature: Buffer }, extract the signature
+    const signature = result.signature || result;
+    const sigBuffer = Buffer.isBuffer(signature) ? signature : Buffer.from(signature);
+    tx.addSignature(this.publicKey, sigBuffer);
+    
+    return tx;
+  }
 
+  async signAllTransactions(txs: Transaction[]): Promise<Transaction[]> {
+    // Sign each transaction sequentially
+    const signedTxs: Transaction[] = [];
+    for (const tx of txs) {
+      signedTxs.push(await this.signTransaction(tx));
+    }
+    return signedTxs;
+  }
+}
+
+// ============================================================================
+// Unified Signer Factory
+// ============================================================================
+
+type SignerConfig = {
+  chain: 'evm' | 'solana';
+  ledger: boolean;
+  signerPath?: string;  // Required if ledger=false
+  rpcUrl: string;
+};
+
+async function createSigner(config: SignerConfig): Promise<EvmSigner | EvmLedgerSigner | SolanaSigner | SolanaLedgerSigner> {
+  if (config.chain === 'evm') {
+    const provider = new ethers.JsonRpcProvider(config.rpcUrl);
+    if (config.ledger) {
+      return await EvmLedgerSigner.create(provider);
+    } else {
+      if (!config.signerPath) {
+        throw new Error('signerPath is required for file-based signing');
+      }
+      return new EvmSigner(config.signerPath, provider);
+    }
+  } else {
+    // Solana
+    if (config.ledger) {
+      return await SolanaLedgerSigner.create();
+    } else {
+      if (!config.signerPath) {
+        throw new Error('signerPath is required for file-based signing');
+      }
+      return new SolanaSigner(config.signerPath);
+    }
+  }
+}
+
+async function executeEvmTransaction(args: EvmArgs, dataBytes: Buffer): Promise<void> {
   // Validate contract address
-  if (!isHex(args.contractAddress)) {
+  if (!ethers.isAddress(args.contractAddress)) {
     console.error("Contract address must be a valid hex address");
     process.exit(1);
   }
 
-  // Setup chain and wallet client
-  const viemChain = defineChain({
-    id: args.chainId,
-    name: `Chain ${args.chainId}`,
-    nativeCurrency: {
-      decimals: 18,
-      name: 'ETH',
-      symbol: 'ETH',
-    },
-    rpcUrls: {
-      default: {
-        http: [args.rpcUrl],
-      },
-    },
-  });
-
-  const walletClient = createWalletClient({
-    chain: viemChain,
-    transport: http(args.rpcUrl),
-    account,
+  // Create signer using unified factory
+  const signer = await createSigner({
+    chain: 'evm',
+    ledger: args.ledger || false,
+    signerPath: args.signer,
+    rpcUrl: args.rpcUrl,
   });
 
   const updateData = encodeUpdate(args, dataBytes);
@@ -170,23 +365,19 @@ async function executeEvmTransaction(args: EvmArgs, dataBytes: Buffer): Promise<
 
   try {
     console.log('\nSending transaction...');
-    const txHash = await walletClient.writeContract({
-      address: args.contractAddress,
-      abi: UPDATE_ABI,
-      functionName: 'update',
-      args: [updateData],
-    });
+    // Get the underlying ethers signer - both EvmSigner and EvmLedgerSigner have getSigner()
+    const ethersSigner = (signer as EvmSigner | EvmLedgerSigner).getSigner();
+    const contract = new ethers.Contract(args.contractAddress, UPDATE_ABI, ethersSigner);
+    const tx = await contract.update(updateData);
 
-    console.log(`Transaction sent: ${txHash}`);
+    console.log(`Transaction sent: ${tx.hash}`);
     console.log('Waiting for confirmation...');
 
-    const receipt = await waitForTransactionReceipt(walletClient, {
-      hash: txHash,
-    });
+    const receipt = await tx.wait();
 
-    if (receipt.status === 'success') {
+    if (receipt.status === 1) {
       console.log(`Transaction confirmed in block ${receipt.blockNumber}`);
-      console.log(`Gas used: ${receipt.gasUsed}`);
+      console.log(`Gas used: ${receipt.gasUsed.toString()}`);
     } else {
       console.error('Transaction failed');
       process.exit(1);
@@ -198,24 +389,31 @@ async function executeEvmTransaction(args: EvmArgs, dataBytes: Buffer): Promise<
 }
 
 async function executeSolanaTransaction(args: SolanaArgs): Promise<void> {
-  // Load keypair from JSON file
-  let keypair: Keypair;
-  try {
-    const keypairData = JSON.parse(fs.readFileSync(args.signer, 'utf-8'));
-    keypair = Keypair.fromSecretKey(new Uint8Array(keypairData));
-  } catch (error) {
-    console.error(`Failed to load Solana keypair from ${args.signer}: ${errorMsg(error)}`);
-    process.exit(1);
-  }
+  // Create signer using unified factory
+  const signer = await createSigner({
+    chain: 'solana',
+    ledger: args.ledger || false,
+    signerPath: args.signer,
+    rpcUrl: args.rpcUrl,
+  });
 
-  console.log(`Using signer: ${keypair.publicKey.toBase58()}`);
-
+  // Type assertion since we know this is a Solana signer
+  const solanaSigner = signer as SolanaSigner | SolanaLedgerSigner;
+  const signerPublicKey = solanaSigner.publicKey;
   const connection = new Connection(args.rpcUrl, "confirmed");
   const programId = new PublicKey(args.contractAddress || DEFAULT_SOLANA_PROGRAM_ID);
 
-  const wallet = new Wallet(keypair);
+  // Create wallet/provider - all signer classes implement the Signer interface
+  const wallet = solanaSigner instanceof SolanaSigner 
+    ? new Wallet(solanaSigner.getKeypair())
+    : {
+        publicKey: solanaSigner.publicKey,
+        signTransaction: (tx: Transaction) => solanaSigner.signTransaction(tx),
+        signAllTransactions: (txs: Transaction[]) => solanaSigner.signAllTransactions(txs),
+      } as Wallet;
+  
   const provider = new AnchorProvider(connection, wallet, { commitment: "confirmed" });
-  const program = new Program<VerificationV2>(idl as VerificationV2, provider);
+  const program = new Program<VerificationV2>(idl, provider);
 
   const postedVaa = new PublicKey(args.postedVaa);
   const signatureSet = new PublicKey(args.signatureSet);
@@ -239,7 +437,7 @@ async function executeSolanaTransaction(args: SolanaArgs): Promise<void> {
     console.log('\nBuilding transaction...');
     const ix = await program.methods.appendSchnorrKey()
       .accountsPartial({
-        payer: keypair.publicKey,
+        payer: signerPublicKey,
         vaa: postedVaa,
         signatureSet: signatureSet,
         latestSchnorrKey: latestKeyPda,
@@ -248,14 +446,27 @@ async function executeSolanaTransaction(args: SolanaArgs): Promise<void> {
       })
       .instruction();
 
+    // Get recent blockhash and set fee payer before signing
+    const { blockhash } = await connection.getLatestBlockhash();
     const tx = new Transaction().add(ix);
+    tx.feePayer = signerPublicKey;
+    tx.recentBlockhash = blockhash;
     
     console.log('Sending transaction...');
-    const signature = await sendAndConfirmTransaction(connection, tx, [keypair], {
-      commitment: "confirmed",
-    });
-
-    console.log(`Transaction confirmed: ${signature}`);
+    
+    // Sign and send transaction based on signer type
+    if (solanaSigner instanceof SolanaSigner) {
+      const signature = await sendAndConfirmTransaction(connection, tx, [solanaSigner.getKeypair()], {
+        commitment: "confirmed",
+      });
+      console.log(`Transaction confirmed: ${signature}`);
+    } else {
+      // For Ledger, we need to sign the transaction first
+      const signedTx = await solanaSigner.signTransaction(tx);
+      const signature = await connection.sendRawTransaction(signedTx.serialize());
+      await connection.confirmTransaction(signature, "confirmed");
+      console.log(`Transaction confirmed: ${signature}`);
+    }
   } catch (error) {
     console.error(`Transaction failed: ${errorStack(error)}`);
     process.exit(1);
@@ -302,13 +513,17 @@ async function main() {
       default: 'evm' as const,
       alias: 't',
     })
-    //TODO: add support for ledger signer
-    .option('signer', {
-      description: 'Path to signer key file (GPG armor guardian key for EVM, JSON keypair for Solana)',
-      demandOption: true,
-      type: 'string',
-      alias: 's',
-    })
+     .option('ledger', {
+       description: 'Use Ledger hardware wallet for signing',
+       type: 'boolean',
+       default: false,
+     })
+     .option('signer', {
+       description: 'Path to signer key file (GPG armor guardian key for both EVM and Solana). Optional when --ledger is used.',
+       demandOption: false,
+       type: 'string',
+       alias: 's',
+     })
     .option('contract-address', {
       description: 'Address of the WormholeVerifier contract/program',
       type: 'string',
@@ -348,8 +563,19 @@ async function main() {
       process.exit(1);
     }
 
-    if (!parsedArgs.postedVaa || !parsedArgs.signatureSet || parsedArgs.newKeyIndex === undefined) {
+    const postedVaa = parsedArgs.postedVaa as string | undefined;
+    const signatureSet = parsedArgs.signatureSet as string | undefined;
+    const newKeyIndex = parsedArgs.newKeyIndex as number | undefined;
+    const oldKeyIndex = parsedArgs.oldKeyIndex as number | undefined;
+
+    if (!postedVaa || !signatureSet || newKeyIndex === undefined) {
       console.error("Solana append_schnorr requires --posted-vaa, --signature-set, and --new-key-index");
+      process.exit(1);
+    }
+
+    // Validate signer requirement
+    if (!parsedArgs.ledger && !parsedArgs.signer) {
+      console.error("Either --signer or --ledger must be provided");
       process.exit(1);
     }
 
@@ -362,11 +588,12 @@ async function main() {
       rpcUrl: parsedArgs.rpcUrl === 'https://eth.llamarpc.com'
         ? 'https://api.mainnet-beta.solana.com'
         : parsedArgs.rpcUrl,
-      signer: parsedArgs.signer,
-      postedVaa: parsedArgs.postedVaa,
-      signatureSet: parsedArgs.signatureSet,
-      newKeyIndex: parsedArgs.newKeyIndex,
-      oldKeyIndex: parsedArgs.oldKeyIndex,
+      signer: parsedArgs.signer || '', // Required by type but not used when ledger is true
+      ledger: parsedArgs.ledger || false,
+      postedVaa: postedVaa!, // Safe after check above
+      signatureSet: signatureSet!, // Safe after check above
+      newKeyIndex: newKeyIndex!, // Safe after check above
+      oldKeyIndex,
     };
 
     await executeSolanaTransaction(args);
@@ -395,13 +622,20 @@ async function main() {
       console.log(`Loaded ${dataBytes.length} bytes of VAA`);
     }
 
+    // Validate signer requirement
+    if (!parsedArgs.ledger && !parsedArgs.signer) {
+      console.error("Either --signer or --ledger must be provided");
+      process.exit(1);
+    }
+
     const args: EvmArgs = {
       chain: "evm",
       command: command as EvmArgs["command"],
       contractAddress: parsedArgs.contractAddress,
       rpcUrl: parsedArgs.rpcUrl,
       chainId: parsedArgs.chainId,
-      signer: parsedArgs.signer,
+      signer: parsedArgs.signer || '', // Required by type but not used when ledger is true
+      ledger: parsedArgs.ledger || false,
       limit: parsedArgs.limit,
       ...(command === "set_shard_id" ? { guardianMessage: parsedArgs.guardianMessage as string } : {}),
       ...(command === "append_schnorr" ? { vaa: parsedArgs.vaa as string } : {}),
@@ -411,7 +645,12 @@ async function main() {
   }
 }
 
-main().catch((error: unknown) => {
-  console.error(`[ERROR] Unhandled error: ${errorStack(error)}`);
-  process.exit(1);
-});
+// Only run main if this file is executed directly (not imported for tests)
+// Check if we're running as a script (not being imported)
+if (import.meta.url.endsWith(process.argv[1]?.replace(/\\/g, '/')) || 
+    process.argv[1]?.includes('governance_client')) {
+  main().catch((error: unknown) => {
+    console.error(`[ERROR] Unhandled error: ${errorStack(error)}`);
+    process.exit(1);
+  });
+}
