@@ -52,13 +52,6 @@
       "wormholeAddress": "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"
     },
     {
-      "description": "Monad Testnet",
-      "evmNetworkId": 10143,
-      "chainId": 48,
-      "rpc": "https://monad-testnet.drpc.org",
-      "wormholeAddress": "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"
-    },
-    {
       "description": "Mezo",
       "evmNetworkId": 31611,
       "chainId": 50,

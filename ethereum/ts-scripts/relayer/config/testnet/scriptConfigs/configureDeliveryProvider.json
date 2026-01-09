@@ -36,11 +36,6 @@
       "updatePriceNative": "100000"
     },
     {
-      "chainId": 48,
-      "updatePriceGas": "10000000000",
-      "updatePriceNative": "100000"
-    },
-    {
       "chainId": 50,
       "updatePriceGas": "10000000000",
       "updatePriceNative": "100000"
@@ -111,10 +106,6 @@
       "updateGasOverhead": "350000"
     },
     {
-      "chainId": 48,
-      "updateGasOverhead": "350000"
-    },
-    {
       "chainId": 50,
       "updateGasOverhead": "350000"
     },
@@ -174,10 +165,6 @@
     },
     {
       "chainId": 46,
-      "updateMaximumBudget": "2000000000000000000"
-    },
-    {
-      "chainId": 48,
       "updateMaximumBudget": "2000000000000000000"
     },
     {
@@ -255,11 +242,6 @@
       "bufferDenominator": 100
     },
     {
-      "chainId": 48,
-      "buffer": 5,
-      "bufferDenominator": 100
-    },
-    {
       "chainId": 50,
       "buffer": 5,
       "bufferDenominator": 100
@@ -331,10 +313,6 @@
     },
     {
       "chainId": 46,
-      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
-    },
-    {
-      "chainId": 48,
       "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
@@ -417,15 +395,15 @@
     },
     {
       "chainId": 34,
-      "isSupported": true
+      "isSupported": false
     },
     {
       "chainId": 35,
-      "isSupported": true
+      "isSupported": false
     },
     {
       "chainId": 37,
-      "isSupported": true
+      "isSupported": false
     },
     {
       "chainId": 39,
@@ -445,7 +423,7 @@
     },
     {
       "chainId": 48,
-      "isSupported": true
+      "isSupported": false
     },
     {
       "chainId": 50,
@@ -486,18 +464,6 @@
       "supportedKeys": ["vaa"]
     },
     {
-      "chainId": 34,
-      "supportedKeys": ["vaa"]
-    },
-    {
-      "chainId": 35,
-      "supportedKeys": ["vaa"]
-    },
-    {
-      "chainId": 37,
-      "supportedKeys": ["vaa"]
-    },
-    {
       "chainId": 39,
       "supportedKeys": ["vaa"]
     },
@@ -511,10 +477,6 @@
     },
     {
       "chainId": 46,
-      "supportedKeys": ["vaa", "cctp"]
-    },
-    {
-      "chainId": 48,
       "supportedKeys": ["vaa", "cctp"]
     },
     {
