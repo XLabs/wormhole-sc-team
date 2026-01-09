@@ -1,103 +1,72 @@
 {
   "addresses": [
     {
-      "chainId": 2,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
-    },
-    {
       "chainId": 4,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
-    },
-    {
-      "chainId": 5,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 6,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
-    },
-    {
-      "chainId": 10,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
-    },
-    {
-      "chainId": 14,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 16,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
-    },
-    {
-      "chainId": 23,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
-    },
-    {
-      "chainId": 24,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
-    },
-    {
-      "chainId": 30,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 39,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 40,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 44,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 46,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 48,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 50,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
+    },
+    {
+      "chainId": 55,
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 57,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 10002,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 10003,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 10004,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 10005,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 10007,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     }
   ],
   "pricingInfo": [
     {
-      "chainId": 2,
-      "deliverGasOverhead": "350000",
-      "updatePriceGas": "30000000000",
-      "updatePriceNative": "200000",
-      "maximumBudget": "1000000000000000000"
-    },
-    {
       "chainId": 4,
       "deliverGasOverhead": "350000",
       "updatePriceGas": "30000000000",
@@ -105,28 +74,7 @@
       "maximumBudget": "1000000000000000000"
     },
     {
-      "chainId": 5,
-      "deliverGasOverhead": "350000",
-      "updatePriceGas": "7322000000",
-      "updatePriceNative": "100000",
-      "maximumBudget": "1000000000000000000"
-    },
-    {
       "chainId": 6,
-      "deliverGasOverhead": "350000",
-      "updatePriceGas": "30000000000",
-      "updatePriceNative": "100000",
-      "maximumBudget": "1000000000000000000"
-    },
-    {
-      "chainId": 10,
-      "deliverGasOverhead": "350000",
-      "updatePriceGas": "3000000000",
-      "updatePriceNative": "200000",
-      "maximumBudget": "1000000000000000000"
-    },
-    {
-      "chainId": 14,
       "deliverGasOverhead": "350000",
       "updatePriceGas": "30000000000",
       "updatePriceNative": "100000",
@@ -140,27 +88,6 @@
       "maximumBudget": "1000000000000000000"
     },
     {
-      "chainId": 23,
-      "deliverGasOverhead": "350000",
-      "updatePriceGas": "30000000000",
-      "updatePriceNative": "200000",
-      "maximumBudget": "1000000000000000000"
-    },
-    {
-      "chainId": 24,
-      "deliverGasOverhead": "350000",
-      "updatePriceGas": "30000000000",
-      "updatePriceNative": "200000",
-      "maximumBudget": "1000000000000000000"
-    },
-    {
-      "chainId": 30,
-      "deliverGasOverhead": "350000",
-      "updatePriceGas": "30000000000",
-      "updatePriceNative": "200000",
-      "maximumBudget": "1000000000000000000"
-    },
-    {
       "chainId": 39,
       "deliverGasOverhead": "350000",
       "updatePriceGas": "30000000000",
@@ -200,6 +127,13 @@
       "deliverGasOverhead": "350000",
       "updatePriceGas": "30000000000",
       "updatePriceNative": "200000",
+      "maximumBudget": "1000000000000000000"
+    },
+    {
+      "chainId": 55,
+      "deliverGasOverhead": "350000",
+      "updatePriceGas": "30000000000",
+      "updatePriceNative": "100000",
       "maximumBudget": "1000000000000000000"
     },
     {
