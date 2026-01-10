@@ -6,4 +6,4 @@ npx tsx ./ts-scripts/relayer/config/checkNetworks.ts \
   && npx tsx ./ts-scripts/relayer/deliveryProvider/initializeDeliveryProvider.ts \
   && npx tsx ./ts-scripts/relayer/mockIntegration/deployMockIntegration.ts \
   && npx tsx ./ts-scripts/relayer/wormholeRelayer/registerChainsWormholeRelayer.ts \
-  && npx tsx ./ts-scripts/relayer/deliveryProvider/configureDeliveryProviderPriceAssistant.ts 
+  && npx tsx ./ts-scripts/relayer/deliveryProvider/configureDeliveryProviderPriceAssistant.ts

@@ -1,7 +1,6 @@
 {
   "guardianSetIndex": 0,
   "description": "This file contains the chains against which all the scripts should run.",
-  "useLastRun": true,
   "chains": [
     {
       "description": "BSC Testnet",
@@ -16,20 +15,6 @@
       "chainId": 6,
       "rpc": "https://api.avax-test.network/ext/bc/C/rpc",
       "wormholeAddress": "0x7bbcE28e64B3F8b84d876Ab298393c38ad7aac4C"
-    },
-    {
-      "description": "Fantom",
-      "evmNetworkId": 4002,
-      "chainId": 10,
-      "rpc": "https://fantom-testnet.publicnode.com",
-      "wormholeAddress": "0x1BB3B4119b7BA9dfad76B0545fb3F531383c3bB7"
-    },
-    {
-      "description": "Celo Testnet",
-      "evmNetworkId": 44787,
-      "chainId": 14,
-      "rpc": "https://alfajores-forno.celo-testnet.org",
-      "wormholeAddress": "0x88505117CA88e7dd2eC6EA1E13f0948db2D50D56"
     },
     {
       "description": "Moonbase Alpha",
@@ -67,18 +52,18 @@
       "wormholeAddress": "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"
     },
     {
-      "description": "Monad Testnet",
-      "evmNetworkId": 10143,
-      "chainId": 48,
-      "rpc": "https://monad-testnet.drpc.org",
-      "wormholeAddress": "0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd"
-    },
-    {
       "description": "Mezo",
       "evmNetworkId": 31611,
       "chainId": 50,
       "rpc": "https://mezo-testnet.drpc.org",
       "wormholeAddress": "0x268557122Ffd64c85750d630b716471118F323c8"
+    },
+    {
+      "description": "Plume",
+      "evmNetworkId": 98867,
+      "chainId": 55,
+      "rpc": "https://testnet-rpc.plume.org",
+      "wormholeAddress": "0x81705b969cDcc6FbFde91a0C6777bE0EF3A75855"
     },
     {
       "description": "XPRL-EVM",

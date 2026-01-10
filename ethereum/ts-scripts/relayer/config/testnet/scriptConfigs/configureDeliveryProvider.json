@@ -11,16 +11,6 @@
       "updatePriceNative": "100000"
     },
     {
-      "chainId": 10,
-      "updatePriceGas": "3000000000",
-      "updatePriceNative": "200000"
-    },
-    {
-      "chainId": 14,
-      "updatePriceGas": "30000000000",
-      "updatePriceNative": "100000"
-    },
-    {
       "chainId": 16,
       "updatePriceGas": "10000000000",
       "updatePriceNative": "100000"
@@ -46,12 +36,17 @@
       "updatePriceNative": "100000"
     },
     {
-      "chainId": 48,
+      "chainId": 50,
       "updatePriceGas": "10000000000",
       "updatePriceNative": "100000"
     },
     {
-      "chainId": 50,
+      "chainId": 55,
+      "updatePriceGas": "10000000000",
+      "updatePriceNative": "100000"
+    },
+    {
+      "chainId": 57,
       "updatePriceGas": "10000000000",
       "updatePriceNative": "100000"
     },
@@ -72,6 +67,11 @@
     },
     {
       "chainId": 10005,
+      "updatePriceGas": "30000000000",
+      "updatePriceNative": "200000"
+    },
+    {
+      "chainId": 10007,
       "updatePriceGas": "30000000000",
       "updatePriceNative": "200000"
     }
@@ -86,14 +86,6 @@
       "updateGasOverhead": "350000"
     },
     {
-      "chainId": 10,
-      "updateGasOverhead": "350000"
-    },
-    {
-      "chainId": 14,
-      "updateGasOverhead": "350000"
-    },
-    {
       "chainId": 16,
       "updateGasOverhead": "350000"
     },
@@ -114,11 +106,15 @@
       "updateGasOverhead": "350000"
     },
     {
-      "chainId": 48,
+      "chainId": 50,
       "updateGasOverhead": "350000"
     },
     {
-      "chainId": 50,
+      "chainId": 55,
+      "updateGasOverhead": "350000"
+    },
+    {
+      "chainId": 57,
       "updateGasOverhead": "350000"
     },
     {
@@ -135,6 +131,10 @@
     },
     {
       "chainId": 10005,
+      "updateGasOverhead": "350000"
+    },
+    {
+      "chainId": 10007,
       "updateGasOverhead": "350000"
     }
   ],
@@ -148,14 +148,6 @@
       "updateMaximumBudget": "2000000000000000000"
     },
     {
-      "chainId": 10,
-      "updateMaximumBudget": "2000000000000000000"
-    },
-    {
-      "chainId": 14,
-      "updateMaximumBudget": "2000000000000000000"
-    },
-    {
       "chainId": 16,
       "updateMaximumBudget": "2000000000000000000"
     },
@@ -176,11 +168,15 @@
       "updateMaximumBudget": "2000000000000000000"
     },
     {
-      "chainId": 48,
+      "chainId": 50,
       "updateMaximumBudget": "2000000000000000000"
     },
     {
-      "chainId": 50,
+      "chainId": 55,
+      "updateMaximumBudget": "2000000000000000000"
+    },
+    {
+      "chainId": 57,
       "updateMaximumBudget": "2000000000000000000"
     },
     {
@@ -197,6 +193,10 @@
     },
     {
       "chainId": 10005,
+      "updateMaximumBudget": "2000000000000000000"
+    },
+    {
+      "chainId": 10007,
       "updateMaximumBudget": "2000000000000000000"
     }
   ],
@@ -217,16 +217,6 @@
       "bufferDenominator": 100
     },
     {
-      "chainId": 10,
-      "buffer": 5,
-      "bufferDenominator": 100
-    },
-    {
-      "chainId": 14,
-      "buffer": 5,
-      "bufferDenominator": 100
-    },
-    {
       "chainId": 16,
       "buffer": 5,
       "bufferDenominator": 100
@@ -252,12 +242,17 @@
       "bufferDenominator": 100
     },
     {
-      "chainId": 48,
+      "chainId": 50,
       "buffer": 5,
       "bufferDenominator": 100
     },
     {
-      "chainId": 50,
+      "chainId": 55,
+      "buffer": 5,
+      "bufferDenominator": 100
+    },
+    {
+      "chainId": 57,
       "buffer": 5,
       "bufferDenominator": 100
     },
@@ -278,6 +273,11 @@
     },
     {
       "chainId": 10005,
+      "buffer": 5,
+      "bufferDenominator": 100
+    },
+    {
+      "chainId": 10007,
       "buffer": 5,
       "bufferDenominator": 100
     }
@@ -285,67 +285,67 @@
   "rewardAddresses": [
     {
       "chainId": 4,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 5,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 6,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
-    },
-    {
-      "chainId": 10,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
-    },
-    {
-      "chainId": 14,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 16,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 39,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 40,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 44,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 46,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
-    },
-    {
-      "chainId": 48,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 50,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
+    },
+    {
+      "chainId": 55,
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
+    },
+    {
+      "chainId": 57,
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 10002,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 10003,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 10004,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     },
     {
       "chainId": 10005,
-      "rewardAddress": "0x734D539a7efEE15714a2755caa4280e12EF3d7e4"
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
+    },
+    {
+      "chainId": 10007,
+      "rewardAddress": "0xd1f852ff49c8190abdefd2b098c0555696e1084c"
     }
   ],
   "supportedChains": [
@@ -367,7 +367,7 @@
     },
     {
       "chainId": 10,
-      "isSupported": true
+      "isSupported": false
     },
     {
       "chainId": 13,
@@ -375,7 +375,7 @@
     },
     {
       "chainId": 14,
-      "isSupported": true
+      "isSupported": false
     },
     {
       "chainId": 16,
@@ -395,15 +395,15 @@
     },
     {
       "chainId": 34,
-      "isSupported": true
+      "isSupported": false
     },
     {
       "chainId": 35,
-      "isSupported": true
+      "isSupported": false
     },
     {
       "chainId": 37,
-      "isSupported": true
+      "isSupported": false
     },
     {
       "chainId": 39,
@@ -423,7 +423,7 @@
     },
     {
       "chainId": 48,
-      "isSupported": true
+      "isSupported": false
     },
     {
       "chainId": 50,
@@ -444,63 +444,23 @@
     {
       "chainId": 10005,
       "isSupported": true
+    },
+    {
+      "chainId": 10007,
+      "isSupported": true
     }
   ],
   "supportedKeysByChain": [
     {
-      "chainId": 2,
-      "supportedKeys": ["vaa"]
-    },
-    {
       "chainId": 4,
       "supportedKeys": ["vaa", "cctp"]
-    },
-    {
-      "chainId": 5,
-      "supportedKeys": ["vaa"]
     },
     {
       "chainId": 6,
       "supportedKeys": ["vaa", "cctp"]
     },
     {
-      "chainId": 10,
-      "supportedKeys": ["vaa"]
-    },
-    {
-      "chainId": 13,
-      "supportedKeys": ["vaa"]
-    },
-    {
-      "chainId": 14,
-      "supportedKeys": ["vaa"]
-    },
-    {
       "chainId": 16,
-      "supportedKeys": ["vaa"]
-    },
-    {
-      "chainId": 23,
-      "supportedKeys": ["vaa", "cctp"]
-    },
-    {
-      "chainId": 24,
-      "supportedKeys": ["vaa", "cctp"]
-    },
-    {
-      "chainId": 30,
-      "supportedKeys": ["vaa", "cctp"]
-    },
-    {
-      "chainId": 34,
-      "supportedKeys": ["vaa"]
-    },
-    {
-      "chainId": 35,
-      "supportedKeys": ["vaa"]
-    },
-    {
-      "chainId": 37,
       "supportedKeys": ["vaa"]
     },
     {
@@ -517,14 +477,18 @@
     },
     {
       "chainId": 46,
-      "supportedKeys": ["vaa"]
-    },
-    {
-      "chainId": 48,
-      "supportedKeys": ["vaa"]
+      "supportedKeys": ["vaa", "cctp"]
     },
     {
       "chainId": 50,
+      "supportedKeys": ["vaa"]
+    },
+    {
+      "chainId": 55,
+      "supportedKeys": ["vaa", "cctp"]
+    },
+    {
+      "chainId": 57,
       "supportedKeys": ["vaa"]
     },
     {
@@ -541,6 +505,10 @@
     },
     {
       "chainId": 10005,
+      "supportedKeys": ["vaa", "cctp"]
+    },
+    {
+      "chainId": 10007,
       "supportedKeys": ["vaa", "cctp"]
     }
   ]

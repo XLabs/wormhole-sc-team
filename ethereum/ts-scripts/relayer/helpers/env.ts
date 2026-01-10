@@ -274,7 +274,7 @@ export function loadGuardianKeys(): string[] {
   const guardianKey2 = get_env_var("GUARDIAN_KEY2");
 
   let numGuardians: number = 0;
-  console.log("NUM_GUARDIANS variable : " + NUM_GUARDIANS);
+  // console.log("NUM_GUARDIANS variable : " + NUM_GUARDIANS);
 
   if (!NUM_GUARDIANS) {
     numGuardians = 1;
