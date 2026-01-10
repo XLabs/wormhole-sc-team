@@ -530,7 +530,7 @@
     },
     {
       "chainId": 38,
-      "isSupported": false
+      "isSupported": true
     },
     {
       "chainId": 39,
