@@ -646,7 +646,6 @@ async function main() {
 }
 
 // Only run main if this file is executed directly (not imported for tests)
-// Check if we're running as a script (not being imported)
 if (import.meta.url.endsWith(process.argv[1]?.replace(/\\/g, '/')) || 
     process.argv[1]?.includes('governance_client')) {
   main().catch((error: unknown) => {
