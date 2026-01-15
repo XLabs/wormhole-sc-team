@@ -3,7 +3,7 @@ import { Chain, isChainId, toChain } from "@wormhole-foundation/sdk";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { Program, AnchorProvider } from "@coral-xyz/anchor";
 import yargs from "yargs";
-import { hideBin } from 'yargs/helpers';
+import { hideBin } from "yargs/helpers";
 
 import type { VerificationV2 } from "../../../src/solana/target/types/verification_v2.js";
 import { createRequire } from "module";
@@ -30,22 +30,24 @@ const WORMHOLE_VERIFIER_ABI = [
   },
 ] as const;
 
-export type VerificationResult = {
-  verified: true;
-  emitterChainId: number;
-  emitterAddress: string;
-  sequence: bigint;
-  payloadOffset: number;
-} | {
-  verified: false;
-  error: string;
-}
+export type VerificationResult =
+  | {
+      verified: true;
+      emitterChainId: number;
+      emitterAddress: string;
+      sequence: bigint;
+      payloadOffset: number;
+    }
+  | {
+      verified: false;
+      error: string;
+    };
 
 // EVM verification
 async function verifyVaaEvm(
   client: PublicClient,
   verifierAddress: Address,
-  vaa: Hex,
+  vaa: Hex
 ): Promise<VerificationResult> {
   try {
     const result = await client.readContract({
@@ -62,15 +64,24 @@ async function verifyVaaEvm(
       payloadOffset: result[3],
     };
   } catch (error) {
-    if (!(error instanceof Error && error.cause && typeof error.cause === 'object' && "raw" in error.cause)) {
-      return { verified: false, error: error instanceof Error ? error.message : "Unknown error" };
+    if (!(error instanceof Error && "raw" in (error.cause as { raw: Hex }))) {
+      return {
+        verified: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
     }
     const hexData = (error.cause as { raw: Hex }).raw;
     if (hexData.startsWith(VERIFICATION_FAILED_ERROR_SIGNATURE)) {
       const flags = hexData.slice(VERIFICATION_FAILED_ERROR_SIGNATURE.length);
-      return { verified: false, error: `Verification failed with flags: 0x${flags}` };
+      return {
+        verified: false,
+        error: `Verification failed with flags: 0x${flags}`,
+      };
     }
-    return { verified: false, error: `Contract call failed with unknown error data: ${hexData}` };
+    return {
+      verified: false,
+      error: `Contract call failed with unknown error data: ${hexData}`,
+    };
   }
 }
 
@@ -177,59 +188,59 @@ type Args = {
 }
 
 async function main() {
-  const parser = yargs(hideBin(process.argv))
-    .option('chain', {
-      description: 'Target chain type',
-      choices: ['evm', 'solana'] as const,
-      default: 'evm' as const,
-      alias: 't',
+  const { chain, rpc, verifier, vaa } = await yargs(hideBin(process.argv))
+    .usage("Usage: $0 --chain <evm|solana> --rpc <url> --verifier <address> --vaa <base64>")
+    .option("chain", {
+      alias: "c",
+      type: "string",
+      description: "Target chain type",
+      choices: ["evm", "solana"] as const,
+      default: "evm" as const,
     })
-    .option('rpc-url', {
-      description: 'RPC endpoint URL',
-      type: 'string',
+    .option("rpc", {
+      alias: "r",
+      type: "string",
+      description: "RPC URL",
       demandOption: true,
-      alias: 'r',
     })
-    .option('verifier-address', {
-      description: 'Verifier contract/program address',
-      type: 'string',
+    .option("verifier", {
+      alias: "v",
+      type: "string",
+      description: "Verifier contract/program address",
       demandOption: true,
-      alias: 'a',
     })
-    .option('vaa', {
-      description: 'Base64 encoded VAA to verify',
-      type: 'string',
+    .option("vaa", {
+      type: "string",
+      description: "Base64-encoded VAA to verify",
       demandOption: true,
-      alias: 'v',
     })
-    .strictOptions()
+    .strict()
     .help()
-    .alias('help', 'h');
+    .parse();
 
-  const args = await parser.parse() as Args;
-  const vaaBytes = Buffer.from(args.vaa, "base64");
+  const vaaBytes = Buffer.from(vaa, "base64");
   const vaaType = getVaaType(vaaBytes);
 
   if (vaaType === undefined) {
-    console.error(`Invalid VAA type (first byte: 0x${vaaBytes[0].toString(16).padStart(2, '0')})`);
+    console.error(`Invalid VAA type (first byte: 0x${vaaBytes[0].toString(16).padStart(2, "0")})`);
     process.exit(1);
   }
 
-  console.log(`Verifying ${vaaType} VAA on ${args.chain.toUpperCase()}...`);
+  console.log(`Verifying ${vaaType} VAA on ${chain.toUpperCase()}...`);
 
   let result: VerificationResult;
 
-  if (args.chain === "evm") {
+  if (chain === "evm") {
     const vaaHex = ("0x" + vaaBytes.toString("hex")) as Hex;
-    const client = createPublicClient({ transport: http(args.rpcUrl) });
-    result = await verifyVaaEvm(client, args.verifierAddress as Address, vaaHex);
+    const client = createPublicClient({ transport: http(rpc) });
+    result = await verifyVaaEvm(client, verifier as Address, vaaHex);
   } else {
     if (vaaType !== "Schnorr") {
       console.error("Solana verification currently only supports Schnorr VAAs");
       process.exit(1);
     }
-    const connection = new Connection(args.rpcUrl, "confirmed");
-    const programId = new PublicKey(args.verifierAddress || DEFAULT_SOLANA_PROGRAM_ID);
+    const connection = new Connection(rpc, "confirmed");
+    const programId = new PublicKey(verifier || DEFAULT_SOLANA_PROGRAM_ID);
     result = await verifyVaaSolana(connection, programId, vaaBytes);
   }
 
@@ -241,7 +252,7 @@ async function main() {
 
   console.log("VAA verified successfully");
   console.log("================================================");
-  if (args.chain === "evm") {
+  if (chain === "evm") {
     const emitterChain = toMaybeUnknownChain(result.emitterChainId);
     console.log(`Emitter Chain: ${emitterChain} (${result.emitterChainId})`);
     console.log("Emitter Address:", result.emitterAddress);
@@ -253,4 +264,7 @@ async function main() {
   console.log("================================================");
 }
 
-await main().catch((error: unknown) => { console.error(error); process.exit(1); });
+main().catch((error: unknown) => {
+  console.error(error);
+  process.exit(1);
+});

@@ -4,8 +4,7 @@
     "outDir": "./ts-build",
     "resolveJsonModule": true
   },
-  "include": ["target/types", "target/idl", "scripts", "tests/testing-wormhole-core.ts", "tests/testing_helpers.ts"],
-  "exclude": ["tests/**/*.test.ts"],
+  "include": ["tests", "target/types", "scripts"],
   "references": [
     { "path": "../../ts-pkgs/tss-definitions" }
   ]
