@@ -78,10 +78,10 @@ interface SupportedChain {
   isSupported: boolean;
 }
 
-const vaaBit = 0n;
-const cctpBit = 1n;
-const vaaKey = 1n << vaaBit;
-const cctpKey = 1n << cctpBit;
+const vaaKeyType = 1n;
+const cctpKeyType = 2n;
+const vaaMask = 1n << vaaKeyType;
+const cctpMask = 1n << cctpKeyType;
 
 const zeroAddress = "0x0000000000000000000000000000000000000000";
 const whZeroAddress =
@@ -469,8 +469,8 @@ function generateBitmap(keys: string[]): bigint {
   let bitmap = 0n;
   for (const key of keys) {
     let i;
-    if (key === "vaa") i = vaaKey;
-    else if (key === "cctp") i = cctpKey;
+    if (key === "vaa") i = vaaMask;
+    else if (key === "cctp") i = cctpMask;
     else throw new Error(`Unknown message key ${key}`);
 
     bitmap |= i;
@@ -479,8 +479,8 @@ function generateBitmap(keys: string[]): bigint {
 }
 
 function supportedKeyDescription(i: bigint): "vaa" | "cctp" | `Unknown message key bit ${bigint}` {
-  if (i === vaaBit) return "vaa";
-  else if (i === cctpBit) return "cctp";
+  if (i === vaaKeyType) return "vaa";
+  else if (i === cctpKeyType) return "cctp";
   else return `Unknown message key bit ${i}`;
 }
 
