@@ -64,7 +64,7 @@ require (
 	github.com/prometheus/common v0.60.0
 	github.com/wormhole-foundation/wormchain v0.0.0-00010101000000-000000000000
 	github.com/wormhole-foundation/wormhole/sdk v0.0.0-20220926172624-4b38dc650bb0
-	github.com/xlabs/multi-party-sig v0.0.2-0.20260106091636-03df0eb97600
+	github.com/xlabs/multi-party-sig v0.0.2-0.20260114132444-9fa120708b77
 	github.com/xlabs/tss-common v0.0.0-20260106090845-24efe5d8f9c2
 	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250804133106-a7a43d27e69b

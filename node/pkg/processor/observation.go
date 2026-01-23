@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"context"
 	"encoding/hex"
 	"fmt"
 	"math"
@@ -11,6 +12,7 @@ import (
 	"github.com/mr-tron/base58"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	tsscommon "github.com/xlabs/tss-common"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -303,7 +305,10 @@ func (p *Processor) handleInboundSignedVAAWithQuorum(m *gossipv1.SignedVAAWithQu
 		//
 		// in case the leader has a VaaV2, it doesn't need to start a new signing process.
 		if !p.haveSignedVaav2(*db.VaaIDFromVAA(v)) {
-			p.thresholdSigner.WitnessNewVaa(v)
+			if err := p.thresholdSigner.WitnessNewVaaV1(context.TODO(), v); err != nil { // TODO: handle ctx.
+				p.logger.Warn("witnessing new VAA v1 for TSS signing failed",
+					zap.Error(err), zap.Any("message", m))
+			}
 		}
 	}
 
@@ -340,16 +345,18 @@ func (p *Processor) handleInboundSignedVAAWithQuorum(m *gossipv1.SignedVAAWithQu
 
 	var verificationPublic vaa.PublicKeys = keys
 	if v.Version == vaa.TSSVaaVersion {
-		// TODO: Handle TSSVaa Version verification properly.
-		// verificationPublic, err = p.thresholdSigner.GetPublicKey()
-		// if err != nil {
-		// 	p.logger.Warn("dropping SignedVAAWithQuorum message since we failed to get public key for TSS VAA",
-		// 		zap.String("message_id", v.MessageID()),
-		// 		zap.String("digest", hex.EncodeToString(v.SigningDigest().Bytes())),
-		// 		zap.Error(err),
-		// 	)
-		// 	return
-		// }
+		// TODO: Choose the protocol somehow.
+		pb, err := p.thresholdSigner.GetPublicKey(context.TODO(), tsscommon.ProtocolFROSTSign) // TODO: handle ctx.
+		if err != nil {
+			p.logger.Warn("dropping SignedVAAWithQuorum message since we failed to get public key for TSS VAA",
+				zap.String("message_id", v.MessageID()),
+				zap.String("digest", hex.EncodeToString(v.SigningDigest().Bytes())),
+				zap.Error(err),
+			)
+			return
+		}
+
+		verificationPublic = pb
 	}
 
 	if err := v.Verify(verificationPublic); err != nil {

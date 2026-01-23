@@ -89,7 +89,7 @@ type G struct {
 
 	// guardianSigner is the abstracted GuardianSigner that signs VAAs, or any other guardian-related information
 	guardianSigner guardiansigner.GuardianSigner
-	tssEngine      tss.Signer
+	tssEngine      tss.SignerConnection
 
 	// components
 	db                 *db.Database
@@ -137,20 +137,21 @@ type G struct {
 func NewGuardianNode(
 	env common.Environment,
 	guardianSigner guardiansigner.GuardianSigner,
-	tssEngine tss.Signer,
 ) *G {
 
 	g := G{
 		env:            env,
-		tssEngine:      tssEngine,
 		guardianSigner: guardianSigner,
 	}
+
 	return &g
 }
 
 // initializeBasic sets up everything that every GuardianNode needs before any options can be applied.
 func (g *G) initializeBasic(rootCtxCancel context.CancelFunc) {
 	g.rootCtxCancel = rootCtxCancel
+
+	g.tssEngine = (*tss.SignerClient)(nil) // ensure nil receiver is ok.
 
 	// Setup various channels...
 	g.gossipControlSendC = make(chan []byte, gossipControlSendBufferSize)

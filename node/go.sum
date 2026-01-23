@@ -3313,8 +3313,8 @@ github.com/xeipuuv/gojsonschema v1.2.0/go.mod h1:anYRn/JVcOK2ZgGU+IjEV4nwlhoK5sQ
 github.com/xhit/go-str2duration v1.2.0/go.mod h1:3cPSlfZlUHVlneIVfePFWcJZsuwf+P1v2SRTV4cUmp4=
 github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8/go.mod h1:HUYIGzjTL3rfEspMxjDjgmT5uz5wzYJKVo23qUhYTos=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
-github.com/xlabs/multi-party-sig v0.0.2-0.20260106091636-03df0eb97600 h1:MW2mJZhnH8jPSuMtyPgYnvT/dxAMxeR8ChsXnWxl+90=
-github.com/xlabs/multi-party-sig v0.0.2-0.20260106091636-03df0eb97600/go.mod h1:4yXG6LBqQsccdeLKfxHqDqkZlayRkdhsjib13P5xpms=
+github.com/xlabs/multi-party-sig v0.0.2-0.20260114132444-9fa120708b77 h1:IMjKAhCJxZl/Q7FHbnr9+FFdDm0Plq1fz8EQLzdO95A=
+github.com/xlabs/multi-party-sig v0.0.2-0.20260114132444-9fa120708b77/go.mod h1:4yXG6LBqQsccdeLKfxHqDqkZlayRkdhsjib13P5xpms=
 github.com/xlabs/tss-common v0.0.0-20260106090845-24efe5d8f9c2 h1:NXHZJVgpS8dhCEPKf3R7o5mGRbK1XZ5Ik4Vw6I/leWc=
 github.com/xlabs/tss-common v0.0.0-20260106090845-24efe5d8f9c2/go.mod h1:fZmQ4NRkV/rXf68cDLgZoi/4LF89Nn8Rh2KGdxDB+ZM=
 github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778/go.mod h1:2MuV+tbUrU1zIOPMxZ5EncGwgmMJsa+9ucAQZXxsObs=

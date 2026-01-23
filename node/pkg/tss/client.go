@@ -5,10 +5,14 @@ import (
 	"errors"
 	"sync/atomic"
 
+	"github.com/certusone/wormhole/node/pkg/common"
+	"github.com/certusone/wormhole/node/pkg/guardiansigner"
+	gossipv1 "github.com/certusone/wormhole/node/pkg/proto/gossip/v1"
 	"github.com/certusone/wormhole/node/pkg/supervisor"
+	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/gogo/status"
-	"github.com/wormhole-foundation/wormhole/sdk/vaa"
-	common "github.com/xlabs/tss-common"
+	"github.com/xlabs/multi-party-sig/pkg/math/curve"
+	tsscommon "github.com/xlabs/tss-common"
 	"github.com/xlabs/tss-common/service/signer"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -16,14 +20,27 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type signerClient struct {
+type vaaHandling struct {
+	isLeader      bool
+	leaderAddress ethcommon.Address
+
+	gst *common.GuardianSetState
+	guardiansigner.GuardianSigner
+
+	gossipOutput   chan *gossipv1.TSSGossipMessage // channel to send outgoing gossip messages.
+	incomingGossip chan *gossipv1.TSSGossipMessage // channel to receive incoming gossip messages.
+}
+
+type SignerClient struct {
 	// immutable fields:
 	dialOpts   []grpc.DialOption
 	socketPath string
-	out        chan *common.SignatureData // outputs signatures.
+	out        chan *tsscommon.SignatureData // outputs signatures.
 
 	// used to communicate with the signer service.
 	conn *connChans
+
+	vaaData vaaHandling
 
 	connected atomic.Int64 // 0 is not connected, 1 is connected.
 }
@@ -67,12 +84,12 @@ var (
 // it connects to the signer service, forwards requests from the in channel, and outputs responses to the out channel.
 // It runs until the context is cancelled or an error occurs.
 // (expects the supervisor to restart it on failure).
-func (s *signerClient) Connect(ctx context.Context) error {
+func (s *SignerClient) Connect(ctx context.Context) error {
 	return s.connect(ctx, supervisor.Logger(ctx).Named("tss-signer-connection"))
 }
 
 // AsyncSign implements Signer.
-func (s *signerClient) AsyncSign(rq *signer.SignRequest) error {
+func (s *SignerClient) AsyncSign(rq *signer.SignRequest) error {
 	if s == nil {
 		return ErrSignerClientNil
 	}
@@ -85,12 +102,8 @@ func (s *signerClient) AsyncSign(rq *signer.SignRequest) error {
 	}
 }
 
-func (s *signerClient) InformValidV1Vaa() {
-	panic("unimplemented")
-}
-
 // GetPublicData implements Signer.
-func (s *signerClient) GetPublicData(ctx context.Context) (*signer.PublicData, error) {
+func (s *SignerClient) GetPublicData(ctx context.Context) (*signer.PublicData, error) {
 	if s == nil {
 		return nil, ErrSignerClientNil
 	}
@@ -108,8 +121,29 @@ func (s *signerClient) GetPublicData(ctx context.Context) (*signer.PublicData, e
 	return publicData, nil
 }
 
+func (s *SignerClient) GetPublicKey(ctx context.Context, protocol tsscommon.ProtocolType) (curve.Point, error) {
+	if s == nil {
+		return nil, ErrSignerClientNil
+	}
+
+	publicData, err := s.GetPublicData(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	grp := curve.Secp256k1{} // supporting only secp256k1 for now.
+	switch protocol {
+	case tsscommon.ProtocolECDSASign:
+		return grp.UnmarshalPoint(publicData.EcdsaPublicData)
+	case tsscommon.ProtocolFROSTSign:
+		return grp.UnmarshalPoint(publicData.FrostPublicData)
+	default:
+		return nil, errors.New("unsupported protocol type for public key retrieval")
+	}
+}
+
 // outputs the SignerService responses.
-func (s *signerClient) Response() <-chan *signer.SignResponse {
+func (s *SignerClient) Response() <-chan *signer.SignResponse {
 	if s == nil || s.conn == nil {
 		return nil // ensure we don't panic, but return nil channel (which blocks forever, and ignored in select).
 	}
@@ -118,7 +152,7 @@ func (s *signerClient) Response() <-chan *signer.SignResponse {
 }
 
 // Verify implements Signer.
-func (s *signerClient) Verify(ctx context.Context, toVerify *signer.VerifySignatureRequest) error {
+func (s *SignerClient) Verify(ctx context.Context, toVerify *signer.VerifySignatureRequest) error {
 	if s == nil {
 		return ErrSignerClientNil
 	}
@@ -140,7 +174,7 @@ func (s *signerClient) Verify(ctx context.Context, toVerify *signer.VerifySignat
 	return nil // no error. signature is valid.
 }
 
-func (s *signerClient) sendUnaryRequest(ctx context.Context, request proto.Message) (proto.Message, error) {
+func (s *SignerClient) sendUnaryRequest(ctx context.Context, request proto.Message) (proto.Message, error) {
 	chn := make(chan unaryResult, 1)
 
 	select {
@@ -168,14 +202,8 @@ func (s *signerClient) sendUnaryRequest(ctx context.Context, request proto.Messa
 	}
 }
 
-// WitnessNewVaa implements Signer.
-func (s *signerClient) WitnessNewVaa(v *vaa.VAA) error {
-	// TODO: validate VAA. in case its valid and this is the leader: create a gossip message to all peers.
-	panic("unimplemented")
-}
-
 // mainly used for tests.
-func (s *signerClient) isConnected() bool {
+func (s *SignerClient) isConnected() bool {
 	if s == nil {
 		return false
 	}
@@ -183,7 +211,7 @@ func (s *signerClient) isConnected() bool {
 	return s.connected.Load() == connected
 }
 
-func (s *signerClient) connect(ctx context.Context, logger *zap.Logger) error {
+func (s *SignerClient) connect(ctx context.Context, logger *zap.Logger) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel() // we cancel on exit to ensure all goroutines exit.
 
@@ -220,6 +248,7 @@ func (s *signerClient) connect(ctx context.Context, logger *zap.Logger) error {
 	go s.receivingStream(ctx, stream, errchan)
 	go s.sendingStream(ctx, stream, errchan)
 	go s.unaryRequestsHandler(ctx, client, logger, errchan)
+	go s.gossipListener(ctx, logger)
 
 	supervisor.Signal(ctx, supervisor.SignalHealthy)
 
@@ -233,7 +262,7 @@ func (s *signerClient) connect(ctx context.Context, logger *zap.Logger) error {
 	}
 }
 
-func (s *signerClient) receivingStream(ctx context.Context, stream signatureStream, errchan chan error) {
+func (s *SignerClient) receivingStream(ctx context.Context, stream signatureStream, errchan chan error) {
 	for {
 		resp, err := stream.Recv()
 		if err != nil {
@@ -253,7 +282,7 @@ func (s *signerClient) receivingStream(ctx context.Context, stream signatureStre
 }
 
 // responsible to send sign requests to the signer-service.
-func (s *signerClient) sendingStream(ctx context.Context, stream signatureStream, errchan chan error) {
+func (s *SignerClient) sendingStream(ctx context.Context, stream signatureStream, errchan chan error) {
 	for {
 		select {
 		case <-ctx.Done(): // context cancelled, or error from other peer.
@@ -269,7 +298,7 @@ func (s *signerClient) sendingStream(ctx context.Context, stream signatureStream
 }
 
 // responsible to receive unary requests and send the to the signer-service for processing.
-func (s *signerClient) unaryRequestsHandler(ctx context.Context, client signer.SignerClient, logger *zap.Logger, errchan chan error) {
+func (s *SignerClient) unaryRequestsHandler(ctx context.Context, client signer.SignerClient, logger *zap.Logger, errchan chan error) {
 	for {
 		select {
 		case <-ctx.Done():
