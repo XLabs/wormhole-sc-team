@@ -68,9 +68,10 @@ done
 
 for i in "${!GUARDIAN_PRIVATE_KEYS[@]}"
 do
+  createGuardianPrivateKey $i > ./out/$i/keys/guardian.pem
    # The host here refers to the builder host container, not the host machine.
   docker build --builder dkg-builder --network=host --file ../../../peer-client/Dockerfile \
-    --secret id=guardian_pk,src=<(createGuardianPrivateKey "$i") \
+    --secret id=guardian_pk,src=./out/$i/keys/guardian.pem \
     --secret "id=cert.pem,src=./out/$i/keys/cert.pem" \
     --build-arg "TLS_HOSTNAME=${TLS_HOSTNAME}$i" \
     --build-arg TLS_PORT=$((TLS_BASE_PORT + i)) \
