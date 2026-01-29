@@ -1,0 +1,42 @@
+[package]
+name = "verification_v2"
+version = "0.1.0"
+description = "Wormhole threshold signature verification program"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "verification_v2"
+
+[features]
+default = ["mainnet"]
+mainnet = ["wormhole-anchor-sdk/mainnet"]
+testnet = ["wormhole-anchor-sdk/solana-devnet"]
+devnet = ["wormhole-anchor-sdk/tilt-devnet"]
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = [
+	"anchor-lang/idl-build",
+	"wormhole-anchor-sdk/idl-build",
+]
+from-env = ["wormhole-anchor-sdk/from-env"]
+
+[dependencies]
+anchor-lang = { version = "0.32.1", features = ["init-if-needed"] }
+solana-keccak-hasher = { version = "3.1.0" }
+solana-secp256k1-recover = { version = "3.1.0" }
+byteorder = "1.5.0"
+cfg-if = "1.0"
+const-crypto = "0.3.0"
+primitive-types = "0.13.1"
+wormhole-anchor-sdk = { git = "https://github.com/wormhole-foundation/wormhole-scaffolding.git", rev = "1e5f6d6db2e1d77cca291cd77b5b2e05e97b905e", default-features = false }
+# NOTE: this is the `main` commit at the time of writing.
+wormhole-svm-definitions = { git = "https://github.com/wormhole-foundation/wormhole", rev = "325cca4b628f17536f54b079eeb82b41247bfbef" }
+
+[dev-dependencies]
+num-bigint = "0.4.6"
+num-traits = "0.2.19"
+rstest = "0.25.0"
+proptest = "1.7.0"

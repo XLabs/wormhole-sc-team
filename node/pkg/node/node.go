@@ -89,7 +89,7 @@ type G struct {
 
 	// guardianSigner is the abstracted GuardianSigner that signs VAAs, or any other guardian-related information
 	guardianSigner guardiansigner.GuardianSigner
-	tssEngine      tss.ReliableTSS
+	tssEngine      tss.SignerConnection
 
 	// components
 	db                 *db.Database
@@ -137,14 +137,13 @@ type G struct {
 func NewGuardianNode(
 	env common.Environment,
 	guardianSigner guardiansigner.GuardianSigner,
-	tssEngine tss.ReliableTSS,
 ) *G {
 
 	g := G{
 		env:            env,
-		tssEngine:      tssEngine,
 		guardianSigner: guardianSigner,
 	}
+
 	return &g
 }
 
@@ -230,13 +229,6 @@ func (g *G) Run(rootCtxCancel context.CancelFunc, options ...*GuardianOption) su
 
 		if g.tssEngine != nil {
 			logger.Info("Starting TSS engine")
-			if err := g.tssEngine.SetGuardianSetState(g.gst); err != nil {
-				logger.Fatal("failed to set guardian set state", zap.Error(err))
-			}
-
-			if err := g.tssEngine.Start(ctx); err != nil {
-				logger.Fatal("failed to start TSS engine", zap.Error(err))
-			}
 		}
 
 		// TODO there is an opportunity to refactor the startup of the accountant and governor:

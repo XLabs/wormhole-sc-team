@@ -15,9 +15,9 @@ import (
 	"time"
 
 	"github.com/certusone/wormhole/node/pkg/guardiansigner"
-	"github.com/certusone/wormhole/node/pkg/tss"
 	"github.com/certusone/wormhole/node/pkg/watchers"
 	"github.com/certusone/wormhole/node/pkg/watchers/ibc"
+	ethcommon "github.com/ethereum/go-ethereum/common"
 	ethcrypto "github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/certusone/wormhole/node/pkg/watchers/cosmwasm"
@@ -73,7 +73,11 @@ var (
 	guardianKeyPath   *string
 	guardianSignerUri *string
 
-	tssSecretsPath *string
+	tssTLSCertPath        *string
+	tssTLSKeyPath         *string
+	tssSignerAddr         *string
+	tssLeaderAddr         *string
+	tssConfigurationsPath *string
 
 	ethRPC      *string
 	ethContract *string
@@ -324,7 +328,11 @@ func init() {
 	fogoContract = NodeCmd.Flags().String("fogoContract", "", "Address of the Fogo program (required if fogoRpc is specified)")
 	fogoShimContract = NodeCmd.Flags().String("fogoShimContract", "", "Address of the Fogo shim program")
 
-	tssSecretsPath = NodeCmd.Flags().String("tssSecret", "", "Path to guardian tss secrets (required)")
+	tssTLSCertPath = NodeCmd.Flags().String("tssTLSCert", "", "Path to guardian tss TLS certificate (required for secure connections)")
+	tssTLSKeyPath = NodeCmd.Flags().String("tssTLSKey", "", "Path to guardian tss TLS key (required for secure connections)")
+	tssSignerAddr = NodeCmd.Flags().String("tssSignerAddress", "127.0.0.1:9973", "Path to guardian tss socket (address:port for TCP connections)")
+	tssLeaderAddr = NodeCmd.Flags().String("tssLeaderAddress", "", "ethereum address (as hex) of the guardian that is the TSS leader")
+	tssConfigurationsPath = NodeCmd.Flags().String("tssConfigurations", "", "Path to guardian tss configurations JSON file (optional)")
 
 	ethRPC = node.RegisterFlagWithValidationOrFail(NodeCmd, "ethRPC", "Ethereum RPC URL", "ws://eth-devnet:8545", []string{"ws", "wss"})
 	ethContract = NodeCmd.Flags().String("ethContract", "", "Ethereum contract address")
@@ -763,8 +771,10 @@ func runNode(cmd *cobra.Command, args []string) {
 		logger.Fatal("failed to create a new guardian signer", zap.Error(err))
 	}
 
-	logger.Info("Created the guardian signer", zap.String(
-		"address", ethcrypto.PubkeyToAddress(guardianSigner.PublicKey(rootCtx)).String()))
+	guardianSignerAddress := ethcrypto.PubkeyToAddress(guardianSigner.PublicKey(rootCtx))
+	logger.Info("Created the guardian signer",
+		zap.String("address", guardianSignerAddress.String()),
+	)
 
 	// Load p2p private key
 	var p2pKey libp2p_crypto.PrivKey
@@ -1883,21 +1893,11 @@ func runNode(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	tssGuardianStorage, err := tss.NewGuardianStorageFromFile(*tssSecretsPath)
-	if err != nil {
-		logger.Fatal("failed to load the guardian's threshold signature scheme's secrets", zap.Error(err))
-	}
 	logger.Info("Loaded the guardian's threshold signature scheme's storage")
-
-	reliableTss, err := tss.NewReliableTSS(tssGuardianStorage)
-	if err != nil {
-		logger.Fatal("failed to start tss engine", zap.Error(err))
-	}
 
 	guardianNode := node.NewGuardianNode(
 		env,
 		guardianSigner,
-		reliableTss,
 	)
 
 	var guardianAddrAsBytes []byte
@@ -1906,6 +1906,7 @@ func runNode(cmd *cobra.Command, args []string) {
 	}
 
 	guardianOptions := []*node.GuardianOption{
+		node.GuardianOptionTSS(guardianSignerAddress, ethcommon.HexToAddress(*tssLeaderAddr), *tssConfigurationsPath, *tssSignerAddr, *tssTLSCertPath, *tssTLSKeyPath),
 		node.GuardianOptionDatabase(db),
 		node.GuardianOptionWatchers(watcherConfigs, ibcWatcherConfig),
 		node.GuardianOptionAccountant(*accountantWS, *accountantContract, *accountantCheckEnabled, accountantWormchainConn, *accountantNttContract, accountantNttWormchainConn),
@@ -1917,7 +1918,6 @@ func runNode(cmd *cobra.Command, args []string) {
 		node.GuardianOptionStatusServer(*statusAddr),
 		node.GuardianOptionAlternatePublisher(guardianAddrAsBytes, *additionalPublishers),
 		node.GuardianOptionProcessor(*p2pNetworkID),
-		node.GuardianOptionTSSNetwork(),
 
 		// Keep this last so that all of its dependencies are met.
 		node.GuardianOptionP2P(

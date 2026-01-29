@@ -1,0 +1,403 @@
+package tss
+
+import (
+	"context"
+	"errors"
+	"sync/atomic"
+
+	"github.com/certusone/wormhole/node/pkg/common"
+	"github.com/certusone/wormhole/node/pkg/guardiansigner"
+	gossipv1 "github.com/certusone/wormhole/node/pkg/proto/gossip/v1"
+	"github.com/certusone/wormhole/node/pkg/supervisor"
+	ethcommon "github.com/ethereum/go-ethereum/common"
+	"github.com/gogo/status"
+	"github.com/xlabs/multi-party-sig/pkg/math/curve"
+	tsscommon "github.com/xlabs/tss-common"
+	"github.com/xlabs/tss-common/service/signer"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/protobuf/proto"
+)
+
+type vaaHandling struct {
+	isLeader      bool
+	leaderAddress ethcommon.Address
+
+	gst *common.GuardianSetState
+	guardiansigner.GuardianSigner
+
+	gossipOutput   chan *gossipv1.TSSGossipMessage // channel to send outgoing gossip messages.
+	incomingGossip chan *gossipv1.TSSGossipMessage // channel to receive incoming gossip messages.
+}
+
+type SignerClient struct {
+	// immutable fields:
+	dialOpts   []grpc.DialOption
+	socketPath string
+
+	// used to communicate with the signer service.
+	conn *connChans
+
+	vaaData vaaHandling
+
+	connected atomic.Int64 // 0 is not connected, 1 is connected.
+
+	configurations Configurations
+}
+
+type unaryResult struct {
+	item proto.Message
+	err  error
+}
+
+type unaryRequest struct {
+	item         proto.Message
+	responseChan chan unaryResult
+}
+
+// This might fail suddenly. if it does, the runnable should restart it.
+type connChans struct {
+	// streams for sign request/response.
+	signRequests  chan *signer.SignRequest
+	signResponses chan *signer.SignResponse
+
+	// unary requests (GetPublicData, VerifySignature).
+	unaryRequests chan unaryRequest
+}
+
+type signatureStream grpc.BidiStreamingClient[signer.SignRequest, signer.SignResponse]
+
+const (
+	notConnected = iota
+	connected
+)
+
+var (
+	ErrSignerClientSignRequestChannelFull = errors.New("signer client sign request channel is full")
+	ErrSignerClientNil                    = errors.New("tss signer client is nil")
+	errInvalidUnaryResponseError          = errors.New("internal error: invalid response type from signer service")
+	errMalformedSignRequest               = errors.New("malformed sign request")
+)
+
+// a blocking call that connects to the signer service and maintains the connection.
+//
+// Connect implements a connection that can be used for the supervisor.Runnable interface.
+// it connects to the signer service, forwards requests from the in channel, and outputs responses to the out channel.
+// It runs until the context is cancelled or an error occurs.
+// (expects the supervisor to restart it on failure).
+func (s *SignerClient) Connect(ctx context.Context) error {
+	return s.connect(ctx, supervisor.Logger(ctx).Named("tss-signer-connection"))
+}
+
+func (s *SignerClient) GetProtocol(chainID int) tsscommon.ProtocolType {
+	if s == nil {
+		return defaultSigningProtocol
+	}
+
+	protocol, ok := s.configurations.ChainToProtocol[chainID]
+	if !ok {
+		return defaultSigningProtocol
+	}
+
+	return protocol
+}
+
+// AsyncSign implements Signer.
+func (s *SignerClient) AsyncSign(rq *signer.SignRequest) error {
+	if s == nil {
+		return ErrSignerClientNil
+	}
+
+	if rq == nil || len(rq.Digest) == 0 || rq.Protocol == "" {
+		return errMalformedSignRequest
+	}
+
+	select {
+	case s.conn.signRequests <- rq:
+		return nil
+	default:
+		return ErrSignerClientSignRequestChannelFull
+	}
+}
+
+// GetPublicData implements Signer.
+func (s *SignerClient) GetPublicData(ctx context.Context) (*signer.PublicData, error) {
+	if s == nil {
+		return nil, ErrSignerClientNil
+	}
+
+	response, err := s.sendUnaryRequest(ctx, &signer.PublicDataRequest{})
+	if err != nil {
+		return nil, err
+	}
+
+	publicData, ok := response.(*signer.PublicData)
+	if !ok {
+		return nil, errInvalidUnaryResponseError
+	}
+
+	return publicData, nil
+}
+
+var errNilRequest = errors.New("nil request")
+
+func (s *SignerClient) UpdateKeys(ctx context.Context, req *signer.UpdateKeysRequest) error {
+	if s == nil {
+		return ErrSignerClientNil
+	}
+	if req == nil {
+		return errNilRequest
+	}
+
+	res, err := s.sendUnaryRequest(ctx, req)
+	if err != nil {
+		return err
+	}
+
+	// unused response, but validate type.
+	if _, ok := res.(*signer.UpdateKeysResponse); !ok {
+		return errInvalidUnaryResponseError
+	}
+
+	return nil
+}
+
+func (s *SignerClient) GetPublicKey(ctx context.Context, protocol tsscommon.ProtocolType) (curve.Point, error) {
+	if s == nil {
+		return nil, ErrSignerClientNil
+	}
+
+	publicData, err := s.GetPublicData(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	grp := curve.Secp256k1{} // supporting only secp256k1 for now.
+	switch protocol {
+	case tsscommon.ProtocolECDSASign:
+		return grp.UnmarshalPoint(publicData.EcdsaPublicData)
+	case tsscommon.ProtocolFROSTSign:
+		return grp.UnmarshalPoint(publicData.FrostPublicData)
+	default:
+		return nil, errors.New("unsupported protocol type for public key retrieval")
+	}
+}
+
+// outputs the SignerService responses.
+func (s *SignerClient) Response() <-chan *signer.SignResponse {
+	if s == nil || s.conn == nil {
+		return nil // ensure we don't panic, but return nil channel (which blocks forever, and ignored in select).
+	}
+
+	return s.conn.signResponses
+}
+
+// Verify implements Signer.
+func (s *SignerClient) Verify(ctx context.Context, toVerify *signer.VerifySignatureRequest) error {
+	if s == nil {
+		return ErrSignerClientNil
+	}
+	if toVerify == nil {
+		return errNilRequest
+	}
+
+	response, err := s.sendUnaryRequest(ctx, toVerify)
+	if err != nil {
+		return err
+	}
+
+	verifyResult, ok := response.(*signer.VerifySignatureResponse)
+	if !ok {
+		return errInvalidUnaryResponseError
+	}
+
+	if !verifyResult.IsValid {
+		return errors.New("signature verification failed")
+	}
+
+	return nil // no error. signature is valid.
+}
+
+func (s *SignerClient) sendUnaryRequest(ctx context.Context, request proto.Message) (proto.Message, error) {
+	chn := make(chan unaryResult, 1)
+
+	select {
+	case s.conn.unaryRequests <- unaryRequest{
+		item:         request,
+		responseChan: chn,
+	}:
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
+
+	select {
+	case response := <-chn:
+		if response.err != nil {
+			return nil, response.err
+		}
+
+		if response.item == nil {
+			return nil, errors.New("internal error: nil response from signer service")
+		}
+
+		return response.item, nil
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
+}
+
+// mainly used for tests.
+func (s *SignerClient) isConnected() bool {
+	if s == nil {
+		return false
+	}
+
+	return s.connected.Load() == connected
+}
+
+func (s *SignerClient) connect(ctx context.Context, logger *zap.Logger) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel() // we cancel on exit to ensure all goroutines exit.
+
+	logger.Info("connecting to signer service...")
+
+	// setup conn:
+	cc, err := grpc.NewClient(s.socketPath, s.dialOpts...)
+	if err != nil {
+		logger.Error("connecting to signer service failed", zap.Error(err))
+
+		return err
+	}
+	defer cc.Close()
+
+	client := signer.NewSignerClient(cc)
+
+	// Setting up the stream for signing requests and responses.
+	stream, err := client.SignMessage(ctx)
+	if err != nil {
+		logger.Error("stream setup failed", zap.Error(err))
+
+		return err
+	}
+	defer stream.CloseSend()
+
+	logger.Info("connection to signer service established")
+
+	s.connected.Store(connected)
+	defer s.connected.Store(notConnected)
+
+	// buffer to avoid goroutine leaks.
+	errchan := make(chan error, 3)
+
+	go s.receivingStream(ctx, logger, stream, errchan)
+	go s.sendingStream(ctx, stream, errchan)
+	go s.unaryRequestsHandler(ctx, client, logger, errchan)
+	go s.gossipListener(ctx, logger)
+
+	supervisor.Signal(ctx, supervisor.SignalHealthy)
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case err := <-errchan:
+		logger.Error("closing connection", zap.Error(err))
+
+		return err
+	}
+}
+
+func (s *SignerClient) receivingStream(ctx context.Context, logger *zap.Logger, stream signatureStream, errchan chan<- error) {
+	for {
+		resp, err := stream.Recv()
+		if err != nil {
+			errchan <- err // error from stream is stream-fatal.
+
+			return
+		}
+
+		select {
+		case <-ctx.Done():
+			return
+		case s.conn.signResponses <- resp: // forward response to consumer.
+		default:
+			// drop response if channel is full to avoid blocking. This is not ideal, but prevents deadlocks.
+			// log as an error, since it indicates that the consumer is not keeping up.
+			logger.Error("signResponses channel full, dropping response", zap.Stringer("response", resp))
+		}
+	}
+}
+
+// responsible to send sign requests to the signer-service.
+func (s *SignerClient) sendingStream(ctx context.Context, stream signatureStream, errchan chan<- error) {
+	for {
+		select {
+		case <-ctx.Done(): // context cancelled, or error from other peer.
+			return
+		case rq := <-s.conn.signRequests:
+			if err := stream.Send(rq); err != nil {
+				errchan <- err // error from stream is stream-fatal.
+
+				return
+			}
+		}
+	}
+}
+
+// responsible to receive unary requests and send the to the signer-service for processing.
+func (s *SignerClient) unaryRequestsHandler(ctx context.Context, client signer.SignerClient, logger *zap.Logger, errchan chan<- error) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case urq := <-s.conn.unaryRequests:
+			if urq.item == nil {
+				continue // malformed request, ignore.
+			}
+
+			var resp proto.Message
+			var errResponse error
+
+			switch req := urq.item.(type) {
+			case *signer.PublicDataRequest:
+				resp, errResponse = client.GetPublicData(ctx, req)
+			case *signer.VerifySignatureRequest:
+				resp, errResponse = client.VerifySignature(ctx, req)
+			case *signer.UpdateKeysRequest:
+				resp, errResponse = client.UpdateKeys(ctx, req)
+			default:
+				errResponse = errors.New("unknown unary request type")
+			}
+
+			select {
+			case urq.responseChan <- unaryResult{item: resp, err: errResponse}:
+			default:
+				logger.Error("unary response channel full, dropping response", zap.Any("response", resp))
+			}
+
+			if isFatalError(errResponse) {
+				errchan <- errResponse
+
+				return
+			}
+		}
+	}
+}
+
+func isFatalError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	st, ok := status.FromError(err)
+	if !ok {
+		return false
+	}
+
+	switch st.Code() {
+	case codes.Unavailable, codes.Internal:
+		return true
+	default:
+		return false
+	}
+}

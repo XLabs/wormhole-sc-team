@@ -1,0 +1,233 @@
+name: VerificationV2 tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - tss-develop
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    # Set job outputs to values from filter step
+    outputs:
+      evm: ${{ steps.filter.outputs.evm }}
+      solana: ${{ steps.filter.outputs.solana }}
+      ts-pkgs: ${{ steps.filter.outputs.ts-pkgs }}
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      with:
+          persist-credentials: false
+    - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36
+      id: filter
+      with:
+        filters: |
+          evm:
+            - '.github/workflows/verification-v2.yaml'
+            - 'verification-v2/Makefile'
+            - 'verification-v2/foundry.toml'
+            - 'verification-v2/src/evm/**'
+            - 'verification-v2/test/**'
+          solana:
+            - '.github/workflows/verification-v2.yaml'
+            - 'verification-v2/Makefile'
+            - 'verification-v2/src/solana/**'
+            - 'verification-v2/yarn.lock'
+            - 'verification-v2/.yarnrc.yml'
+          ts-pkgs:
+            - '.github/workflows/verification-v2.yaml'
+            - 'verification-v2/ts-pkgs/**'
+            - 'verification-v2/src/solana/package.json'
+            - 'verification-v2/yarn.lock'
+            - 'verification-v2/.yarnrc.yml'
+
+  solana-tests:
+    name: Solana
+    needs: changes
+    if: ${{ needs.changes.outputs.solana == 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: "--max-old-space-size=2500"
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      with:
+          persist-credentials: false
+          sparse-checkout: 'verification-v2'
+    - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # 6.1.0
+      with:
+        node-version: "24.13.0"
+        cache: "yarn"
+        cache-dependency-path: |
+          ./verification-v2/yarn.lock
+
+    - name: Set the rust toolchain version
+      run: |
+        rustup toolchain install nightly-2025-06-02-x86_64-unknown-linux-gnu
+    - name: Cache Rust packages
+      uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # 5.0.1
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          verification-v2/src/solana/target
+        # The chosen agave package uses solana platform tools v1.52 which has a v1.89 rust toolchain
+        key: ${{ runner.os }}-rust-1.89.0-cargo-nightly-2025-06-02-x86_64-${{ hashFiles('src/solana/Cargo.lock') }}
+
+    # Taken from https://github.com/metaDAOproject/setup-anchor/blob/main/action.yml#L25-L40
+    # TODO: read Solana version from Anchor.toml
+    - name: Cache Solana CLI tools
+      id: cache-solana-tools
+      uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # 5.0.1
+      with:
+        path: |
+          ~/.cache/solana/
+          ~/.local/share/solana/
+        key: solana-cli-${{ runner.os }}-build-3.1.7
+    - name: Install Solana CLI tools
+      if: ${{ steps.cache-solana-tools.outputs.cache-hit != 'true' }}
+      run: sh -c "$(curl -sSfL https://release.anza.xyz/v3.1.7/install)"
+      shell: bash
+    # TODO: read Anchor version from Anchor.toml
+    - name: Cache Anchor CLI tools
+      id: cache-anchor-tool
+      uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # 5.0.1
+      with:
+        path: |
+          ~/bin/anchor
+        key: anchor-cli-${{ runner.os }}-build-0.32.1
+    - name: Install Anchor
+      if: ${{ steps.cache-anchor-tool.outputs.cache-hit != 'true' }}
+      run: |
+        wget https://github.com/coral-xyz/anchor/releases/download/v0.32.1/anchor-0.32.1-x86_64-unknown-linux-gnu
+        chmod +x anchor-0.32.1-x86_64-unknown-linux-gnu
+        mkdir -p "$HOME/bin"
+        mv anchor-0.32.1-x86_64-unknown-linux-gnu "$HOME/bin/anchor"
+      shell: bash
+    - name: Update PATH
+      run: |
+        echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
+        echo "$HOME/bin" >> "$GITHUB_PATH"
+      shell: bash
+    # We create the Solana CLI keypair to avoid errors and/or interactive keygen prompts
+    - name: Create keypair
+      run: solana-keygen new --no-bip39-passphrase
+      shell: bash
+    - name: Run Solana tests
+      working-directory: ./verification-v2
+      run: make test-solana
+
+  evm-tests:
+    name: EVM
+    needs: changes
+    if: ${{ needs.changes.outputs.evm == 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: "--max-old-space-size=2500"
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      with:
+          persist-credentials: false
+          sparse-checkout: 'verification-v2'
+    - name: Hash Solidity dependencies
+      id: solidity-deps-hash
+      working-directory: ./verification-v2
+      run: |
+        HASH=$(grep "^LIB_DEPS" Makefile | sha256sum | cut --delimiter=" " --fields=1)
+        echo "hash=$HASH" >> "$GITHUB_OUTPUT"
+    - name: Cache Solidity build
+      uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # 5.0.1
+      with:
+        path: |
+          verification-v2/out
+          verification-v2/cache
+        key: ${{ runner.os }}-${{ steps.solidity-deps-hash.outputs.hash }}-${{ hashFiles('foundry.toml') }}
+
+    - name: Cache Foundry CLI tools
+      id: cache-foundry-tool
+      uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # 5.0.1
+      with:
+        path: |
+          ~/.foundry/bin
+        key: foundry-cli-${{ runner.os }}-build-1.3.4
+    - name: Install Foundry
+      if: ${{ steps.cache-foundry-tool.outputs.cache-hit != 'true' }}
+      run: |
+        wget https://github.com/foundry-rs/foundry/releases/download/v1.5.1/foundry_v1.5.1_linux_amd64.tar.gz
+        mkdir -p ~/.foundry/bin
+        tar -xvf foundry_v1.5.1_linux_amd64.tar.gz --directory ~/.foundry/bin
+        chmod +x ~/.foundry/bin/*
+      shell: bash
+    - name: Update PATH
+      run: |
+        echo "$HOME/.foundry/bin" >> "$GITHUB_PATH"
+      shell: bash
+    - name: Run EVM tests
+      working-directory: ./verification-v2
+      run: make test-evm
+
+  ts-pkg-tests:
+    name: TS libraries
+    needs: changes
+    if: ${{ needs.changes.outputs.ts-pkgs == 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: "--max-old-space-size=2500"
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      with:
+          persist-credentials: false
+          sparse-checkout: 'verification-v2'
+    - uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # 6.1.0
+      with:
+        node-version: "24.13.0"
+        cache: "yarn"
+        cache-dependency-path: |
+          ./verification-v2/yarn.lock
+
+    - name: Check lockfile
+      working-directory: ./verification-v2
+      run: yarn --immutable
+    - name: Typecheck
+      working-directory: ./verification-v2
+      run: yarn run build:ts:libs
+    - name: Lint check
+      working-directory: ./verification-v2
+      run: yarn run lint:libs
+    - name: Peer server tests
+      working-directory: ./verification-v2
+      run: yarn workspace @xlabs-xyz/peer-server run test
+    - name: Peer server e2e tests
+      working-directory: ./verification-v2
+      run: yarn workspace @xlabs-xyz/peer-e2e run test
+    - name: Tss definitions tests
+      working-directory: ./verification-v2
+      run: yarn workspace @xlabs-xyz/tss-definitions run test
+
+  e2e-dkg:
+    name: E2E DKG ceremony
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      with:
+          persist-credentials: false
+          sparse-checkout: 'verification-v2'
+    - name: Create network
+      run: docker network create dkg-test
+    - name: Setup buildx container
+      uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+      with:
+        name: dkg-builder
+        driver-opts: |
+          network=dkg-test
+    - name: Run E2E DKG ceremony
+      run: ./e2e.sh
+      working-directory: ./verification-v2/ts-pkgs/peer-e2e/tests/e2e/

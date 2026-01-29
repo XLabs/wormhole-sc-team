@@ -2,103 +2,189 @@ package tss
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
-	"time"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"os"
+	"sync/atomic"
 
-	whcommon "github.com/certusone/wormhole/node/pkg/common"
-	tsscommv1 "github.com/certusone/wormhole/node/pkg/proto/tsscomm/v1"
+	"github.com/certusone/wormhole/node/pkg/common"
+	"github.com/certusone/wormhole/node/pkg/guardiansigner"
+	gossipv1 "github.com/certusone/wormhole/node/pkg/proto/gossip/v1"
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/wormhole-foundation/wormhole/sdk/vaa"
 	"github.com/xlabs/multi-party-sig/pkg/math/curve"
-	common "github.com/xlabs/tss-common"
-	"github.com/xlabs/tss-lib/v2/party"
+	tsscommon "github.com/xlabs/tss-common"
+	"github.com/xlabs/tss-common/service/signer"
+	"google.golang.org/grpc"
 )
 
-type message interface {
-	IsBroadcast() bool
-	GetNetworkMessage() *tsscommv1.PropagatedMessage
-}
+type SignerConnection interface {
+	// Connect establishes a connection to the signer service.
+	// It blocks until the connection is established or an error occurs.
+	// Can be used as supervisor.Runnable [ensuring rapid restarts on failure].
+	Connect(ctx context.Context) error
 
-type Sendable interface {
-	message
-	GetDestinations() []*Identity
-
-	cloneSelf() Sendable // deep copy to avoid race condition in tests (ensuring no one shares the same sendable).
-}
-
-type Incoming interface {
-	message
-	IsUnicast() bool
-	GetSource() *Identity
-
-	toUnicast() *tsscommv1.Unicast
-	toBroadcastMsg() *tsscommv1.Echo
-}
-
-// ReliableMessenger is a component of tss, where it knows how to handle incoming tsscommv1.PropagatedMessage,
-// it may produce messages (of type Sendable), which should be delivered to other guardians.
-// these Sendable messages are produced by the tss engine, and are needed by the other guardians to
-// complete a TSS round. In addition it supplies a server with certificates of any
-// party member, including itself.
-type ReliableMessenger interface {
-	// HandleIncomingTssMessage receives a network `message`` and process it using a reliable-broadcast protocol.
-	HandleIncomingTssMessage(msg Incoming)
-	ProducedOutputMessages() <-chan Sendable // just need to propagate this through the p2p network
-
-	// Utilities for servers:
-	GetCertificate() *tls.Certificate // containing secret key.
-	GetPeers() []*x509.Certificate    // containing public keys.
-
-	// FetchPartyId returns the PartyId for a given certificate, it'll use the public key
-	// in the certificate and match it to the public key expected to be found in `*tsscommv1.PartyId`.
-	FetchIdentity(cert *x509.Certificate) (*Identity, error)
-}
-
-// Signer is the interface to give any component with the ability to authorise a new threshold signature over a message.
-type Signer interface {
-	// for consistency level see https://wormhole.com/docs/build/reference/consistency-levels/
-	BeginAsyncThresholdSigningProtocol(vaaDigest []byte, chainID vaa.ChainID, vaaconsistency uint8) error
-	ProducedSignature() <-chan *common.SignatureData
-
-	GetPublicKey() (curve.Point, error)
-	GetEthAddress() (ethcommon.Address, error)
-
-	// tells the maximal duration one might wait on a signature to be produced
-	// (realisticly, it should be produced within a few seconds).
-	MaxTTL() time.Duration
-
-	// WitnessNewVaa is a method to witness a new VAA, andto start a signing protocol for it.
-	WitnessNewVaa(v *vaa.VAA) error
-}
-
-type Starter interface {
-	// Start deploys the component and allocates its resources.
-	// The context is used to control the lifetime of the component.
-	Start(ctx context.Context) error
-}
-
-type KeyGenerator interface {
-	Starter
-
-	// demands the usage of a reliable messenger. Either via full Reliable Broadcast,
-	// or via a hash-broadcast protocol.
-	ReliableMessenger
-
-	// StartDKG starts a distributed key generation protocol, which will produce a frost.Config.
-	// Using this config, one can create a frost.Signer.
-	// this function doesn't change disk stored state.
-	StartDKG(party.DkgTask) (chan *party.TSSSecrets, error)
-}
-
-// ReliableTSS represents a TSS engine that can fully support logic of
-// reliable broadcast needed for the security of TSS over the network.
-type ReliableTSS interface {
-	Starter
-	// demands the usage of a reliable messenger. Either via full Reliable Broadcast,
-	// or via a hash-broadcast protocol.
-	ReliableMessenger
 	Signer
+	Gossiper
 
-	SetGuardianSetState(gs *whcommon.GuardianSetState) error
+	// informs the signerConnection on key updates.
+	UpdateKeys(ctx context.Context, req *signer.UpdateKeysRequest) error
+}
+
+// The TssGossiper interface represents the ability to listen and publish new TSS related gossip to the network.
+// It is specifically used to abstract the interaction of the TSS signer with the P2P layer for VAA gossiping.
+type Gossiper interface {
+	// tells the gossiper on new TSS message to inspect and learn about. (e.g., new VAA from a leader entity.)
+	Inform(*gossipv1.TSSGossipMessage) error
+
+	// Outbound returns a channel that produces TSS gossip messages to be sent to the network.
+	// These messages are typically generated by the TSS signer when it needs to share information with other peers.
+	Outbound() <-chan *gossipv1.TSSGossipMessage // in essences, currently only a leader will produce messages.
+}
+
+/*
+The Signer interface represents a TSS signer service that can be used to request signatures.
+*/
+type Signer interface {
+	/*
+		AsyncSign starts an asynchronous signing request.
+		The produced signature can be received from ProducedSignatures() channel.
+		The request must contain the digest to be signed and the protocol to use.
+
+		If a specific committee is needed, it can be specified via rq.CommitteeMembers. (nil means use pseudo-random committee).
+		The committee members are specified via their public keys (guardian public keys).
+		If the signer is not configured to recognize the specified committee members, it'll return an error.
+	*/
+	AsyncSign(rq *signer.SignRequest) error
+	// Outputs signatures as they are produced. doesn't guarantee order.
+	Response() <-chan *signer.SignResponse
+
+	// TODO: Missing signerService API! The SignerService should support both GetPublicData data and verify.
+	// GetPublicKey gets the public information of the signer.
+	GetPublicData(context.Context) (*signer.PublicData, error)
+	// GetPublicKey gets the public key for the specified protocol type.
+	GetPublicKey(context.Context, tsscommon.ProtocolType) (curve.Point, error)
+	// Verify verifies a signature against the provided public data.
+	Verify(context.Context, *signer.VerifySignatureRequest) error
+
+	// Witness new VAA is used by a LEADER to inform all peers of a new VAA observed on the network and to sign it!
+	// If this signer is a leader: it'll use the p2p network to tell all peers to sign the
+	// the context parameter is due to the usage of guardianSigner which may need it for signing.
+	WitnessNewVaaV1(ctx context.Context, v *vaa.VAA) error
+
+	// GetProtocol provides the mapping from emitter chain ID to TSS protocol type.
+	// based on the configuration provided during signer creation.
+	// if no mapping is found, it returns tsscommon.ProtocolFROSTSign (default).
+	GetProtocol(int) tsscommon.ProtocolType
+}
+
+// Ensure interfaces are implemented.
+var (
+	_ SignerConnection = (*SignerClient)(nil)
+	_ Signer           = (*SignerClient)(nil)
+)
+
+type Parameters struct {
+	// configurations for the signer client.
+	Configurations `json:"configurations"`
+	// Path to the signer service socket (hostname, ip).
+	SocketPath string `json:"socket_path"`
+	// grpc dial options to connect to the signer service (including tls.credentials or insecure connection).
+	DialOpts []grpc.DialOption `json:"-"` // no json
+
+	LeaderAddress ethcommon.Address `json:"leader_address"`
+	// index of this guardian in the guardian set. should be same for all guardians in the network.
+	Self           ethcommon.Address             `json:"self"`
+	GST            *common.GuardianSetState      `json:"-"` // no json
+	GuardianSigner guardiansigner.GuardianSigner `json:"-"` // no json
+}
+
+type Configurations struct {
+	// buffer sizes for internal channels. if no value is provided, choosing default value according to `defaultBufferSize`.
+	ChannelBufferSizes int `json:"channel_buffer_sizes"`
+
+	// mapping from chain ID to protocol type.
+	// used to determine which protocol to use when signing VAAs from different chains.
+	// sets the mapping used in the API call EmitterChainToProtocolMapping. if nil, all chains map to FROST.
+	ChainToProtocol map[int]tsscommon.ProtocolType `json:"chain_to_protocol"`
+
+	// specifies the threshold size for TSS operations.
+	// NOTE:[Should match the signer service configuration]
+	//      This isn't for security, just to avoid sending requests
+	//      that will be rejected by the signer.
+	//
+	// threshold represents the maximal number that will not be able to sign. For instance,
+	// if threshold is 2, then 3 or more parties will be able to sign.
+	ThresholdSize int `json:"threshold_size"`
+}
+
+const (
+	defaultSigningProtocol = tsscommon.ProtocolFROSTSign
+	defaultBufferSize      = 1024
+)
+
+// The opts should provide the dial options to connect to the signer service. this includes tls.credentials.
+func NewSigner(p Parameters) (*SignerClient, error) {
+	for _, opt := range p.DialOpts {
+		if opt == nil {
+			return nil, errors.New("nil grpc dial option provided")
+		}
+	}
+
+	if p.GST == nil {
+		return nil, errors.New("guardian set state must not be nil")
+	}
+	if p.GuardianSigner == nil {
+		return nil, errors.New("guardian signer must not be nil")
+	}
+	if p.SocketPath == "" {
+		return nil, errors.New("socket path must not be empty")
+	}
+
+	bufferSize := defaultBufferSize // default
+	if p.Configurations.ChannelBufferSizes > 0 {
+		bufferSize = p.Configurations.ChannelBufferSizes
+	}
+
+	if p.Configurations.ChainToProtocol == nil {
+		p.Configurations.ChainToProtocol = make(map[int]tsscommon.ProtocolType)
+	}
+
+	sc := &SignerClient{
+		dialOpts:   p.DialOpts,
+		socketPath: p.SocketPath,
+		conn: &connChans{
+			signRequests:  make(chan *signer.SignRequest, bufferSize),
+			signResponses: make(chan *signer.SignResponse, bufferSize),
+			unaryRequests: make(chan unaryRequest, bufferSize),
+		},
+		connected: atomic.Int64{},
+		vaaData: vaaHandling{
+			isLeader:       p.LeaderAddress == p.Self && p.Self != (ethcommon.Address{}), // only if self is defined.
+			leaderAddress:  p.LeaderAddress,
+			gst:            p.GST,
+			GuardianSigner: p.GuardianSigner,
+			gossipOutput:   make(chan *gossipv1.TSSGossipMessage, bufferSize),
+			incomingGossip: make(chan *gossipv1.TSSGossipMessage, bufferSize),
+		},
+
+		configurations: p.Configurations,
+	}
+
+	return sc, nil
+}
+
+// LoadFromFile loads the TSS configurations from a JSON file.
+func (c *Configurations) LoadFromFile(configurationsPath string) error {
+	data, err := os.ReadFile(configurationsPath)
+	if err != nil {
+		return fmt.Errorf("failed to read tss configurations file: %w", err)
+	}
+	err = json.Unmarshal(data, c)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal tss configurations: %w", err)
+	}
+
+	return nil
 }
