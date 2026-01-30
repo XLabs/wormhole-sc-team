@@ -42,7 +42,7 @@ GUARDIAN_SET="([${GUARDIAN_ADDRESSES[*]}], $EXPIRATION_TIME)"
 UPDATE_FUNCTION_SIG="update(bytes)"
 PULL_MESSAGE=0x0200000001
 
-anvil --quiet --host 0.0.0.0 &
+anvil --quiet --host 0.0.0.0 --chain-id 11155111 &
 
 deadline=$((SECONDS+60))
 until cast block-number >/dev/null 2>&1; do

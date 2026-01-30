@@ -13,6 +13,8 @@ fi
 ./scripts/anvil.sh &
 ./scripts/server.sh &
 ./scripts/client.sh
+./scripts/signer.sh &
+./scripts/guardian.sh
 ./scripts/clean.sh
 
 # Wait for anvil and server subshells to check that their exit codes are zero

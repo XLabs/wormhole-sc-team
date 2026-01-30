@@ -52,6 +52,7 @@ do
   docker run --rm --mount "type=bind,src=./out/$i/keys,dst=/keys" \
     --env "TLS_HOSTNAME=${TLS_HOSTNAME}$i" \
     --env TLS_PUBLIC_IP=${TLS_PUBLIC_IP} \
+    --user $(id --user) \
     tls-gen &
 done
 
