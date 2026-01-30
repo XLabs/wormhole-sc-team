@@ -6,6 +6,7 @@ export DOCKER_BUILDKIT=1
 SIGNER_NAME="Guardian"
 SIGNER_PORT=50051
 GUARDIAN_NAME="GuardianNode"
+WORMHOLE_ADDRESS="0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
 
 NODE_KEYS=(
   "CAESQJq7c6GLNV6UWeaN1AqiaK5D5gWyhDmL1CLemaUAs6ro+sl6H8fM6IlCujbtVoTSFwIA+qccMiMBmANP2PnQMQ0="
@@ -72,6 +73,7 @@ do
     --user $(id --user) --network=dkg-test \
     --mount "type=bind,src=./out/$i/keys,dst=/keys" \
     dkg-guardian \
+    --ethContract "${WORMHOLE_ADDRESS}" \
     --tssSignerAddress "${SIGNER_NAME}$i:${SIGNER_PORT}" \
     --bootstrap $(createBootstrapPeers) &
 done

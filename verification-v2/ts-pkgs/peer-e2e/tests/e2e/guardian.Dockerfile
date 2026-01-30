@@ -23,6 +23,5 @@ ENTRYPOINT [ \
   "--tssTLSCert", "/keys/cert.pem", \
   "--adminSocket", "/go/adminSocket.sock", \
   "--dataDir", "/go/", \
-  "--ethRPC", "ws://anvil-with-verifier:8545",\
-  "--ethContract", "0x5FbDB2315678afecb367f032d93F642f64180aa3" \
+  "--ethRPC", "ws://anvil-with-verifier:8545" \
 ]

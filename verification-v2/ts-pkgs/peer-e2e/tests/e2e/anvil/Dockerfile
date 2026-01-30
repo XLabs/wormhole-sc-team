@@ -10,6 +10,9 @@ COPY --link foundry.toml Makefile /core-bridge/
 COPY --link src/evm /core-bridge/src/evm
 COPY --link test /core-bridge/test
 COPY --link ts-pkgs/peer-e2e/tests/e2e/anvil/localAnvilWithVerifier.sh /core-bridge/
+COPY --link ts-pkgs/peer-e2e/tests/e2e/anvil/CoreV1ImplementationBytecode.hex /core-bridge/
+COPY --link ts-pkgs/peer-e2e/tests/e2e/anvil/CoreV1SetupBytecode.hex /core-bridge/
+COPY --link ts-pkgs/peer-e2e/tests/e2e/anvil/CoreV1WormholeBytecode.hex /core-bridge/
 
 WORKDIR /core-bridge
 

@@ -2,16 +2,31 @@
 
 set -meuo pipefail
 
-# Anvil Private Key
+# Anvil
 PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+EVM_CHAIN_ID=11155111
 
 # Contract Addresses
-MOCK_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3
-VERIFIER_ADDRESS=0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+VERIFIER_ADDRESS=0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9
 
-# Guardian Set
-APPEND_SET_FUNCTION_SIG="appendGuardianSet((address[], uint32))"
-EXPIRATION_TIME=$(date -d "1 year" +%s)
+# Wormhole
+WORMHOLE_BYTECODE=$(<./CoreV1WormholeBytecode.hex)
+WORMHOLE_CONSTRUCTOR_SIG='constructor(address, bytes)'
+WORMHOLE_CHAIN_ID=10002
+WORMHOLE_ADDRESS=0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0
+
+# Implementation
+IMPLEMENTATION_BYTECODE=$(<./CoreV1ImplementationBytecode.hex)
+IMPLEMENTATION_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3
+
+# Setup
+SETUP_BYTECODE=$(<./CoreV1SetupBytecode.hex)
+SETUP_SIG='setup(address, address[], uint16, uint16, bytes32, uint256)'
+SETUP_ADDRESS=0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+
+# Governance
+GOVERNANCE_CHAIN_ID=1
+GOVERNANCE_ADDRESS=0x0000000000000000000000000000000000000000000000000000000000000004
 
 GUARDIAN_ADDRESSES=(
   "0x1bB315E24af6Bb5DaBA538dD17A6168CFA91A213"
@@ -36,13 +51,13 @@ GUARDIAN_ADDRESSES=(
 )
 
 IFS=,
-GUARDIAN_SET="([${GUARDIAN_ADDRESSES[*]}], $EXPIRATION_TIME)"
+SETUP_CALLDATA=$(cast calldata "$SETUP_SIG" "$IMPLEMENTATION_ADDRESS" "[${GUARDIAN_ADDRESSES[*]}]" "$WORMHOLE_CHAIN_ID" "$GOVERNANCE_CHAIN_ID" "$GOVERNANCE_ADDRESS" "$EVM_CHAIN_ID")
 
 # Verifier Update
 UPDATE_FUNCTION_SIG="update(bytes)"
 PULL_MESSAGE=0x0200000001
 
-anvil --quiet --host 0.0.0.0 --chain-id 11155111 &
+anvil --quiet --host 0.0.0.0 --chain-id $EVM_CHAIN_ID &
 
 deadline=$((SECONDS+60))
 until cast block-number >/dev/null 2>&1; do
@@ -53,8 +68,9 @@ until cast block-number >/dev/null 2>&1; do
     sleep 0.5
 done
 
-forge create --private-key "$PRIVATE_KEY" --broadcast test/WormholeVerifier.t.sol:WormholeV1Mock
-forge create WormholeVerifier --private-key "$PRIVATE_KEY" --broadcast --constructor-args $MOCK_ADDRESS 0 0 0 0x
-cast send --private-key "$PRIVATE_KEY" "$MOCK_ADDRESS" "$APPEND_SET_FUNCTION_SIG" "$GUARDIAN_SET"
+cast send --private-key "$PRIVATE_KEY" --create "$IMPLEMENTATION_BYTECODE"
+cast send --private-key "$PRIVATE_KEY" --create "$SETUP_BYTECODE"
+cast send --private-key "$PRIVATE_KEY" --create "$WORMHOLE_BYTECODE" "$WORMHOLE_CONSTRUCTOR_SIG" "$SETUP_ADDRESS" "$SETUP_CALLDATA"
+forge create WormholeVerifier --private-key "$PRIVATE_KEY" --broadcast --constructor-args $WORMHOLE_ADDRESS 0 0 0 0x
 cast send --private-key "$PRIVATE_KEY" "$VERIFIER_ADDRESS" "$UPDATE_FUNCTION_SIG" "$PULL_MESSAGE"
 fg
