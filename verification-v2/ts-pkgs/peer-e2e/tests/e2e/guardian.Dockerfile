@@ -8,6 +8,7 @@ RUN apt-get --quiet update && apt-get --quiet --no-install-recommends --yes inst
 RUN git clone -b tss-develop --depth 1 https://github.com/XLabs/wormhole-sc-team.git
 
 RUN nc -lkU adminSocket.sock &
+RUN nc -lkU grpcSocket.sock &
 
 WORKDIR /go/wormhole-sc-team/
 
@@ -23,5 +24,7 @@ ENTRYPOINT [ \
   "--tssTLSCert", "/keys/cert.pem", \
   "--adminSocket", "/go/adminSocket.sock", \
   "--dataDir", "/go/", \
+  "--publicGRPCSocket", "/go/grpcSocket.sock", \
+  "--publicWeb", "0.0.0.0:8081", \
   "--ethRPC", "ws://anvil-with-verifier:8545" \
 ]
