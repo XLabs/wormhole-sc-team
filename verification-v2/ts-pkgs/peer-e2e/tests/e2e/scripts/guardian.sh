@@ -7,6 +7,9 @@ SIGNER_NAME="Guardian"
 SIGNER_PORT=50051
 GUARDIAN_NAME="GuardianNode"
 WORMHOLE_ADDRESS="0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+ETHEREUM_RPC_URL="ws://anvil-with-verifier:8545"
+# Guardian 0 Ethereum Address
+TSS_LEADER_ADDRESS="0x1bB315E24af6Bb5DaBA538dD17A6168CFA91A213"
 
 NODE_KEYS=(
   "CAESQJq7c6GLNV6UWeaN1AqiaK5D5gWyhDmL1CLemaUAs6ro+sl6H8fM6IlCujbtVoTSFwIA+qccMiMBmANP2PnQMQ0="
@@ -65,6 +68,7 @@ for i in "${!NODE_KEYS[@]}"
 do
   base64 --decode <(echo ${NODE_KEYS[$i]}) > ./out/$i/keys/nodeKey
   # Wait until the signer starts listening
+  # TODO: There is a good chance this can be removed
   until docker logs "${SIGNER_NAME}$i" 2>&1 | grep "Server is running"
   do
     sleep 1
@@ -73,7 +77,9 @@ do
     --user $(id --user) --network=dkg-test \
     --mount "type=bind,src=./out/$i/keys,dst=/keys" \
     dkg-guardian \
+    --ethRPC "${ETHEREUM_RPC_URL}" \
     --ethContract "${WORMHOLE_ADDRESS}" \
+    --tssLeaderAddress "${TSS_LEADER_ADDRESS}" \
     --tssSignerAddress "${SIGNER_NAME}$i:${SIGNER_PORT}" \
     --bootstrap $(createBootstrapPeers) &
 done

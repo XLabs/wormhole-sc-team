@@ -25,6 +25,5 @@ ENTRYPOINT [ \
   "--adminSocket", "/go/adminSocket.sock", \
   "--dataDir", "/go/", \
   "--publicGRPCSocket", "/go/grpcSocket.sock", \
-  "--publicWeb", "0.0.0.0:8081", \
-  "--ethRPC", "ws://anvil-with-verifier:8545" \
+  "--publicWeb", "0.0.0.0:8081" \
 ]
