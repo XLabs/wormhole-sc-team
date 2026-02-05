@@ -1,5 +1,18 @@
 FROM node:22.21-trixie-slim@sha256:1ddaeddded05b2edeaf35fac720a18019e1044a6791509c8670c53c2308301bb
 
+# Install aws_signing_helper for IAM Roles Anywhere credential_process support
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates && \
+    ARCH=$(dpkg --print-architecture) && \
+    if [ "$ARCH" = "amd64" ]; then \
+      curl -Lo /usr/local/bin/aws_signing_helper https://rolesanywhere.amazonaws.com/releases/1.4.0/X86_64/Linux/aws_signing_helper; \
+    elif [ "$ARCH" = "arm64" ]; then \
+      curl -Lo /usr/local/bin/aws_signing_helper https://rolesanywhere.amazonaws.com/releases/1.4.0/ARM64/Linux/aws_signing_helper; \
+    else \
+      echo "Unsupported architecture: $ARCH" && exit 1; \
+    fi && \
+    chmod +x /usr/local/bin/aws_signing_helper && \
+    apt-get purge -y curl && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
+
 RUN mkdir --parents verification-v2/ts-pkgs/peer-client verification-v2/ts-pkgs/peer-lib
 COPY .yarn /verification-v2/.yarn
 COPY package.json yarn.lock .yarnrc.yml /verification-v2/
