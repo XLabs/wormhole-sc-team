@@ -16,11 +16,14 @@ import (
 	"github.com/certusone/wormhole/node/pkg/watchers/evm/connectors"
 	"github.com/certusone/wormhole/node/pkg/watchers/evm/connectors/ethabi"
 	"github.com/certusone/wormhole/node/pkg/watchers/evm/connectors/verifier"
+	"github.com/certusone/wormhole/node/pkg/tss"
 
 	"github.com/certusone/wormhole/node/pkg/p2p"
 	gossipv1 "github.com/certusone/wormhole/node/pkg/proto/gossip/v1"
+	"github.com/xlabs/tss-common/service/signer"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	"google.golang.org/grpc"
 
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -162,7 +165,7 @@ type (
 		cclCache     CCLCache
 		cclCacheLock sync.Mutex
 
-		verifierConn *verifier.WormholeVerifier
+		verifierConn connectors.VerifierBaseConnector
 	}
 
 	pendingKey struct {
@@ -346,7 +349,7 @@ func (w *Watcher) Run(parentCtx context.Context) error {
 		}
 	}
 
-		{
+	{
 		timeout, cancel := context.WithTimeout(ctx, 15*time.Second)
 		w.verifierConn, err = w.createVerifier(timeout, w.url)
 		cancel()
@@ -477,6 +480,7 @@ func (w *Watcher) Run(parentCtx context.Context) error {
 	// Watch for shard ID updates
 	shardIdC := make(chan *verifier.WormholeVerifierShardIdUpdated, 2)
 	shardIdSub, err := w.verifierConn.WatchShardIdUpdated(ctx, errC, shardIdC)
+	logger.Info("subscribed to verifier shard ID updates -----------------------------------------------------")
 	if err != nil {
 		verifierConnectionErrors.WithLabelValues(w.networkName, "subscribe_error").Inc()
 		p2p.DefaultRegistry.AddErrorCount(w.chainID, 1)
@@ -495,8 +499,28 @@ func (w *Watcher) Run(parentCtx context.Context) error {
 				p2p.DefaultRegistry.AddErrorCount(w.chainID, 1)
 				return nil
 			case ev := <-shardIdC:
+				oldPubKey := append([]byte{0x04}, append(ev.OldPubKeyX[:], ev.OldPubKeyY[:]...)...)
+				newPubKey := append([]byte{0x04}, append(ev.NewPubKeyX[:], ev.NewPubKeyY[:]...)...)
 
-				// grpc to the signer
+				req := &signer.UpdateKeysRequest{
+					Pairs: []*signer.UpdateKeyPair{
+						{
+							KnownKey: &signer.TypedKey{
+								Type: signer.TypedKey_EthKey,
+								Key:  oldPubKey,
+							},
+							UpdateKey: &signer.TypedKey{
+								Type: signer.TypedKey_EthKey,
+								Key:  newPubKey,
+							},
+						},
+					},
+				}
+
+				err = w.signerClient.UpdateKeys(ctx, req)
+				if err != nil {
+					logger.Error("UpdateKeys failed", zap.Error(err))
+				}
 			}
 		}
 	})
@@ -1105,13 +1129,13 @@ func (w *Watcher) createConnector(ctx context.Context, url string) (ethConn conn
 	return
 }
 
-func (w *Watcher) createVerifier(ctx context.Context, url string) (verifierConnector connectors.VerifierBaseConnector, err error) {
-	verifierConnector, err = connectors.NewVerifierBaseConnector(ctx, w.networkName, url, w.contract, w.logger)
+func (w *Watcher) createVerifier(ctx context.Context, url string) (connectors.VerifierBaseConnector, error) {
+	verifierConnector, err := connectors.NewVerifierBaseConnector(ctx, w.networkName, url, w.contract, w.logger)
 	if err != nil {
 		err = fmt.Errorf("dialing eth client failed: %w", err)
-		return
+		return connectors.VerifierBaseConnector{}, err
 	}
-	return
+	return *verifierConnector, nil
 }
 
 // consistencyLevelMatches returns true if the consistency level of this block "matches" the requested consistency level of an observation.

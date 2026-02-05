@@ -24,8 +24,8 @@ type VerifierBaseConnector struct {
 	logger      *zap.Logger
 	client      *ethClient.Client
 	rawClient   *ethRpc.Client
-	filterer    *ethVerifier.AbiFilterer
-	caller      *ethVerifier.AbiCaller
+	filterer    *ethVerifier.WormholeVerifierFilterer
+	caller      *ethVerifier.WormholeVerifierCaller
 }
 
 func NewVerifierBaseConnector(ctx context.Context, networkName, rawUrl string, address ethCommon.Address, logger *zap.Logger) (*VerifierBaseConnector, error) {
@@ -102,8 +102,8 @@ func (v *VerifierBaseConnector) SubscribeNewHead(ctx context.Context, ch chan<- 
 }
 
 func (v *VerifierBaseConnector) GetCurrentSchnorrShardData(ctx context.Context) ([]byte, error) {
-	var GET_CURRENT_SCHNORR_SHARD_DATA_ID = 0x05
-	var data = [1]byte{GET_CURRENT_SCHNORR_SHARD_DATA_ID}
+	var GET_CURRENT_SCHNORR_SHARD_DATA_ID = byte(0x05)
+	var data = []byte{GET_CURRENT_SCHNORR_SHARD_DATA_ID}
 	return v.caller.Get(&ethBind.CallOpts{Context: ctx}, data)
 }
 
