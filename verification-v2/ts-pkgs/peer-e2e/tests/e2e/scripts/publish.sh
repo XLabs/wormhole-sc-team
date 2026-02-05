@@ -12,18 +12,35 @@ WORMHOLE_ADDRESS="0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
 GUARDIAN_RPC="127.0.0.1:8081"
 EMITTER_ADDRESS="000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266"
 ETHEREUM_CHAIN_ID=2
-NONCE=0
-SIGNED_VAA_ENDPOINT="${GUARDIAN_RPC}/v1/signed_vaa/${ETHEREUM_CHAIN_ID}/${EMITTER_ADDRESS}/${NONCE}"
+SEQUENCE=0
+SIGNED_VAA_ENDPOINT="${GUARDIAN_RPC}/v1/signed_vaa/${ETHEREUM_CHAIN_ID}/${EMITTER_ADDRESS}/${SEQUENCE}"
 
 # Verify VAA
 VERIFY_SIG="verify(bytes)"
 VERIFIER_ADDRESS=0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9
 
 # TODO: Wait for the guardian to sign the VAA
-fetchVaa() {
-  docker exec GuardianNode0 curl "${SIGNED_VAA_ENDPOINT}?message_id.version=$1" 2>/dev/null | jq -r ".vaaBytes" | base64 --decode | od -An -vtx1 | tr -d ' \n'
+fetchVaaV1() {
+# Wait until anvil starts listening
+  docker exec --env "SIGNED_VAA_ENDPOINT=${SIGNED_VAA_ENDPOINT}" GuardianNode0 bash -c '
+    start=$(date +%s)
+    deadline=$((start+60))
+    until vaa=$(curl --silent --fail "${SIGNED_VAA_ENDPOINT}" | jq --raw-output --exit-status ".vaaBytes"); do
+      now=$(date +%s)
+      if [ "$now" -ge "$deadline" ]; then
+        echo "Timed out waiting for VAA" >&2
+        exit 1
+      fi
+      sleep 0.5
+    done
+    echo "$vaa"
+  '
 }
 
 docker exec anvil-with-verifier cast send --private-key="${PRIVATE_KEY}" "${WORMHOLE_ADDRESS}" "${PUBLISH_SIG}" 0 "0x5ABAD00B" 200
-docker exec anvil-with-verifier cast call "${VERIFIER_ADDRESS}" "${VERIFY_SIG}" "$(fetchVaa 1)"
-docker exec anvil-with-verifier cast call "${VERIFIER_ADDRESS}" "${VERIFY_SIG}" "$(fetchVaa 2)"
+
+vaa_v1="$(fetchVaaV1)"
+docker exec anvil-with-verifier cast call "${VERIFIER_ADDRESS}" "${VERIFY_SIG}" "$(echo ${vaa_v1} | base64 --decode | od -An -vtx1 | tr -d ' \n')"
+# Query for VAA v2
+#vaa_v2="TODO"
+#docker exec anvil-with-verifier cast call "${VERIFIER_ADDRESS}" "${VERIFY_SIG}" "$(vaa_v2)"
