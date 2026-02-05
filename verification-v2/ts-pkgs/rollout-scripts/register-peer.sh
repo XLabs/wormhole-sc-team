@@ -64,7 +64,6 @@ if [ -n "${TSS_E2E_DOCKER_NETWORK:-}" ]; then
     run_option+="--network ${TSS_E2E_DOCKER_NETWORK} "
 fi
 
-
 docker build ${builder_option} \
     --file "${PROJECT_ROOT}/ts-pkgs/peer-client/Dockerfile" \
     --build-arg TLS_HOSTNAME="${TLS_HOSTNAME}" \
@@ -75,6 +74,10 @@ docker build ${builder_option} \
 
 docker run ${run_option} \
     --rm \
+    --volume ~/.aws:/root/.aws:ro \
+    --volume /etc/rolesanywhere:/etc/rolesanywhere:ro \
+    --env AWS_PROFILE=rolesanywhere \
+    --env AWS_REGION=us-east-2 \
     --volume "${CERT_PATH}:/run/secrets/cert.pem:ro" \
     "register-peer${TSS_E2E_GUARDIAN_ID:-}"
 
