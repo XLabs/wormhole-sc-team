@@ -62,7 +62,7 @@ createBootstrapPeers() {
   done | paste -sd "," -
 }
 
-docker build --tag dkg-guardian --file ./guardian.Dockerfile --progress=plain .
+docker build --tag tss-guardian --file ./guardian.Dockerfile --progress=plain .
 
 for i in "${!NODE_KEYS[@]}"
 do
@@ -76,7 +76,7 @@ do
   docker run --rm --name "${GUARDIAN_NAME}$i" \
     --user $(id --user) --network=dkg-test \
     --mount "type=bind,src=./out/$i/keys,dst=/keys" \
-    dkg-guardian \
+    tss-guardian \
     --ethRPC "${ETHEREUM_RPC_URL}" \
     --ethContract "${WORMHOLE_ADDRESS}" \
     --tssLeaderAddress "${TSS_LEADER_ADDRESS}" \
