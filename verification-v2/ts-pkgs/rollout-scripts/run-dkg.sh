@@ -58,7 +58,7 @@ fi
 
 run_options+="--env THRESHOLD=${THRESHOLD:13}"
 
-docker build --tag "dkg-client${TSS_E2E_GUARDIAN_ID}" --file "${REPO_ROOT}/ts-pkgs/peer-client/dkg.Dockerfile" "${REPO_ROOT}"
+docker build --tag "dkg-client${TSS_E2E_GUARDIAN_ID:-}" --file "${REPO_ROOT}/ts-pkgs/peer-client/dkg.Dockerfile" "${REPO_ROOT}"
 
 docker run \
     --rm \
@@ -70,7 +70,7 @@ docker run \
     --env PEER_SERVER_URL="${PEER_SERVER_URL}" \
     --env ETHEREUM_RPC_URL="${ETHEREUM_RPC_URL}" \
     --user $(id --user) \
-    "dkg-client${TSS_E2E_GUARDIAN_ID}"
+    "dkg-client${TSS_E2E_GUARDIAN_ID:-}"
 
 
 echo ""
