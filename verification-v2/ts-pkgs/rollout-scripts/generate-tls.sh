@@ -47,8 +47,9 @@ docker build \
 docker run \
     --rm \
     --mount type=bind,src="${OUTPUT_DIR}",dst=/keys \
-    --env TLS_HOSTNAME="${TLS_HOSTNAME}" \
+    --env TLS_HOSTNAME="${TLS_HOSTNAME}${TSS_E2E_GUARDIAN_ID:-}" \
     --env TLS_PUBLIC_IP="${TLS_PUBLIC_IP}" \
+    --user $(id --user) \
     tls-gen
 
 if [ -f "${OUTPUT_DIR}/key.pem" ] && [ -f "${OUTPUT_DIR}/cert.pem" ]; then
@@ -67,15 +68,17 @@ if [ -z "${SKIP_NEXT_STEP_HINT:-}" ]; then
     echo "Run the following command from the rollout-scripts directory:"
     echo ""
     echo "  ./register-peer.sh \\"
-    echo "    <GUARDIAN_KEY_PATH> \\"
+    echo "    <Guardian key option> \\"
     echo "    ${OUTPUT_DIR}/cert.pem \\"
     echo "    ${TLS_HOSTNAME} \\"
     echo "    <TLS_PORT> \\"
     echo "    <PEER_SERVER_URL>"
     echo ""
     echo "Where:"
-    echo "  GUARDIAN_KEY_PATH - Path to your guardian's Wormhole private key"
-    echo "  TLS_PORT          - Port your DKG server will listen on (e.g., 8443)"
-    echo "  PEER_SERVER_URL   - URL of the peer discovery server"
+    echo "  TLS_PORT            - Port your DKG server will listen on (e.g., 8443)"
+    echo "  PEER_SERVER_URL     - URL of the peer discovery server"
+    echo "Guardian key option must be exactly one of these:"
+    echo "  --key <KEY_PATH>    - Path to the guardian's Wormhole private key"
+    echo "  --arn <AWS_KMS_ARN> - ARN of AWS KMS key"
     echo ""
 fi

@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import {
   hashPeerData,
   PeerRegistration,
-  SelfConfig,
+  PeerClientConfig,
   PeersResponse,
   validateOrFail,
   PeerRegistrationSchema,
@@ -10,30 +10,33 @@ import {
   UploadResponseSchema,
   UploadResponse,
   errorStack,
-  validatePeers,
-  WormholeGuardianData
+  createSigner,
+  validateSomePeers,
+  WormholeGuardianData,
+  Peer,
+  UncheckedPeer
 } from '@xlabs-xyz/peer-lib';
 
 export class PeerClient {
-  private config: SelfConfig;
+  private config: PeerClientConfig;
   private serverUrl: string;
 
-  constructor(config: SelfConfig, private readonly pollPeriod = 5000) {
+  constructor(config: PeerClientConfig, private readonly pollPeriod = 5000) {
     this.config = config;
     this.serverUrl = this.config.serverUrl;
   }
 
-  private async signPeerData(guardianPrivateKey: string): Promise<PeerRegistration> {
+  private async signPeerData(): Promise<PeerRegistration> {
     const { peer } = this.config;
     // Create wallet from private key
-    const wallet = new ethers.Wallet(guardianPrivateKey);
+    const signer = await createSigner(this.config);
     // Create message hash as per server implementation
     const messageHash = hashPeerData(peer);
     // Sign the message
-    const signature = await wallet.signMessage(ethers.getBytes(messageHash));
+    const signature = await signer.signMessage(ethers.getBytes(messageHash));
     const peerRegistration = {
       peer,
-      signature
+      signature,
     };
     // Validate the generated PeerRegistration
     return validateOrFail(PeerRegistrationSchema, peerRegistration, "Generated PeerRegistration is invalid");
@@ -65,26 +68,26 @@ export class PeerClient {
     }
   }
 
-  private async signAndUploadPeerData(guardianPrivateKey: string): Promise<UploadResponse> {
-    const peerRegistration = await this.signPeerData(guardianPrivateKey);
+  private async signAndUploadPeerData(): Promise<UploadResponse> {
+    const peerRegistration = await this.signPeerData();
     return this.uploadPeerData(peerRegistration);
   }
 
-  private async pollForCompletion(): Promise<PeersResponse> {
+  private async pollForCompletion(totalExpectedGuardians: number): Promise<PeersResponse> {
     console.log(`[POLLING] Starting to poll for completion...`);
 
     let lastPeerCount = 0;
 
     for (;;) {
       try {
-        const response = await fetch(`${this.serverUrl}/peers`);
+        const uncheckedResponse = await fetch(`${this.serverUrl}/peers`);
 
-        if (response.ok) {
-          const jsonResponse = await response.json() as PeersResponse;
+        if (uncheckedResponse.ok) {
+          const uncheckedJsonResponse = await uncheckedResponse.json() as PeersResponse;
 
           // Validate response with Zod
-          const { peers, threshold, totalExpectedGuardians } = validateOrFail(
-            PeersResponseSchema, jsonResponse, "Invalid peers response"
+          const { peers, threshold } = validateOrFail(
+            PeersResponseSchema, uncheckedJsonResponse, "Invalid peers response"
           );
 
           if (peers.length > totalExpectedGuardians) {
@@ -106,7 +109,7 @@ export class PeerClient {
             console.log(`[PROGRESS] ${progressMessage} (waiting for more...)`);
           }
         } else {
-          console.error(`[ERROR] Failed to fetch peers: ${response.status} ${response.statusText}`);
+          console.error(`[ERROR] Failed to fetch peers: ${uncheckedResponse.status} ${uncheckedResponse.statusText}`);
         }
       } catch (error) {
         console.error(`[ERROR] Error polling for completion: ${errorStack(error)}`);
@@ -117,17 +120,20 @@ export class PeerClient {
     }
   }
 
-  private validatePeers(response: PeersResponse, wormholeData: WormholeGuardianData): void {
-    if (response.peers.length !== wormholeData.guardians.length) {
-      throw new Error(`Expected ${wormholeData.guardians.length} guardians, got ${response.peers.length}`);
+  private validatePeers(uncheckedPeers: UncheckedPeer[], wormholeData: WormholeGuardianData): Peer[] {
+    // We need to ensure that we're providing the full set of peers here to do a full validation in `validateSomePeers`.
+    if (uncheckedPeers.length !== wormholeData.guardians.length) {
+      throw new Error(`Expected ${wormholeData.guardians.length} guardians, got ${uncheckedPeers.length}`);
     }
-    validatePeers(response.peers, wormholeData);
+
+    // We cast because we know there is no undefined slot in the array after validating the full set of guardians.
+    return validateSomePeers(uncheckedPeers, wormholeData) as Peer[];
   }
 
   private async pollAllPeersAndValidate(wormholeData: WormholeGuardianData): Promise<PeersResponse> {
-    const response = await this.pollForCompletion();
-    this.validatePeers(response, wormholeData);
-    return response;
+    const uncheckedResponse = await this.pollForCompletion(wormholeData.guardians.length);
+    const checkedPeers = this.validatePeers(uncheckedResponse.peers, wormholeData);
+    return {...uncheckedResponse, peers: checkedPeers};
   }
 
   private sleep(ms: number): Promise<void> {
@@ -145,11 +151,10 @@ export class PeerClient {
   }
 
   public async submitPeerData(): Promise<UploadResponse> {
-    const guardianPrivateKey = this.config.guardianPrivateKey;
-    if (guardianPrivateKey === undefined) {
-      throw new Error(`Guardian private key path was not set`);
+    if (this.config.guardianKey === undefined) {
+      throw new Error(`Guardian key was not set`);
     }
-    return this.run(() => this.signAndUploadPeerData(guardianPrivateKey), "Uploading peer data...");
+    return this.run(() => this.signAndUploadPeerData(), "Uploading peer data...");
   }
 
   public async waitForAllPeers(wormholeData: WormholeGuardianData): Promise<PeersResponse> {
