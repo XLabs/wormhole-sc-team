@@ -19,9 +19,7 @@ SIGNED_VAA_ENDPOINT="${GUARDIAN_RPC}/v1/signed_vaa/${ETHEREUM_CHAIN_ID}/${EMITTE
 VERIFY_SIG="verify(bytes)"
 VERIFIER_ADDRESS=0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9
 
-# TODO: Wait for the guardian to sign the VAA
 fetchVaaV1() {
-# Wait until anvil starts listening
   docker exec --env "SIGNED_VAA_ENDPOINT=${SIGNED_VAA_ENDPOINT}" GuardianNode0 bash -c '
     start=$(date +%s)
     deadline=$((start+60))
@@ -40,7 +38,7 @@ fetchVaaV1() {
 docker exec anvil-with-verifier cast send --private-key="${PRIVATE_KEY}" "${WORMHOLE_ADDRESS}" "${PUBLISH_SIG}" 0 "0x5ABAD00B" 200
 
 vaa_v1="$(fetchVaaV1)"
-docker exec anvil-with-verifier cast call "${VERIFIER_ADDRESS}" "${VERIFY_SIG}" "$(echo ${vaa_v1} | base64 --decode | od -An -vtx1 | tr -d ' \n')"
+docker exec anvil-with-verifier cast call "${VERIFIER_ADDRESS}" "${VERIFY_SIG}" "$(echo ${vaa_v1} | base64 --decode | od -An -vtx1 | tr --delete ' \n')"
 # Query for VAA v2
 #vaa_v2="TODO"
 #docker exec anvil-with-verifier cast call "${VERIFIER_ADDRESS}" "${VERIFY_SIG}" "$(vaa_v2)"
