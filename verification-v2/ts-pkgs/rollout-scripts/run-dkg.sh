@@ -146,7 +146,6 @@ docker run \
   ${run_options} \
   --mount type=bind,src="${TLS_KEYS_DIR}",dst=/keys \
   --volume ${peer_client_config}:/verification-v2/ts-pkgs/peer-client/self_config.json:ro \
-  --user $(id --user) \
   "dkg-client${TSS_E2E_GUARDIAN_ID:-}"
 
 

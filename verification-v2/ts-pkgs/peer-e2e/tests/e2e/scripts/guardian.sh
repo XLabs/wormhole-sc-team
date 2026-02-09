@@ -74,7 +74,7 @@ do
     sleep 1
   done
   docker run --rm --name "${GUARDIAN_NAME}$i" \
-    --user $(id --user) --network=dkg-test \
+    --network=dkg-test \
     --mount "type=bind,src=./out/$i/keys,dst=/keys" \
     tss-guardian \
     --ethRPC "${ETHEREUM_RPC_URL}" \

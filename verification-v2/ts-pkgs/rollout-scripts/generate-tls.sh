@@ -84,7 +84,6 @@ docker run \
     --mount type=bind,src="${OUTPUT_DIR}",dst=/keys \
     --env TLS_HOSTNAME="${TLS_HOSTNAME}${TSS_E2E_GUARDIAN_ID:-}" \
     --env TLS_PUBLIC_IP="${TLS_PUBLIC_IP}" \
-    --user $(id --user) \
     tls-gen
 
 if [ -f "${OUTPUT_DIR}/key.pem" ] && [ -f "${OUTPUT_DIR}/cert.pem" ]; then
