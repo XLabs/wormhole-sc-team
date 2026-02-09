@@ -16,11 +16,11 @@ fi
 
 # Make sure the peer server and the dkg clients are shut down:
 
-docker stop peer-server
+docker rm -f peer-server
 
 for i in $(seq 0 18)
 do
-  docker stop "Guardian$i"
+  docker rm -f "Guardian$i"
 done;
 
 
