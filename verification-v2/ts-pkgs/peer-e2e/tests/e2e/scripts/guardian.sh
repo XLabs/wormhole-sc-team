@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -meuo pipefail
+set -xmeuo pipefail
 export DOCKER_BUILDKIT=1
 
 SIGNER_NAME="Guardian"

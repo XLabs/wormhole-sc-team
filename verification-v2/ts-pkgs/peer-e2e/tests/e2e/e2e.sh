@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -meuo pipefail
+set -xmeuo pipefail
 
 rm -rf out/
 
