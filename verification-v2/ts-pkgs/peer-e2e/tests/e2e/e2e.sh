@@ -13,6 +13,17 @@ fi
 ./scripts/anvil.sh &
 ./scripts/server.sh &
 ./scripts/client.sh
+
+# Make sure the peer server and the dkg clients are shut down:
+
+docker stop peer-server
+
+for i in $(seq 0 18)
+do
+  docker stop "Guardian$i"
+done;
+
+
 ./scripts/signer.sh &
 ./scripts/guardian.sh &
 ./scripts/publish.sh
