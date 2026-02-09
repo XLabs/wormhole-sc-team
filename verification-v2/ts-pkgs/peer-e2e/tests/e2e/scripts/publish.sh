@@ -19,11 +19,11 @@ SIGNED_VAA_ENDPOINT="${GUARDIAN_RPC}/v1/signed_vaa/${ETHEREUM_CHAIN_ID}/${EMITTE
 VERIFY_SIG="verify(bytes)"
 VERIFIER_ADDRESS=0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9
 
-fetchVaaV1() {
-  docker exec --env "SIGNED_VAA_ENDPOINT=${SIGNED_VAA_ENDPOINT}" GuardianNode0 bash -c '
+fetchVaa() {
+  docker exec --env "SIGNED_VAA_ENDPOINT=${SIGNED_VAA_ENDPOINT}" --env "VAA_VERSION=${1}" GuardianNode0 bash -c '
     start=$(date +%s)
     deadline=$((start+60))
-    until vaa=$(curl --silent --fail "${SIGNED_VAA_ENDPOINT}" | jq --raw-output --exit-status ".vaaBytes"); do
+    until vaa=$(curl --silent --fail "${SIGNED_VAA_ENDPOINT}?message_id.version=${VAA_VERSION}" | jq --raw-output --exit-status ".vaaBytes"); do
       now=$(date +%s)
       if [ "$now" -ge "$deadline" ]; then
         echo "Timed out waiting for VAA" >&2
@@ -35,10 +35,19 @@ fetchVaaV1() {
   '
 }
 
+toCleanHex() {
+  echo "${1}" | base64 --decode | od -An -vtx1 | tr --delete ' \n'
+}
+
 docker exec anvil-with-verifier cast send --private-key="${PRIVATE_KEY}" "${WORMHOLE_ADDRESS}" "${PUBLISH_SIG}" 0 "0x5ABAD00B" 200
 
-vaa_v1="$(fetchVaaV1)"
-docker exec anvil-with-verifier cast call "${VERIFIER_ADDRESS}" "${VERIFY_SIG}" "$(echo ${vaa_v1} | base64 --decode | od -An -vtx1 | tr --delete ' \n')"
-# Query for VAA v2
-#vaa_v2="TODO"
-#docker exec anvil-with-verifier cast call "${VERIFIER_ADDRESS}" "${VERIFY_SIG}" "$(vaa_v2)"
+vaas=(
+  "$(fetchVaa 1)"
+  "$(fetchVaa 2)"
+)
+
+for vaa in "${vaas[@]}"
+do
+  docker exec anvil-with-verifier \
+    cast call "${VERIFIER_ADDRESS}" "${VERIFY_SIG}" "$(toCleanHex ${vaa})"
+done
