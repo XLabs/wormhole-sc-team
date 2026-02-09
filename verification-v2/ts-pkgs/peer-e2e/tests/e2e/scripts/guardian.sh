@@ -62,7 +62,7 @@ createBootstrapPeers() {
   done | paste -sd "," -
 }
 
-docker build --tag tss-guardian --file ./guardian.Dockerfile --progress=plain .
+docker build --tag tss-guardian --file ./guardian.Dockerfile --progress=plain ../../../../..
 
 for i in "${!NODE_KEYS[@]}"
 do
