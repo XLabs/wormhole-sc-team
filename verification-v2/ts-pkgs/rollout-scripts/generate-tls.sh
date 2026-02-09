@@ -62,57 +62,67 @@ fi
 mkdir -p "${OUTPUT_DIR}"
 
 if [ -f "${OUTPUT_DIR}/key.pem" ] || [ -f "${OUTPUT_DIR}/cert.pem" ]; then
-    if [ -n "${FORCE_OVERWRITE:-}" ]; then
-        log_info "Overwriting existing TLS credentials (FORCE_OVERWRITE=1)"
-    elif [ -n "${NON_INTERACTIVE:-}" ]; then
-        log_error "TLS credentials already exist. Set FORCE_OVERWRITE=1 to overwrite."
-        exit 1
-    else
-        read -p "TLS credentials already exist. Overwrite? (y/N) " -n 1 -r
-        echo
-        [[ ! $REPLY =~ ^[Yy]$ ]] && exit 0
-    fi
+  if [ -n "${FORCE_OVERWRITE:-}" ]; then
+    log_info "Overwriting existing TLS credentials (FORCE_OVERWRITE=1)"
+  elif [ -n "${NON_INTERACTIVE:-}" ]; then
+    log_error "TLS credentials already exist. Set FORCE_OVERWRITE=1 to overwrite."
+    exit 1
+  else
+    read -p "TLS credentials already exist. Overwrite? (y/N) " -n 1 -r
+    echo
+    [[ ! $REPLY =~ ^[Yy]$ ]] && exit 0
+  fi
+fi
+
+build_options=""
+run_options=""
+if [ -n "${NON_INTERACTIVE:-}" ]; then
+  build_options+="--progress=plain "
+else
+  run_options+="--interactive --tty "
 fi
 
 docker build \
-    --tag tls-gen \
-    --file "${REPO_ROOT}/ts-pkgs/peer-client/tls.Dockerfile" \
-    "${REPO_ROOT}"
+  ${build_options} \
+  --tag tls-gen \
+  --file "${REPO_ROOT}/ts-pkgs/peer-client/tls.Dockerfile" \
+  "${REPO_ROOT}"
 
 docker run \
-    --rm \
-    --mount type=bind,src="${OUTPUT_DIR}",dst=/keys \
-    --env TLS_HOSTNAME="${TLS_HOSTNAME}" \
-    --env TLS_PUBLIC_IP="${TLS_PUBLIC_IP}" \
-    tls-gen
+  ${run_options} \
+  --rm \
+  --mount type=bind,src="${OUTPUT_DIR}",dst=/keys \
+  --env TLS_HOSTNAME="${TLS_HOSTNAME}" \
+  --env TLS_PUBLIC_IP="${TLS_PUBLIC_IP}" \
+  tls-gen
 
 if [ -f "${OUTPUT_DIR}/key.pem" ] && [ -f "${OUTPUT_DIR}/cert.pem" ]; then
-    log_info "TLS credentials saved to ${OUTPUT_DIR}"
+  log_info "TLS credentials saved to ${OUTPUT_DIR}"
 else
-    log_error "Failed to generate TLS credentials"
-    exit 1
+  log_error "Failed to generate TLS credentials"
+  exit 1
 fi
 
 if [ -z "${SKIP_NEXT_STEP_HINT:-}" ]; then
-    echo ""
-    echo "=============================================="
-    echo "NEXT STEP: Register your peer with the discovery server"
-    echo "=============================================="
-    echo ""
-    echo "Run the following command from the rollout-scripts directory:"
-    echo ""
-    echo "  ./register-peer.sh \\"
-    echo "    <Guardian key option> \\"
-    echo "    --tls-certificate=${OUTPUT_DIR}/cert.pem \\"
-    echo "    --tls-hostname=${TLS_HOSTNAME} \\"
-    echo "    --tls-port=<TLS_PORT> \\"
-    echo "    --peer-server-url=<PEER_SERVER_URL>"
-    echo ""
-    echo "Where:"
-    echo "  TLS_PORT            - Port your DKG server will listen on (e.g., 8443)"
-    echo "  PEER_SERVER_URL     - URL of the peer discovery server"
-    echo "Guardian key option must be exactly one of these:"
-    echo "  --key=<KEY_PATH>    - Path to the guardian's Wormhole private key"
-    echo "  --arn=<AWS_KMS_ARN> - ARN of AWS KMS key"
-    echo ""
+  echo ""
+  echo "=============================================="
+  echo "NEXT STEP: Register your peer with the discovery server"
+  echo "=============================================="
+  echo ""
+  echo "Run the following command from the rollout-scripts directory:"
+  echo ""
+  echo "  ./register-peer.sh \\"
+  echo "    <Guardian key option> \\"
+  echo "    --tls-certificate=${OUTPUT_DIR}/cert.pem \\"
+  echo "    --tls-hostname=${TLS_HOSTNAME} \\"
+  echo "    --tls-port=<TLS_PORT> \\"
+  echo "    --peer-server-url=<PEER_SERVER_URL>"
+  echo ""
+  echo "Where:"
+  echo "  TLS_PORT            - Port your DKG server will listen on (e.g., 8443)"
+  echo "  PEER_SERVER_URL     - URL of the peer discovery server"
+  echo "Guardian key option must be exactly one of these:"
+  echo "  --key=<KEY_PATH>    - Path to the guardian's Wormhole private key"
+  echo "  --arn=<AWS_KMS_ARN> - ARN of AWS KMS key"
+  echo ""
 fi

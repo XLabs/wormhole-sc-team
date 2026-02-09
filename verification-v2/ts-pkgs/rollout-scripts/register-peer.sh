@@ -101,6 +101,7 @@ fi
 
 export DOCKER_BUILDKIT=1
 
+build_options=""
 run_option=""
 if [ -n "${GUARDIAN_KEY_PATH:-}" ]; then
     run_option+="--volume ${GUARDIAN_KEY_PATH}:/run/secrets/guardian_pk:ro "
@@ -109,6 +110,12 @@ fi
 # TSS_E2E_DOCKER_NETWORK should NOT be used in production.
 if [ -n "${TSS_E2E_DOCKER_NETWORK:-}" ]; then
     run_option+="--network ${TSS_E2E_DOCKER_NETWORK} "
+fi
+
+if [ -n "${NON_INTERACTIVE:-}" ]; then
+  build_options+="--progress=plain "
+else
+  run_options+="--interactive --tty "
 fi
 
 CONFIG_DIR=$(dirname "${TLS_CERTIFICATE}")
@@ -121,6 +128,7 @@ else \
 fi
 
 docker build \
+    ${build_options} \
     --tag "register-peer" \
     --file "${PROJECT_ROOT}/ts-pkgs/peer-client/Dockerfile" \
     "${PROJECT_ROOT}"
