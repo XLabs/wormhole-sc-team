@@ -101,11 +101,6 @@ fi
 
 export DOCKER_BUILDKIT=1
 
-builder_option=""
-if [ -n "${GUARDIAN_KEY_ARN:-}" ]; then
-    builder_option+="--build-arg GUARDIAN_KMS_ARN=${GUARDIAN_KEY_ARN} "
-fi
-
 run_option=""
 if [ -n "${GUARDIAN_KEY_PATH:-}" ]; then
     run_option+="--volume ${GUARDIAN_KEY_PATH}:/run/secrets/guardian_pk:ro "
@@ -116,19 +111,25 @@ if [ -n "${TSS_E2E_DOCKER_NETWORK:-}" ]; then
     run_option+="--network ${TSS_E2E_DOCKER_NETWORK} "
 fi
 
+CONFIG_DIR=$(dirname "${TLS_CERTIFICATE}")
 
-docker build ${builder_option} \
+# Generate config: use ARN if provided, otherwise use the secret file path
+if [ -n "${GUARDIAN_KMS_ARN:-}" ]; then \
+  echo '{"guardianPrivateKeyArn":"'"${GUARDIAN_KMS_ARN}"'","serverUrl":"'"${PEER_SERVER_URL}"'","peer":{"hostname":"'"${TLS_HOSTNAME}"'","port":'"${TLS_PORT}"',"tlsX509":"/run/secrets/cert.pem"}}' > "${CONFIG_DIR}/peer-client-config.json"; \
+else \
+  echo '{"guardianPrivateKeyPath":"/run/secrets/guardian_pk","serverUrl":"'"${PEER_SERVER_URL}"'","peer":{"hostname":"'"${TLS_HOSTNAME}"'","port":'"${TLS_PORT}"',"tlsX509":"/run/secrets/cert.pem"}}' > "${CONFIG_DIR}/peer-client-config.json"; \
+fi
+
+docker build \
+    --tag "register-peer" \
     --file "${PROJECT_ROOT}/ts-pkgs/peer-client/Dockerfile" \
-    --build-arg TLS_HOSTNAME="${TLS_HOSTNAME}${TSS_E2E_GUARDIAN_ID:-}" \
-    --build-arg TLS_PORT="${TLS_PORT}" \
-    --build-arg PEER_SERVER_URL="${PEER_SERVER_URL}" \
-    --tag "register-peer${TSS_E2E_GUARDIAN_ID:-}" \
     "${PROJECT_ROOT}"
 
 docker run ${run_option} \
     --rm \
     --volume "${TLS_CERTIFICATE}:/run/secrets/cert.pem:ro" \
-    "register-peer${TSS_E2E_GUARDIAN_ID:-}"
+    --volume "${CONFIG_DIR}/peer-client-config.json:/verification-v2/ts-pkgs/peer-client/self_config.json:ro" \
+    "register-peer"
 
 log_info "Registration complete"
 

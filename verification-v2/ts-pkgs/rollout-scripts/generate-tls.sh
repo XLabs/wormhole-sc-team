@@ -82,7 +82,7 @@ docker build \
 docker run \
     --rm \
     --mount type=bind,src="${OUTPUT_DIR}",dst=/keys \
-    --env TLS_HOSTNAME="${TLS_HOSTNAME}${TSS_E2E_GUARDIAN_ID:-}" \
+    --env TLS_HOSTNAME="${TLS_HOSTNAME}" \
     --env TLS_PUBLIC_IP="${TLS_PUBLIC_IP}" \
     tls-gen
 

@@ -66,9 +66,10 @@ docker build \
     ../../../..
 
 docker build \
+    --tag "register-peer" \
     --file ../../../peer-client/Dockerfile \
     --progress=plain \
-    ../../../.. 2>/dev/null || true
+    ../../../..
 
 for i in "${!GUARDIAN_PRIVATE_KEYS[@]}"
 do
