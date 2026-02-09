@@ -9,14 +9,17 @@ RUN apt-get --quiet update && apt-get --quiet --no-install-recommends --yes inst
 # We assume that protobuf definitions are up to date here
 # See `generate` recipe in root Makefile.
 
+RUN mkdir /guardian
+WORKDIR /guardian
+
 COPY node node
 COPY sdk sdk
 COPY wormchain wormchain
 
-RUN --mount=type=cache,target=/root/.cache --mount=type=cache,target=/go \
+RUN \
   export CGO_ENABLED=1 && \
   cd node && \
-  go build -mod=readonly -o /guardiand github.com/certusone/wormhole/node
+  go build -mod=readonly -o /guardian/guardiand github.com/certusone/wormhole/node
 
 ENTRYPOINT [ \
   "/guardiand", "node", \
