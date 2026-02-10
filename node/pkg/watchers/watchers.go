@@ -9,6 +9,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/wormhole-foundation/wormhole/sdk/vaa"
+	"github.com/xlabs/tss-common/service/signer"
 )
 
 // NetworkID is a unique identifier of a watcher that is used to link watchers together for the purpose of L1 Finalizers.
@@ -25,6 +26,7 @@ type WatcherConfig interface {
 		queryResponseC chan<- *query.PerChainQueryResponseInternal,
 		setC chan<- *common.GuardianSet,
 		env common.Environment,
+		updateKeyC chan<- *signer.UpdateKeysRequest,
 	) (supervisor.Runnable, interfaces.Reobserver, error)
 }
 

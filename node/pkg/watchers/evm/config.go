@@ -9,6 +9,7 @@ import (
 	"github.com/certusone/wormhole/node/pkg/watchers/interfaces"
 	eth_common "github.com/ethereum/go-ethereum/common"
 	"github.com/wormhole-foundation/wormhole/sdk/vaa"
+	"github.com/xlabs/tss-common/service/signer"
 )
 
 type WatcherConfig struct {
@@ -19,6 +20,7 @@ type WatcherConfig struct {
 	GuardianSetUpdateChain bool               // if `true`, we will retrieve the GuardianSet from this chain and watch this chain for GuardianSet updates
 	CcqBackfillCache       bool
 	TxVerifierEnabled      bool
+	updateKeysC            chan<- *signer.UpdateKeysRequest
 }
 
 func (wc *WatcherConfig) GetNetworkID() watchers.NetworkID {
@@ -37,6 +39,7 @@ func (wc *WatcherConfig) Create(
 	queryResponseC chan<- *query.PerChainQueryResponseInternal,
 	setC chan<- *common.GuardianSet,
 	env common.Environment,
+	updateKeyC chan<- *signer.UpdateKeysRequest,
 ) (supervisor.Runnable, interfaces.Reobserver, error) {
 
 	// only actually use the guardian set channel if wc.GuardianSetUpdateChain == true
@@ -58,6 +61,7 @@ func (wc *WatcherConfig) Create(
 		env,
 		wc.CcqBackfillCache,
 		wc.TxVerifierEnabled,
+		updateKeyC,
 	)
 	return watcher.Run, watcher, nil
 }

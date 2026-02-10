@@ -16,14 +16,12 @@ import (
 	"github.com/certusone/wormhole/node/pkg/watchers/evm/connectors"
 	"github.com/certusone/wormhole/node/pkg/watchers/evm/connectors/ethabi"
 	"github.com/certusone/wormhole/node/pkg/watchers/evm/connectors/verifier"
-	"github.com/certusone/wormhole/node/pkg/tss"
 
 	"github.com/certusone/wormhole/node/pkg/p2p"
 	gossipv1 "github.com/certusone/wormhole/node/pkg/proto/gossip/v1"
 	"github.com/xlabs/tss-common/service/signer"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"google.golang.org/grpc"
 
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -166,6 +164,7 @@ type (
 		cclCacheLock sync.Mutex
 
 		verifierConn connectors.VerifierBaseConnector
+		updateKeyC chan<- *signer.UpdateKeysRequest
 	}
 
 	pendingKey struct {
@@ -206,6 +205,7 @@ func NewEthWatcher(
 	env common.Environment,
 	ccqBackfillCache bool,
 	txVerifierEnabled bool,
+	updateKeyC chan<- *signer.UpdateKeysRequest,
 ) *Watcher {
 	// Note: the watcher's txVerifier field is not set here because it requires a Connector as an argument.
 	// Instead, it will be populated in `Run()`.
@@ -228,6 +228,7 @@ func NewEthWatcher(
 		ccqBackfillChannel: make(chan *ccqBackfillRequest, 50),
 		// Signals that a transfer Verifier should be instantiated in Run()
 		txVerifierEnabled: txVerifierEnabled,
+		updateKeyC:      	 updateKeyC,
 	}
 }
 
@@ -477,53 +478,51 @@ func (w *Watcher) Run(parentCtx context.Context) error {
 		}
 	})
 
-	// Watch for shard ID updates
-	shardIdC := make(chan *verifier.WormholeVerifierShardIdUpdated, 2)
-	shardIdSub, err := w.verifierConn.WatchShardIdUpdated(ctx, errC, shardIdC)
-	logger.Info("subscribed to verifier shard ID updates -----------------------------------------------------")
-	if err != nil {
-		verifierConnectionErrors.WithLabelValues(w.networkName, "subscribe_error").Inc()
-		p2p.DefaultRegistry.AddErrorCount(w.chainID, 1)
-		return fmt.Errorf("failed to subscribe to message publication events: %w", err)
-	}
-	defer shardIdSub.Unsubscribe()
-
-	common.RunWithScissors(ctx, errC, "evm_fetch_shard_ids_updates", func(ctx context.Context) error {
-		for {
-			select {
-			case <-ctx.Done():
-				return nil
-			case err := <-shardIdSub.Err():
-				verifierConnectionErrors.WithLabelValues(w.networkName, "subscription_error").Inc()
-				errC <- fmt.Errorf("error while processing message publication subscription: %w", err) //nolint:channelcheck // The watcher will exit anyway
-				p2p.DefaultRegistry.AddErrorCount(w.chainID, 1)
-				return nil
-			case ev := <-shardIdC:
-				oldPubKey := append([]byte{0x04}, append(ev.OldPubKeyX[:], ev.OldPubKeyY[:]...)...)
-				newPubKey := append([]byte{0x04}, append(ev.NewPubKeyX[:], ev.NewPubKeyY[:]...)...)
-
-				req := &signer.UpdateKeysRequest{
-					Pairs: []*signer.UpdateKeyPair{
-						{
-							KnownKey: &signer.TypedKey{
-								Type: signer.TypedKey_EthKey,
-								Key:  oldPubKey,
-							},
-							UpdateKey: &signer.TypedKey{
-								Type: signer.TypedKey_EthKey,
-								Key:  newPubKey,
+	if (w.networkName == "eth") {
+		// Watch for shard ID updates
+		shardIdC := make(chan *verifier.WormholeVerifierShardIdUpdated, 2)
+		shardIdSub, err := w.verifierConn.WatchShardIdUpdated(ctx, errC, shardIdC)
+		if err != nil {
+			verifierConnectionErrors.WithLabelValues(w.networkName, "subscribe_error").Inc()
+			p2p.DefaultRegistry.AddErrorCount(w.chainID, 1)
+			return fmt.Errorf("failed to subscribe to message publication events: %w", err)
+		}
+		defer shardIdSub.Unsubscribe()
+	
+		common.RunWithScissors(ctx, errC, "evm_fetch_shard_ids_updates", func(ctx context.Context) error {
+			for {
+				select {
+				case <-ctx.Done():
+					return nil
+				case err := <-shardIdSub.Err():
+					verifierConnectionErrors.WithLabelValues(w.networkName, "subscription_error").Inc()
+					errC <- fmt.Errorf("error while processing message publication subscription: %w", err) //nolint:channelcheck // The watcher will exit anyway
+					p2p.DefaultRegistry.AddErrorCount(w.chainID, 1)
+					return nil
+				case ev := <-shardIdC:
+					oldPubKey := append([]byte{0x04}, append(ev.OldPubKeyX[:], ev.OldPubKeyY[:]...)...)
+					newPubKey := append([]byte{0x04}, append(ev.NewPubKeyX[:], ev.NewPubKeyY[:]...)...)
+	
+					req := &signer.UpdateKeysRequest{
+						Pairs: []*signer.UpdateKeyPair{
+							{
+								KnownKey: &signer.TypedKey{
+									Type: signer.TypedKey_EthKey,
+									Key:  oldPubKey,
+								},
+								UpdateKey: &signer.TypedKey{
+									Type: signer.TypedKey_EthKey,
+									Key:  newPubKey,
+								},
 							},
 						},
-					},
-				}
-
-				err = w.signerClient.UpdateKeys(ctx, req)
-				if err != nil {
-					logger.Error("UpdateKeys failed", zap.Error(err))
+					}
+	
+					w.updateKeyC <- req
 				}
 			}
-		}
-	})
+		})
+	}
 
 	// Watch headers
 	headSink := make(chan *connectors.NewBlock, 100)
