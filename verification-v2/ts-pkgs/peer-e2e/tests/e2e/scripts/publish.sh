@@ -9,11 +9,12 @@ ETHEREUM_RPC_URL="http://anvil-with-verifier:8545"
 WORMHOLE_ADDRESS="0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
 
 # Retrieve VAA
-GUARDIAN_RPC="127.0.0.1:8081"
+GUARDIAN_PORT=8081
+GUARDIAN_RPC="127.0.0.1:${GUARDIAN_PORT}"
 EMITTER_ADDRESS="000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266"
 ETHEREUM_CHAIN_ID=2
 SEQUENCE=0
-SIGNED_VAA_ENDPOINT="${GUARDIAN_RPC}/v1/signed_vaa/${ETHEREUM_CHAIN_ID}/${EMITTER_ADDRESS}/${SEQUENCE}"
+SIGNED_VAA_ENDPOINT="v1/signed_vaa/${ETHEREUM_CHAIN_ID}/${EMITTER_ADDRESS}/${SEQUENCE}"
 
 # Verify VAA
 VERIFY_SIG="verify(bytes)"
@@ -35,28 +36,37 @@ waitUntilHeartbeat() {
 }
 
 fetchVaa() {
-  docker exec --env "SIGNED_VAA_ENDPOINT=${SIGNED_VAA_ENDPOINT}" --env "VAA_VERSION=${1}" GuardianNode0 bash -c '
-    start=$(date +%s)
-    deadline=$((start+60))
-    until vaa=$(curl --silent --fail "${SIGNED_VAA_ENDPOINT}?message_id.version=${VAA_VERSION}"); do
-      now=$(date +%s)
-      if [ "$now" -ge "$deadline" ]; then
-        echo "Timed out waiting for VAA" >&2
-        exit 1
-      fi
-      sleep 0.5
-    done
-    echo "$vaa"
-  ' | jq --raw-output --exit-status ".vaaBytes"
+  docker exec --env "SIGNED_VAA_ENDPOINT=${SIGNED_VAA_ENDPOINT}" \
+    --env "VAA_VERSION=${1}" \
+    --env "GUARDIAN_PORT=${GUARDIAN_PORT}" \
+    GuardianNode0 bash -c '
+      set -x
+      start=$(date +%s)
+      deadline=$((start+60))
+      i=0
+      until vaa=$(curl --silent --fail "http://GuardianNode${i}:${GUARDIAN_PORT}/${SIGNED_VAA_ENDPOINT}?message_id.version=${VAA_VERSION}"); do
+        now=$(date +%s)
+        i=$(((i+1) % 18))
+        if [ "$now" -ge "$deadline" ]; then
+          echo "Timed out waiting for VAA" >&2
+          exit 1
+        fi
+        sleep 0.5
+      done
+      echo "$vaa"
+    ' | jq --raw-output --exit-status ".vaaBytes"
 }
 
 toCleanHex() {
   echo "${1}" | base64 --decode | od -An -vtx1 | tr --delete ' \n'
 }
 
-until [ "$(docker inspect --format '{{.State.Running}}' GuardianNode0 2>/dev/null)" = "true" ]; do
-  sleep 0.5
-done
+for i in $(seq 0 18)
+do
+  until [ "$(docker inspect --format '{{.State.Running}}' "GuardianNode$i" 2>/dev/null)" = "true" ]; do
+    sleep 0.5
+  done
+done;
 
 for i in $(seq 0 18)
 do
