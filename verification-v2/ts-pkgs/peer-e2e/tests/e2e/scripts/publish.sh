@@ -23,7 +23,7 @@ waitUntilHeartbeat() {
   docker exec --env "GUARDIAN_RPC=${GUARDIAN_RPC}" GuardianNode0 bash -c '
     start=$(date +%s)
     deadline=$((start+60))
-    until $(curl --silent --fail "${GUARDIAN_RPC}/v1/heartbeats"); do
+    until curl --silent --fail "${GUARDIAN_RPC}/v1/heartbeats"; do
       now=$(date +%s)
       if [ "$now" -ge "$deadline" ]; then
         echo "Timed out waiting for heartbeat" >&2
