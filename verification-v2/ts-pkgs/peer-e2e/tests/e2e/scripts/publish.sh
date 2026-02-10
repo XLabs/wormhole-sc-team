@@ -19,6 +19,21 @@ SIGNED_VAA_ENDPOINT="${GUARDIAN_RPC}/v1/signed_vaa/${ETHEREUM_CHAIN_ID}/${EMITTE
 VERIFY_SIG="verify(bytes)"
 VERIFIER_ADDRESS=0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9
 
+waitUntilHeartbeat() {
+  docker exec --env "GUARDIAN_RPC=${GUARDIAN_RPC}" GuardianNode0 bash -c '
+    start=$(date +%s)
+    deadline=$((start+60))
+    until $(curl --silent --fail "${GUARDIAN_RPC}/v1/heartbeats"); do
+      now=$(date +%s)
+      if [ "$now" -ge "$deadline" ]; then
+        echo "Timed out waiting for heartbeat" >&2
+        exit 1
+      fi
+      sleep 0.5
+    done
+  '
+}
+
 fetchVaa() {
   docker exec --env "SIGNED_VAA_ENDPOINT=${SIGNED_VAA_ENDPOINT}" --env "VAA_VERSION=${1}" GuardianNode0 bash -c '
     start=$(date +%s)
@@ -39,11 +54,13 @@ toCleanHex() {
   echo "${1}" | base64 --decode | od -An -vtx1 | tr --delete ' \n'
 }
 
-docker exec anvil-with-verifier cast send --private-key="${PRIVATE_KEY}" "${WORMHOLE_ADDRESS}" "${PUBLISH_SIG}" 0 "0x5ABAD00B" 200
-
 until [ "$(docker inspect --format '{{.State.Running}}' GuardianNode0 2>/dev/null)" = "true" ]; do
   sleep 0.5
 done
+
+waitUntilHeartbeat
+
+docker exec anvil-with-verifier cast send --private-key="${PRIVATE_KEY}" "${WORMHOLE_ADDRESS}" "${PUBLISH_SIG}" 0 "0x5ABAD00B" 200
 
 vaas=(
   "$(fetchVaa 1)"
