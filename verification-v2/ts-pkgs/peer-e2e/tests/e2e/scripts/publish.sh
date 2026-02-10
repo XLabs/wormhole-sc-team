@@ -38,7 +38,7 @@ fetchVaa() {
   docker exec --env "SIGNED_VAA_ENDPOINT=${SIGNED_VAA_ENDPOINT}" --env "VAA_VERSION=${1}" GuardianNode0 bash -c '
     start=$(date +%s)
     deadline=$((start+60))
-    until vaa=$(curl --silent --fail "${SIGNED_VAA_ENDPOINT}?message_id.version=${VAA_VERSION}" | jq --raw-output --exit-status ".vaaBytes"); do
+    until vaa=$(curl --silent --fail "${SIGNED_VAA_ENDPOINT}?message_id.version=${VAA_VERSION}"); do
       now=$(date +%s)
       if [ "$now" -ge "$deadline" ]; then
         echo "Timed out waiting for VAA" >&2
@@ -47,7 +47,7 @@ fetchVaa() {
       sleep 0.5
     done
     echo "$vaa"
-  '
+  ' | jq --raw-output --exit-status ".vaaBytes"
 }
 
 toCleanHex() {
