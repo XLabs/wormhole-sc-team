@@ -51,7 +51,7 @@ createGuardianPrivateKeyFile() {
 for i in "${!GUARDIAN_PRIVATE_KEYS[@]}"
 do
   mkdir -p "./out/$i/keys"
-  createGuardianPrivateKeyFile "$i" "./out/$i/guardian.pem"
+  createGuardianPrivateKeyFile "$i" "./out/$i/keys/guardian.pem"
 done
 
 until docker logs peer-server 2>/dev/null | grep "Peer server running on"
