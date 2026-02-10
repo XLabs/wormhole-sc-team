@@ -22,7 +22,7 @@ RUN \
   go build -mod=readonly -o /guardian/guardiand github.com/certusone/wormhole/node
 
 ENTRYPOINT [ \
-  "/guardiand", "node", \
+  "/guardian/guardiand", "node", \
   "--testnetMode", \
   "--disableTelemetry", \
   "--nodeKey", "/keys/nodeKey", \

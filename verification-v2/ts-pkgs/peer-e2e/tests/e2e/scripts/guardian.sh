@@ -64,9 +64,11 @@ createBootstrapPeers() {
 
 docker build --tag tss-guardian --file ./guardian.Dockerfile --progress=plain ../../../../..
 
+bootstrapPeers=$(createBootstrapPeers)
+
 for i in "${!NODE_KEYS[@]}"
 do
-  base64 --decode <(echo ${NODE_KEYS[$i]}) > ./out/$i/keys/nodeKey
+  base64 --decode <(echo ${NODE_KEYS[$i]}) > "./out/$i/keys/nodeKey"
   # Wait until the signer starts listening
   # TODO: There is a good chance this can be removed
   until docker logs "${SIGNER_NAME}$i" 2>&1 | grep "Server is running"
@@ -81,7 +83,7 @@ do
     --ethContract "${WORMHOLE_ADDRESS}" \
     --tssLeaderAddress "${TSS_LEADER_ADDRESS}" \
     --tssSignerAddress "${SIGNER_NAME}$i:${SIGNER_PORT}" \
-    --bootstrap $(createBootstrapPeers) &
+    --bootstrap ${bootstrapPeers} &
 done
 
 wait
