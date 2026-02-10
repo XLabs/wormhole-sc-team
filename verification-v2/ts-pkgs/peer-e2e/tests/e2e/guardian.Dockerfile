@@ -21,6 +21,9 @@ RUN \
   cd node && \
   go build -mod=readonly -o /guardian/guardiand github.com/certusone/wormhole/node
 
+RUN useradd -r -u 10001 -g root appuser
+USER appuser
+
 ENTRYPOINT [ \
   "/guardian/guardiand", "node", \
   "--testnetMode", \
