@@ -14,8 +14,8 @@ fi
 ./scripts/server.sh &
 ./scripts/client.sh
 
-# Make sure the peer server and the dkg clients are shut down:
 
+# Make sure the peer server and the dkg clients are shut down:
 docker rm -f peer-server
 
 for i in $(seq 0 18)

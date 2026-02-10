@@ -41,6 +41,10 @@ toCleanHex() {
 
 docker exec anvil-with-verifier cast send --private-key="${PRIVATE_KEY}" "${WORMHOLE_ADDRESS}" "${PUBLISH_SIG}" 0 "0x5ABAD00B" 200
 
+until [ "$(docker inspect --format '{{.State.Running}}' GuardianNode0 2>/dev/null)" = "true" ]; do
+  sleep 0.5
+done
+
 vaas=(
   "$(fetchVaa 1)"
   "$(fetchVaa 2)"
