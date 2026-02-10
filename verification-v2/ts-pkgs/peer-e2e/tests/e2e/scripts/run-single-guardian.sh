@@ -24,7 +24,7 @@ echo "0a20${GUARDIAN_PRIVATE_KEY}" | \
   awk 'BEGIN {print "-----BEGIN WORMHOLE GUARDIAN PRIVATE KEY-----"}
     NR>2 {print last}
     {last=$0}
-    END {print "-----END WORMHOLE GUARDIAN PRIVATE KEY-----"}' > "./out/0/guardian.pem"
+    END {print "-----END WORMHOLE GUARDIAN PRIVATE KEY-----"}' > "./out/0/keys/guardian.pem"
 
 until docker logs peer-server 2>/dev/null | grep "Peer server running on"
 do
@@ -35,7 +35,7 @@ done
   "${TLS_HOSTNAME}" \
   "${TLS_PUBLIC_IP}" \
   "./out/0/keys" \
-  "./out/0/guardian.pem" \
+  "./out/0/keys/guardian.pem" \
   "${TLS_PORT}" \
   "${PEER_SERVER_URL}"
 
