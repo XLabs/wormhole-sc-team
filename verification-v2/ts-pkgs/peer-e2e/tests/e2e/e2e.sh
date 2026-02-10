@@ -6,7 +6,7 @@ rm -rf out/
 
 # These scripts are meant to be run with this directory as the working directory
 
-if [[ -z "${GITHUB_ACTIONS:-}" ]]; then
+if [ -z "${GITHUB_ACTIONS:-}" ]; then
     ./scripts/clean.sh
 fi
 ./scripts/setup.sh

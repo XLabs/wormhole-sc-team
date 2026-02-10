@@ -69,7 +69,9 @@ bootstrapPeers=$(createBootstrapPeers)
 for i in "${!NODE_KEYS[@]}"
 do
   base64 --decode <(echo ${NODE_KEYS[$i]}) > "./out/$i/keys/nodeKey"
-  chown --recursive "10001:$(id --user)" "./out/$i/keys"
+  if [ -n "${GITHUB_ACTIONS:-}" ]; then
+    sudo chown --recursive "505:$(id --user)" "./out/$i/keys"
+  fi
   # Wait until the signer starts listening
   # TODO: There is a good chance this can be removed
   until docker logs "${SIGNER_NAME}$i" 2>&1 | grep "Server is running"

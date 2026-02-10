@@ -21,7 +21,7 @@ RUN \
   cd node && \
   go build -mod=readonly -o /guardian/guardiand github.com/certusone/wormhole/node
 
-RUN useradd -r -u 10001 -g root guardian
+RUN useradd -r -u 505 -g root guardian
 USER guardian
 
 ENTRYPOINT [ \
