@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -euo pipefail
+set -xeuo pipefail
 
 # Publish VAA
 PUBLISH_SIG="publishMessage(uint32, bytes, uint8)"
@@ -20,7 +20,7 @@ VERIFY_SIG="verify(bytes)"
 VERIFIER_ADDRESS=0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9
 
 waitUntilHeartbeat() {
-  docker exec --env "GUARDIAN_RPC=${GUARDIAN_RPC}" GuardianNode0 bash -c '
+  docker exec --env "GUARDIAN_RPC=${GUARDIAN_RPC}" ${1} bash -c '
     start=$(date +%s)
     deadline=$((start+60))
     until curl --silent --fail "${GUARDIAN_RPC}/v1/heartbeats"; do
@@ -58,7 +58,10 @@ until [ "$(docker inspect --format '{{.State.Running}}' GuardianNode0 2>/dev/nul
   sleep 0.5
 done
 
-waitUntilHeartbeat
+for i in $(seq 0 18)
+do
+  waitUntilHeartbeat "GuardianNode$i"
+done;
 
 docker exec anvil-with-verifier cast send --private-key="${PRIVATE_KEY}" "${WORMHOLE_ADDRESS}" "${PUBLISH_SIG}" 0 "0x5ABAD00B" 200
 
