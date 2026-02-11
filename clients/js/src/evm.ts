@@ -324,7 +324,7 @@ async function getSigner(
   } else if (chain === "Unichain") {
     overrides = {
       type: 2,
-      maxFeePerGas: ethers.utils.parseUnits("0.0001", "gwei"),
+      maxFeePerGas: ethers.utils.parseUnits("0.001", "gwei"),
       maxPriorityFeePerGas: ethers.utils.parseUnits("0.000003561", "gwei"),
     }
   } else if (chain === "Worldchain") {
