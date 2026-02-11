@@ -237,6 +237,11 @@ const Mainnet = {
     key: getEnvVar("ETH_KEY"),
     chain_id: 31612,
   },
+  MegaETH: {
+    rpc: "https://mainnet.megaeth.com/rpc",
+    key: getEnvVar("ETH_KEY"),
+    chain_id: 4326,
+  },
   Fogo: {
     rpc: "https://mainnet.fogo.io",
     key: getEnvVar("SOLANA_KEY"),

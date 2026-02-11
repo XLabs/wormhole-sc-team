@@ -56,7 +56,7 @@ export function chainToChain(input: string): Chain {
   if (input.length < 2) {
     throw new Error(`Invalid chain: ${input}`);
   }
-  if (input === "HyperEVM" || input === "XRPLEVM") return input;
+  if (input === "HyperEVM" || input === "XRPLEVM" || input === "MegaETH") return input;
   const chainStr = input[0].toUpperCase() + input.slice(1).toLowerCase();
   return toChain(chainStr);
 }
