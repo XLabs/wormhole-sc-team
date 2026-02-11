@@ -28,6 +28,7 @@
 [ ] Fogo
 [ ] XRPLEVM
 [ ] MegaETH
+[ ] 0g
 
 
 # Need to use a special key
@@ -54,7 +55,8 @@ worm submit --network mainnet --chain Polygon "$SUBMIT_VAA"
 worm submit --network mainnet --chain Avalanche "$SUBMIT_VAA"
 🕰️ https://snowtrace.io/tx/<txid>
 worm submit --network mainnet --chain Algorand "$SUBMIT_VAA"
-🕰️ https://explorer.perawallet.app/tx-group/<txid>
+❌ https://explorer.perawallet.app/tx-group/<txid>
+Algorand core contracts storage space is exhausted, so no new registrations can be submitted.
 worm submit --network mainnet --chain Klaytn "$SUBMIT_VAA"
 🕰️ https://kaiascan.io/tx/<txid>?tabId=internalTx&page=1
 worm submit --network mainnet --chain Celo "$SUBMIT_VAA"
@@ -101,4 +103,6 @@ worm submit --network mainnet --chain Fogo "$SUBMIT_VAA"
 worm submit --network mainnet --chain XRPLEVM "$SUBMIT_VAA"
 🕰️ https://explorer.xrplevm.org/tx/<txid>
 worm submit --network mainnet --chain MegaETH "$SUBMIT_VAA"
-🕰️ ??
+🕰️ https://megaeth.blockscout.com/tx/<txid>
+worm submit --network mainnet --chain 0g "$SUBMIT_VAA"
+🕰️ https://chainscan.0g.ai/tx/<txid>
