@@ -123,6 +123,7 @@ function loadPeerConfig(configPath: string): Peer[] {
     const config = JSON.parse(configData) as PeerConfig;
     
     // Validate basic structure
+    // TODO: can we reuse schemas?
     if (!config.Peers || !Array.isArray(config.Peers)) {
       throw new Error('Invalid config: missing or invalid "Peers" array');
     }

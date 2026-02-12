@@ -1,14 +1,16 @@
 import { createPublicClient, http, Address, Hex, PublicClient } from "viem";
 import { Chain, isChainId, toChain } from "@wormhole-foundation/sdk";
-import { Connection, PublicKey } from "@solana/web3.js";
+import { Connection, PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 import { Program, AnchorProvider } from "@coral-xyz/anchor";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
 import { idl, VerificationV2 } from "../idl/verification_v2.js";
+import { inspect } from "util";
 
 const VERIFICATION_FAILED_ERROR_SIGNATURE = "0x32629d58";
 
+// TODO: update this to a better default when the contracts are deployed.
 // Default Solana program ID from IDL
 const DEFAULT_SOLANA_PROGRAM_ID = "GbFfTqMqKDgAMRH8VmDmoLTdvDd1853TnkkEwpydv3J6";
 
@@ -97,8 +99,8 @@ function getSchnorrKeyIndexFromVaa(vaaBytes: Buffer): number {
   return vaaBytes.readUInt32LE(1);
 }
 
-// Solana verification via simulate
-async function verifyVaaSolana(
+// SVM verification via simulate
+async function verifyVaaSvm(
   connection: Connection,
   programId: PublicKey,
   vaaBytes: Buffer,
@@ -129,13 +131,13 @@ async function verifyVaaSolana(
       .instruction();
 
     const { blockhash } = await connection.getLatestBlockhash();
-    const message = new (await import("@solana/web3.js")).TransactionMessage({
+    const message = new TransactionMessage({
       payerKey: PublicKey.default,
       recentBlockhash: blockhash,
       instructions: [ix],
     }).compileToV0Message();
 
-    const tx = new (await import("@solana/web3.js")).VersionedTransaction(message);
+    const tx = new VersionedTransaction(message);
 
     const result = await connection.simulateTransaction(tx, {
       sigVerify: false,
@@ -143,10 +145,10 @@ async function verifyVaaSolana(
 
     if (result.value.err) {
       const logs = result.value.logs?.join("\n") || "No logs";
-      return { verified: false, error: `Simulation failed: ${JSON.stringify(result.value.err)}\nLogs:\n${logs}` };
+      return { verified: false, error: `Simulation failed: ${inspect(result.value.err)}\nLogs:\n${logs}` };
     }
 
-    // For Solana, we don't get the parsed VAA data back from verify_vaa (only verify_vaa_and_decode returns it)
+    // For SVM, we don't get the parsed VAA data back from verify_vaa (only verify_vaa_and_decode returns it)
     // Return a simplified success result
     return {
       verified: true,
@@ -178,7 +180,7 @@ function getVaaType(vaaBytes: Buffer): "Multisig" | "Schnorr" | undefined {
 }
 
 type Args = {
-  chain: "evm" | "solana";
+  chain: "evm" | "svm";
   rpcUrl: string;
   verifierAddress: string;
   vaa: string;
@@ -186,12 +188,12 @@ type Args = {
 
 async function main() {
   const { chain, rpc, verifier, vaa } = await yargs(hideBin(process.argv))
-    .usage("Usage: $0 --chain <evm|solana> --rpc <url> --verifier <address> --vaa <base64>")
+    .usage("Usage: $0 --chain <evm|svm> --rpc <url> --verifier <address> --vaa <base64>")
     .option("chain", {
       alias: "c",
       type: "string",
       description: "Target chain type",
-      choices: ["evm", "solana"] as const,
+      choices: ["evm", "svm"] as const,
       default: "evm" as const,
     })
     .option("rpc", {
@@ -233,12 +235,12 @@ async function main() {
     result = await verifyVaaEvm(client, verifier as Address, vaaHex);
   } else {
     if (vaaType !== "Schnorr") {
-      console.error("Solana verification currently only supports Schnorr VAAs");
+      console.error("SVM verification currently only supports Schnorr VAAs");
       process.exit(1);
     }
     const connection = new Connection(rpc, "confirmed");
     const programId = new PublicKey(verifier || DEFAULT_SOLANA_PROGRAM_ID);
-    result = await verifyVaaSolana(connection, programId, vaaBytes);
+    result = await verifyVaaSvm(connection, programId, vaaBytes);
   }
 
   if (!result.verified) {
@@ -256,7 +258,7 @@ async function main() {
     console.log("Sequence:", result.sequence.toString());
     console.log("Payload Offset:", result.payloadOffset);
   } else {
-    console.log("(Solana verify_vaa does not return parsed VAA data)");
+    console.log("(SVM verify_vaa does not return parsed VAA data)");
   }
   console.log("================================================");
 }
