@@ -4,14 +4,21 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "tsc --build"
+    "build": "tsc --build",
+    "copy:idl": "node scripts/copy-idl.js",
+    "test": "vitest --run"
   },
   "author": "",
   "license": "Apache-2.0",
   "description": "",
   "dependencies": {
+    "@coral-xyz/anchor": "^0.31.1",
+    "@solana/web3.js": "^1.98.4",
     "@wormhole-foundation/sdk": "^4.5.0",
+    "@xlabs-xyz/ledger-signer-ethers-v6": "^0.0.2",
+    "@xlabs-xyz/ledger-signer-solana": "^0.0.2",
     "@xlabs-xyz/peer-lib": "workspace:*",
+    "ethers": "^6.16.0",
     "viem": "^2.41.2",
     "yargs": "^18.0.0"
   },
@@ -19,6 +26,7 @@
     "@types/node": "^24.10.3",
     "@types/yargs": "^17.0.35",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
   }
 }

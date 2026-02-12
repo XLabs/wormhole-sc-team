@@ -27,3 +27,4 @@ guardian_peers.json
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+verification_v2.json
