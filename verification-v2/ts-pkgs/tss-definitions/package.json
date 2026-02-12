@@ -11,11 +11,11 @@
     "test": "yarn build && vitest --run --dir tests/"
   },
   "dependencies": {
-    "@wormhole-foundation/sdk-base": "^4.9.1",
-    "@wormhole-foundation/sdk-definitions": "^4.9.1"
+    "@wormhole-foundation/sdk-base": "^4.10.0",
+    "@wormhole-foundation/sdk-definitions": "^4.10.0"
   },
   "devDependencies": {
-    "@types/node": "^24.10.10",
+    "@types/node": "^24.10.13",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   }
