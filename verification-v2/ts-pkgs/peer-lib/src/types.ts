@@ -14,6 +14,8 @@ export const BasePeerSchema = z.object({
   tlsX509: z.string().min(1, "TlsX509 certificate cannot be empty"),
 });
 
+export const BasePeerArraySchema = z.array(BasePeerSchema);
+
 const guardianAddressSchema = z.string().startsWith("0x", "Guardian address must be an EVM address hex encoded with 0x prefix").length(42, "Guardian address must be an EVM address hex encoded with 0x prefix");
 
 export const GuardianSchema = z.object({

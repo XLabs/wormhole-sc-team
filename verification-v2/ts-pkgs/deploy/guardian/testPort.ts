@@ -1,7 +1,7 @@
 import net from 'net';
 import fs from 'fs';
 import path from 'path';
-import { errorStack } from '@xlabs-xyz/peer-lib';
+import { errorStack, BasePeerArraySchema, BasePeerSchema, validateOrFail } from '@xlabs-xyz/peer-lib';
 
 type PortState = 'open' | 'closed' | 'filtered' | 'error';
 
@@ -19,16 +19,16 @@ interface CheckResult extends Peer {
 
 // Type for peer_config.json
 interface PeerConfigPeer {
-  Hostname: string;
-  Port: number;
-  TlsX509?: string;
+  hostname: string;
+  port: number;
+  tlsX509?: string;
 }
 
 interface PeerConfig {
-  Peers: PeerConfigPeer[];
-  Self?: PeerConfigPeer;
-  NumParticipants?: number;
-  WantedThreshold?: number;
+  peers: PeerConfigPeer[];
+  self?: PeerConfigPeer;
+  numParticipants?: number;
+  wantedThreshold?: number;
 }
 
 /** Check single host:port using a full TCP connect */
@@ -123,23 +123,23 @@ function loadPeerConfig(configPath: string): Peer[] {
     const configData = fs.readFileSync(configPath, 'utf-8');
     const config = JSON.parse(configData) as PeerConfig;
     
-    // Validate basic structure
-    // TODO: can we reuse schemas?
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/strict-boolean-expressions
-    if (!config.Peers || !Array.isArray(config.Peers)) {
-      throw new Error('Invalid config: missing or invalid "Peers" array');
+    if (!config.peers) {
+      throw new Error('Invalid config: missing "Peers" array');
     }
+    validateOrFail(BasePeerArraySchema, config.peers, 'Invalid config: invalid "Peers" array')
     
-    const peers: Peer[] = config.Peers.map((p: PeerConfigPeer) => ({
-      host: p.Hostname,
-      port: p.Port,
+    const peers: Peer[] = config.peers.map((p: PeerConfigPeer) => ({
+      host: p.hostname,
+      port: p.port,
     }));
     
     // Optionally include Self peer if present
-    if (config.Self) {
+    if (config.self) {
+      validateOrFail(BasePeerSchema, config.self, 'Invalid config: invalid "Self" peer')
       peers.push({
-        host: config.Self.Hostname,
-        port: config.Self.Port,
+        host: config.self.hostname,
+        port: config.self.port,
       });
     }
     
