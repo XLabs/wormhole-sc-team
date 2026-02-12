@@ -193,8 +193,7 @@ abstract contract VerificationTestAPI is Test, VerificationMessageBuilder {
     uint8 signerIndex,
     uint256 privateKey
   ) internal view returns (bytes memory signedMessage) {
-    bytes32 shardId = keccak256(abi.encode(pubKeyX, pubKeyY));
-    bytes32 digest = wormholeVerifier.getRegisterGuardianDigest(keyIndex, nonce, shardId);
+    bytes32 digest = wormholeVerifier.getRegisterGuardianDigest(keyIndex, nonce, pubKeyX, pubKeyY);
 
     (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, digest);
 

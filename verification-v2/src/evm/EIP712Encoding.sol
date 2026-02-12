@@ -72,18 +72,18 @@ contract EIP712Encoding is IERC5267 {
   function getRegisterGuardianDigest(
     uint32 thresholdKeyIndex,
     uint256 nonce,
-    bytes32 guardianId
+    bytes32 pubKeyX,
+    bytes32 pubKeyY
   ) public view returns (bytes32) {
     /// forge-lint: disable-start(asm-keccak256)
     bytes32 idHash = keccak256(abi.encode(
       REGISTER_TYPE_HASH,
       thresholdKeyIndex,
       nonce,
-      guardianId
+      pubKeyX,
+      pubKeyY
     ));
-    /// forge-lint: disable-end(asm-keccak256)
 
-    /// forge-lint: disable-start(asm-keccak256)
     return keccak256(abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR(), idHash));
     /// forge-lint: disable-end(asm-keccak256)
   }

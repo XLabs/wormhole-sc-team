@@ -1165,8 +1165,7 @@ contract WormholeVerifier is EIP712Encoding {
     // Verify the signature
     // We're not doing replay protection with the signature itself so we don't care about
     // verifying only canonical (low s) signatures.
-    bytes32 shardId = keccak256(abi.encode(pubKeyX, pubKeyY));
-    bytes32 digest = getRegisterGuardianDigest(schnorrKeyIndex, nonce, shardId);
+    bytes32 digest = getRegisterGuardianDigest(schnorrKeyIndex, nonce, pubKeyX, pubKeyY);
     address signatory = ecrecover(digest, v, r, s);
     require(signatory == expected, UpdateFailed(baseOffset | MASK_UPDATE_RESULT_SIGNATURE_MISMATCH));
 
