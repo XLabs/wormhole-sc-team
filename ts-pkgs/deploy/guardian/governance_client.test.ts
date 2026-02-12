@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ethers } from 'ethers';
 import fs from 'fs';
 import { 
@@ -8,7 +8,7 @@ import {
   encodeUpdate 
 } from './governance_client.js';
 import { parseGuardianKey } from '@xlabs-xyz/peer-lib';
-import { Connection, Keypair, PublicKey } from '@solana/web3.js';
+import { Keypair, PublicKey } from '@solana/web3.js';
 
 // Mock dependencies
 vi.mock('fs');
@@ -20,7 +20,7 @@ vi.mock('@xlabs-xyz/peer-lib', () => ({
 
 describe('Encoding Functions', () => {
   describe('encodeSetShardId', () => {
-    it('should encode set_shard_id command correctly', () => {
+    it('should encode set-shard-id command correctly', () => {
       const guardianMessage = Buffer.from([0x01, 0x02, 0x03, 0x04]);
       const result = encodeSetShardId(guardianMessage);
       
@@ -51,7 +51,7 @@ describe('Encoding Functions', () => {
   });
 
   describe('encodeAppendSchnorrKey', () => {
-    it('should encode append_schnorr_key command correctly', () => {
+    it('should encode append-schnorr_key command correctly', () => {
       const vaa = Buffer.from([0x10, 0x20, 0x30, 0x40, 0x50]);
       const result = encodeAppendSchnorrKey(vaa);
       
@@ -81,7 +81,7 @@ describe('Encoding Functions', () => {
   });
 
   describe('encodePullMultisigKeyData', () => {
-    it('should encode pull_multisigs command correctly', () => {
+    it('should encode pull-multisigs command correctly', () => {
       const limit = 42;
       const result = encodePullMultisigKeyData(limit);
       
@@ -118,15 +118,14 @@ describe('Encoding Functions', () => {
   });
 
   describe('encodeUpdate', () => {
-    it('should encode set_shard_id command', () => {
+    it('should encode set-shard-id command', () => {
       const args = {
         chain: 'evm' as const,
         contractAddress: '0x1234567890123456789012345678901234567890',
         rpcUrl: 'https://test.rpc',
-        signer: 'test.key',
-        chainId: 1,
-        limit: 0,
-        command: 'set_shard_id' as const,
+        signer: {type: "keyfile", path:"test.key"} as const,
+        pullLimit: 0,
+        command: 'set-shard-id' as const,
         guardianMessage: 'test.msg',
       };
       const dataBytes = Buffer.from([0x01, 0x02, 0x03]);
@@ -141,15 +140,14 @@ describe('Encoding Functions', () => {
       expect(result).toBe(expected);
     });
 
-    it('should encode append_schnorr command with pull_multisigs', () => {
+    it('should encode append-schnorr command with pull-multisigs', () => {
       const args = {
         chain: 'evm' as const,
         contractAddress: '0x1234567890123456789012345678901234567890',
         rpcUrl: 'https://test.rpc',
-        signer: 'test.key',
-        chainId: 1,
-        limit: 10,
-        command: 'append_schnorr' as const,
+        signer: {type: "keyfile", path:"test.key"} as const,
+        pullLimit: 10,
+        command: 'append-schnorr' as const,
         vaa: 'test.vaa',
       };
       const dataBytes = Buffer.from([0x10, 0x20, 0x30]);
@@ -159,22 +157,21 @@ describe('Encoding Functions', () => {
       expect(result).toBeTruthy();
       expect(result.startsWith('0x')).toBe(true);
       
-      // Should be concatenation of pull_multisigs + append_schnorr
-      const pullData = encodePullMultisigKeyData(args.limit);
+      // Should be concatenation of pull-multisigs + append-schnorr
+      const pullData = encodePullMultisigKeyData(args.pullLimit);
       const appendData = encodeAppendSchnorrKey(dataBytes);
       const expected = ethers.solidityPacked(['bytes', 'bytes'], [pullData, appendData]);
       expect(result).toBe(expected);
     });
 
-    it('should encode pull_multisigs command', () => {
+    it('should encode pull-multisigs command', () => {
       const args = {
         chain: 'evm' as const,
         contractAddress: '0x1234567890123456789012345678901234567890',
         rpcUrl: 'https://test.rpc',
-        signer: 'test.key',
-        chainId: 1,
-        limit: 5,
-        command: 'pull_multisigs' as const,
+        signer: {type: "keyfile", path:"test.key"} as const,
+        pullLimit: 5,
+        command: 'pull-multisigs' as const,
       };
       const dataBytes = Buffer.alloc(0);
       
@@ -183,7 +180,7 @@ describe('Encoding Functions', () => {
       expect(result).toBeTruthy();
       
       // Should match encodePullMultisigKeyData output
-      const expected = encodePullMultisigKeyData(args.limit);
+      const expected = encodePullMultisigKeyData(args.pullLimit);
       expect(result).toBe(expected);
     });
   });
@@ -244,10 +241,9 @@ describe('File-based Signing', () => {
         chain: 'evm' as const,
         contractAddress: '0x1234567890123456789012345678901234567890',
         rpcUrl: 'https://test.rpc',
-        signer: 'test.key',
-        chainId: 1,
-        limit: 0,
-        command: 'set_shard_id' as const,
+        signer: {type: "keyfile", path:"test.key"} as const,
+        pullLimit: 0,
+        command: 'set-shard-id' as const,
         guardianMessage: 'test.msg',
       };
       const dataBytes = Buffer.from([0x01, 0x02, 0x03]);

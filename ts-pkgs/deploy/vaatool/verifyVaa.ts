@@ -5,10 +5,7 @@ import { Program, AnchorProvider } from "@coral-xyz/anchor";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
-import type { VerificationV2 } from "../../../src/solana/target/types/verification_v2.js";
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const idl = require("../../../src/solana/target/idl/verification_v2.json");
+import { idl, VerificationV2 } from "../idl/verification_v2.js";
 
 const VERIFICATION_FAILED_ERROR_SIGNATURE = "0x32629d58";
 
@@ -127,7 +124,7 @@ async function verifyVaaSolana(
     const ix = await program.methods
       .verifyVaa(vaaBytes)
       .accounts({
-        keyAccount: schnorrKeyPda,
+        schnorrKey: schnorrKeyPda,
       })
       .instruction();
 

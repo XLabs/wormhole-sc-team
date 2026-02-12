@@ -1,102 +1,20 @@
-{
+/**
+ * Program IDL in camelCase format in order to be used in JS/TS.
+ *
+ * Note that this is only a type helper and is not the actual IDL. The original
+ * IDL can be found at `target/idl/verification_v2.json`.
+ */
+export type VerificationV2 = {
   "address": "GbFfTqMqKDgAMRH8VmDmoLTdvDd1853TnkkEwpydv3J6",
   "metadata": {
-    "name": "verification_v2",
+    "name": "verificationV2",
     "version": "0.1.0",
     "spec": "0.1.0",
     "description": "Wormhole threshold signature verification program"
   },
   "instructions": [
     {
-      "name": "append_ecdsa_key",
-      "discriminator": [
-        74,
-        74,
-        208,
-        15,
-        133,
-        104,
-        213,
-        132
-      ],
-      "accounts": [
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "vaa"
-        },
-        {
-          "name": "signature_set"
-        },
-        {
-          "name": "latest_ecdsa_key",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  108,
-                  97,
-                  116,
-                  101,
-                  115,
-                  116,
-                  101,
-                  99,
-                  100,
-                  115,
-                  97,
-                  107,
-                  101,
-                  121
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "new_ecdsa_key",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  101,
-                  99,
-                  100,
-                  115,
-                  97,
-                  107,
-                  101,
-                  121
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vaa"
-              }
-            ]
-          }
-        },
-        {
-          "name": "old_ecdsa_key",
-          "writable": true,
-          "optional": true
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "append_schnorr_key",
+      "name": "appendSchnorrKey",
       "discriminator": [
         8,
         6,
@@ -117,10 +35,10 @@
           "name": "vaa"
         },
         {
-          "name": "signature_set"
+          "name": "signatureSet"
         },
         {
-          "name": "latest_schnorr_key",
+          "name": "latestKey",
           "writable": true,
           "pda": {
             "seeds": [
@@ -133,13 +51,6 @@
                   101,
                   115,
                   116,
-                  115,
-                  99,
-                  104,
-                  110,
-                  111,
-                  114,
-                  114,
                   107,
                   101,
                   121
@@ -149,7 +60,7 @@
           }
         },
         {
-          "name": "new_schnorr_key",
+          "name": "newSchnorrKey",
           "writable": true,
           "pda": {
             "seeds": [
@@ -176,19 +87,19 @@
           }
         },
         {
-          "name": "old_schnorr_key",
+          "name": "oldSchnorrKey",
           "writable": true,
           "optional": true
         },
         {
-          "name": "system_program",
+          "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": []
     },
     {
-      "name": "verify_vaa",
+      "name": "verifyVaa",
       "discriminator": [
         147,
         254,
@@ -201,18 +112,18 @@
       ],
       "accounts": [
         {
-          "name": "key_account"
+          "name": "schnorrKey"
         }
       ],
       "args": [
         {
-          "name": "raw_vaa",
+          "name": "rawVaa",
           "type": "bytes"
         }
       ]
     },
     {
-      "name": "verify_vaa_and_decode",
+      "name": "verifyVaaAndDecode",
       "discriminator": [
         234,
         128,
@@ -225,19 +136,19 @@
       ],
       "accounts": [
         {
-          "name": "key_account"
+          "name": "schnorrKey"
         }
       ],
       "args": [
         {
-          "name": "raw_vaa",
+          "name": "rawVaa",
           "type": "bytes"
         }
       ],
       "returns": "bytes"
     },
     {
-      "name": "verify_vaa_header_with_digest",
+      "name": "verifyVaaHeaderWithDigest",
       "discriminator": [
         228,
         60,
@@ -250,13 +161,18 @@
       ],
       "accounts": [
         {
-          "name": "key_account"
+          "name": "schnorrKey"
         }
       ],
       "args": [
         {
-          "name": "raw_vaa_header",
-          "type": "bytes"
+          "name": "rawVaaHeader",
+          "type": {
+            "array": [
+              "u8",
+              57
+            ]
+          }
         },
         {
           "name": "digest",
@@ -272,46 +188,20 @@
   ],
   "accounts": [
     {
-      "name": "ECDSAKeyAccount",
+      "name": "latestKeyAccount",
       "discriminator": [
-        224,
-        208,
-        218,
-        94,
-        194,
-        145,
-        77,
-        151
+        26,
+        81,
+        106,
+        22,
+        26,
+        185,
+        50,
+        132
       ]
     },
     {
-      "name": "LatestECDSAKeyAccount",
-      "discriminator": [
-        73,
-        118,
-        207,
-        182,
-        110,
-        212,
-        135,
-        226
-      ]
-    },
-    {
-      "name": "LatestSchnorrKeyAccount",
-      "discriminator": [
-        198,
-        126,
-        27,
-        188,
-        86,
-        108,
-        157,
-        207
-      ]
-    },
-    {
-      "name": "SchnorrKeyAccount",
+      "name": "schnorrKeyAccount",
       "discriminator": [
         239,
         35,
@@ -327,64 +217,17 @@
   "errors": [
     {
       "code": 6000,
-      "name": "InvalidSignature",
+      "name": "invalidSignature",
       "msg": "Signature does not satisfy preconditions"
     },
     {
       "code": 6001,
-      "name": "SignatureVerificationFailed",
-      "msg": "Signature verification failed"
-    },
-    {
-      "code": 6002,
-      "name": "RecoveryFailed",
-      "msg": "Public key recovery failed"
+      "name": "signatureVerificationFailed"
     }
   ],
   "types": [
     {
-      "name": "ECDSAKey",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "address",
-            "type": {
-              "array": [
-                "u8",
-                20
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "ECDSAKeyAccount",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "index",
-            "type": "u32"
-          },
-          {
-            "name": "ecdsa_key",
-            "type": {
-              "defined": {
-                "name": "ECDSAKey"
-              }
-            }
-          },
-          {
-            "name": "expiration_timestamp",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "LatestECDSAKeyAccount",
+      "name": "latestKeyAccount",
       "type": {
         "kind": "struct",
         "fields": [
@@ -396,19 +239,7 @@
       }
     },
     {
-      "name": "LatestSchnorrKeyAccount",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "account",
-            "type": "pubkey"
-          }
-        ]
-      }
-    },
-    {
-      "name": "SchnorrKey",
+      "name": "schnorrKey",
       "type": {
         "kind": "struct",
         "fields": [
@@ -425,7 +256,7 @@
       }
     },
     {
-      "name": "SchnorrKeyAccount",
+      "name": "schnorrKeyAccount",
       "type": {
         "kind": "struct",
         "fields": [
@@ -434,19 +265,298 @@
             "type": "u32"
           },
           {
-            "name": "schnorr_key",
+            "name": "schnorrKey",
             "type": {
               "defined": {
-                "name": "SchnorrKey"
+                "name": "schnorrKey"
               }
             }
           },
           {
-            "name": "expiration_timestamp",
+            "name": "expirationTimestamp",
             "type": "u64"
           }
         ]
       }
     }
   ]
-}
+};
+
+
+export const idl: VerificationV2 = {
+  "address": "GbFfTqMqKDgAMRH8VmDmoLTdvDd1853TnkkEwpydv3J6",
+  "metadata": {
+    "name": "verificationV2",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Wormhole threshold signature verification program"
+  },
+  "instructions": [
+    {
+      "name": "appendSchnorrKey",
+      "discriminator": [
+        8,
+        6,
+        50,
+        98,
+        26,
+        48,
+        99,
+        30
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "vaa"
+        },
+        {
+          "name": "signatureSet"
+        },
+        {
+          "name": "latestKey",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  97,
+                  116,
+                  101,
+                  115,
+                  116,
+                  107,
+                  101,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "newSchnorrKey",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  99,
+                  104,
+                  110,
+                  111,
+                  114,
+                  114,
+                  107,
+                  101,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "vaa"
+              }
+            ]
+          }
+        },
+        {
+          "name": "oldSchnorrKey",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "verifyVaa",
+      "discriminator": [
+        147,
+        254,
+        88,
+        41,
+        24,
+        223,
+        219,
+        29
+      ],
+      "accounts": [
+        {
+          "name": "schnorrKey"
+        }
+      ],
+      "args": [
+        {
+          "name": "rawVaa",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "verifyVaaAndDecode",
+      "discriminator": [
+        234,
+        128,
+        204,
+        252,
+        150,
+        171,
+        153,
+        75
+      ],
+      "accounts": [
+        {
+          "name": "schnorrKey"
+        }
+      ],
+      "args": [
+        {
+          "name": "rawVaa",
+          "type": "bytes"
+        }
+      ],
+      "returns": "bytes"
+    },
+    {
+      "name": "verifyVaaHeaderWithDigest",
+      "discriminator": [
+        228,
+        60,
+        144,
+        171,
+        140,
+        217,
+        77,
+        189
+      ],
+      "accounts": [
+        {
+          "name": "schnorrKey"
+        }
+      ],
+      "args": [
+        {
+          "name": "rawVaaHeader",
+          "type": {
+            "array": [
+              "u8",
+              57
+            ]
+          }
+        },
+        {
+          "name": "digest",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "latestKeyAccount",
+      "discriminator": [
+        26,
+        81,
+        106,
+        22,
+        26,
+        185,
+        50,
+        132
+      ]
+    },
+    {
+      "name": "schnorrKeyAccount",
+      "discriminator": [
+        239,
+        35,
+        12,
+        8,
+        168,
+        74,
+        77,
+        153
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "invalidSignature",
+      "msg": "Signature does not satisfy preconditions"
+    },
+    {
+      "code": 6001,
+      "name": "signatureVerificationFailed"
+    }
+  ],
+  "types": [
+    {
+      "name": "latestKeyAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "account",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "schnorrKey",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "schnorrKeyAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "index",
+            "type": "u32"
+          },
+          {
+            "name": "schnorrKey",
+            "type": {
+              "defined": {
+                "name": "schnorrKey"
+              }
+            }
+          },
+          {
+            "name": "expirationTimestamp",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+};

@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ethers } from 'ethers';
 import { Connection, Keypair, PublicKey, Transaction } from '@solana/web3.js';
-import { Program, AnchorProvider, Wallet } from '@coral-xyz/anchor';
 import fs from 'fs';
 import { 
   encodeSetShardId, 
@@ -45,7 +44,7 @@ describe('EVM Contract Integration', () => {
       expect(decoded.slice(1)).toEqual(new Uint8Array(guardianMessage));
     });
 
-    it('should encode append_schnorr with pull_multisigs correctly', () => {
+    it('should encode append-schnorr with pull-multisigs correctly', () => {
       const vaa = Buffer.from([0x10, 0x20, 0x30]);
       const limit = 5;
       
@@ -53,13 +52,13 @@ describe('EVM Contract Integration', () => {
       const appendData = encodeAppendSchnorrKey(vaa);
       const combined = ethers.solidityPacked(['bytes', 'bytes'], [pullData, appendData]);
       
-      // Verify structure: pull_multisigs (5 bytes) + append_schnorr (variable)
+      // Verify structure: pull-multisigs (5 bytes) + append-schnorr (variable)
       expect(combined.startsWith('0x')).toBe(true);
       
       const decoded = ethers.getBytes(combined);
-      // First 5 bytes should be pull_multisigs: opcode (1) + limit (4)
+      // First 5 bytes should be pull-multisigs: opcode (1) + limit (4)
       expect(decoded[0]).toBe(2); // UPDATE_PULL_MULTISIG_KEY_DATA
-      // Next should be append_schnorr: opcode (1) + length (2) + data
+      // Next should be append-schnorr: opcode (1) + length (2) + data
       const appendStart = 5;
       expect(decoded[appendStart]).toBe(1); // UPDATE_APPEND_SCHNORR_KEY
     });
@@ -95,12 +94,12 @@ describe('EVM Contract Integration', () => {
     it('should encode data that matches expected contract input format', () => {
       const testCases = [
         {
-          command: 'set_shard_id' as const,
+          command: 'set-shard-id' as const,
           data: Buffer.from([0x01, 0x02, 0x03]),
           expectedOpcode: 0,
         },
         {
-          command: 'pull_multisigs' as const,
+          command: 'pull-multisigs' as const,
           data: Buffer.alloc(0),
           expectedOpcode: 2,
           limit: 10,
@@ -116,7 +115,7 @@ describe('EVM Contract Integration', () => {
           chainId: 1,
           limit: testCase.limit || 0,
           command: testCase.command,
-          ...(testCase.command === 'set_shard_id' ? { guardianMessage: 'test.msg' } : {}),
+          ...(testCase.command === 'set-shard-id' ? { guardianMessage: 'test.msg' } : {}),
         };
         
         const encoded = encodeUpdate(args, testCase.data);
@@ -251,24 +250,11 @@ describe('Solana Program Integration', () => {
       expect(pda).toBeInstanceOf(PublicKey);
       expect(pda.toBase58().length).toBeGreaterThan(0);
     });
-
-    it('should create connection and provider correctly', () => {
-      const connection = new Connection(testRpcUrl, 'confirmed');
-      const keypair = Keypair.generate();
-      const wallet = new Wallet(keypair);
-      const provider = new AnchorProvider(connection, wallet, { commitment: 'confirmed' });
-      
-      expect(provider.connection).toBe(connection);
-      expect(provider.wallet).toBe(wallet);
-    });
   });
 
   describe('Instruction Building (Mocked)', () => {
     it('should build appendSchnorrKey instruction with correct accounts', async () => {
-      const connection = new Connection(testRpcUrl, 'confirmed');
       const keypair = Keypair.generate();
-      const wallet = new Wallet(keypair);
-      const provider = new AnchorProvider(connection, wallet, { commitment: 'confirmed' });
       
       // Mock IDL - we'll use a minimal structure
       const mockIdl = {
@@ -399,7 +385,7 @@ describe('Solana Program Integration', () => {
 
 describe('End-to-End Encoding Verification', () => {
   it('should produce encoding that matches contract expectations', () => {
-    // Test set_shard_id
+    // Test set-shard-id
     const guardianMessage = Buffer.from([0x01, 0x02, 0x03, 0x04, 0x05]);
     const encoded = encodeSetShardId(guardianMessage);
     
@@ -420,7 +406,7 @@ describe('End-to-End Encoding Verification', () => {
     expect(callData).toBeTruthy();
   });
 
-  it('should handle append_schnorr with various VAA sizes', () => {
+  it('should handle append-schnorr with various VAA sizes', () => {
     const sizes = [0, 1, 10, 100, 1000, 5000];
     
     for (const size of sizes) {
@@ -438,7 +424,7 @@ describe('End-to-End Encoding Verification', () => {
     }
   });
 
-  it('should encode pull_multisigs with various limits', () => {
+  it('should encode pull-multisigs with various limits', () => {
     const limits = [0, 1, 10, 100, 1000, 0xFFFFFFFF];
     
     for (const limit of limits) {
