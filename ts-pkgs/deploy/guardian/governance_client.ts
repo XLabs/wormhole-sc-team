@@ -4,7 +4,7 @@ import { Connection, Keypair, PublicKey, Transaction } from "@solana/web3.js";
 import { Program } from "@coral-xyz/anchor";
 import yargs from "yargs";
 import { hideBin } from 'yargs/helpers';
-import { parseGuardianKey, errorStack } from '@xlabs-xyz/peer-lib';
+import { errorStack } from '@xlabs-xyz/peer-lib';
 
 import {idl, VerificationV2} from "../idl/verification_v2.js";
 
@@ -123,9 +123,11 @@ async function createEvmSigner(args: EvmArgs) {
   if (args.signer.type === "ledger") {
     const {LedgerSigner} = await import("@xlabs-xyz/ledger-signer-ethers-v6");
     // remove cast as any when ethers is made peer dependency of ledger signer
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
     return LedgerSigner.create(provider as any, args.signer.derivationPath);
   } else {
     const keyfile = fs.readFileSync(args.signer.path, {encoding: "utf8"});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return new ethers.Wallet(JSON.parse(keyfile), provider);
   }
 }
@@ -140,26 +142,33 @@ async function executeEvmTransaction(args: EvmArgs, dataBytes: Buffer): Promise<
   console.log(`RPC URL: ${args.rpcUrl}`);
 
   console.log('\nSending transaction...');
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
   const contract = new ethers.Contract(args.contractAddress, UPDATE_ABI, signer as any);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const tx = await contract.update(updateData);
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   console.log(`Transaction sent: ${tx.hash}`);
   console.log('Waiting for confirmation...');
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
   const receipt = await tx.wait();
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   if (receipt.status !== 1) {
     console.error('Transaction confirmed, but execution failed');
     process.exit(1);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   console.log(`Transaction confirmed in block ${receipt.blockNumber}`);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
   console.log(`Gas used: ${receipt.gasUsed.toString()}`);
 }
 
 async function createSvmSigner(args: SvmArgs) {
   let publicKey: PublicKey;
-  let signTransaction;
+  let signTransaction: (tx: Transaction) => Promise<void> | void;
   if (args.signer.type === "ledger") {
     const {SolanaLedgerSigner} = await import("@xlabs-xyz/ledger-signer-solana");
     // remove cast as any when ethers is made peer dependency of ledger signer
@@ -171,9 +180,10 @@ async function createSvmSigner(args: SvmArgs) {
     }
   } else {
     const keyfile = fs.readFileSync(args.signer.path, {encoding: "utf8"});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const signer = Keypair.fromSecretKey(Uint8Array.from(JSON.parse(keyfile)));
     publicKey = signer.publicKey;
-    signTransaction = async (tx: Transaction) => {
+    signTransaction = (tx: Transaction) => {
       tx.partialSign(signer);
     }
   }
@@ -229,7 +239,7 @@ async function executeSolanaTransaction(args: SvmArgs): Promise<void> {
   const signature = await connection.sendRawTransaction(tx.serialize());
   const receipt = await connection.confirmTransaction({signature, ...blockhash}, "confirmed",);
   console.log(`Transaction confirmed: ${signature}`);
-  if (receipt.value.err !== null) throw new Error(`Transaction failed: ${receipt.value.err.toString()}`);
+  if (receipt.value.err !== null) throw new Error(`Transaction failed: ${errorStack(receipt.value.err)}`);
 }
 
 function main() {
@@ -287,10 +297,11 @@ function main() {
           if (args.ledger !== undefined) {
             signer = { type: "ledger", derivationPath: args.ledger } as const;
           } else {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             signer = { type: "keyfile", path: args.key! } as const;
           }
 
-          executeSolanaTransaction({...args, signer})
+          return executeSolanaTransaction({...args, signer});
         }
       )
       .demandCommand(1, 'A command is required')
@@ -298,6 +309,7 @@ function main() {
     )
     .command('evm', 'EVM commands',
       (yargs) => yargs
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         .coerce("contract-address", (arg) => ethers.getAddress(arg))
         .default("contract-address", DEFAULT_EVM_CONTRACT_ADDRESS)
         .default("rpc-url", 'https://ethereum-rpc.publicnode.com')
@@ -326,6 +338,7 @@ function main() {
             if (args.ledger !== undefined) {
               signer = { type: "ledger", derivationPath: args.ledger } as const;
             } else {
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               signer = { type: "keyfile", path: args.key! } as const;
             }
             const guardianMessage = Buffer.from(args.guardianMessage, 'base64');
@@ -344,6 +357,7 @@ function main() {
             if (args.ledger !== undefined) {
               signer = { type: "ledger", derivationPath: args.ledger } as const;
             } else {
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               signer = { type: "keyfile", path: args.key! } as const;
             }
 
@@ -355,6 +369,7 @@ function main() {
           if (args.ledger !== undefined) {
             signer = { type: "ledger", derivationPath: args.ledger } as const;
           } else {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             signer = { type: "keyfile", path: args.key! } as const;
           }
 

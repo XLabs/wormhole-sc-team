@@ -1,7 +1,7 @@
 import { createPublicClient, http, Address, Hex, PublicClient } from "viem";
 import { Chain, isChainId, toChain } from "@wormhole-foundation/sdk";
 import { Connection, PublicKey, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
-import { Program, AnchorProvider } from "@coral-xyz/anchor";
+import { Program } from "@coral-xyz/anchor";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
@@ -107,17 +107,12 @@ async function verifyVaaSvm(
 ): Promise<VerificationResult> {
   try {
     // Create a read-only provider (no wallet needed for simulation)
-    const provider = new AnchorProvider(
+    const provider = {
       connection,
-      {
-        publicKey: PublicKey.default,
-        signTransaction: async () => { throw new Error("Read-only"); },
-        signAllTransactions: async () => { throw new Error("Read-only"); },
-      },
-      { commitment: "confirmed" }
-    );
+      publicKey: PublicKey.default,
+    };
 
-    const program = new Program<VerificationV2>(idl as VerificationV2, provider);
+    const program = new Program<VerificationV2>(idl, provider);
 
     const schnorrKeyIndex = getSchnorrKeyIndexFromVaa(vaaBytes);
     const schnorrKeyPda = deriveSchnorrKeyPda(programId, schnorrKeyIndex);
@@ -143,8 +138,8 @@ async function verifyVaaSvm(
       sigVerify: false,
     });
 
-    if (result.value.err) {
-      const logs = result.value.logs?.join("\n") || "No logs";
+    if (result.value.err !== null) {
+      const logs = result.value.logs?.join("\n") ?? "No logs";
       return { verified: false, error: `Simulation failed: ${inspect(result.value.err)}\nLogs:\n${logs}` };
     }
 
@@ -177,13 +172,6 @@ function getVaaType(vaaBytes: Buffer): "Multisig" | "Schnorr" | undefined {
     return "Schnorr";
   }
   return undefined;
-}
-
-type Args = {
-  chain: "evm" | "svm";
-  rpcUrl: string;
-  verifierAddress: string;
-  vaa: string;
 }
 
 async function main() {

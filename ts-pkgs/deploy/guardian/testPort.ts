@@ -1,6 +1,7 @@
 import net from 'net';
 import fs from 'fs';
 import path from 'path';
+import { errorStack } from '@xlabs-xyz/peer-lib';
 
 type PortState = 'open' | 'closed' | 'filtered' | 'error';
 
@@ -124,6 +125,7 @@ function loadPeerConfig(configPath: string): Peer[] {
     
     // Validate basic structure
     // TODO: can we reuse schemas?
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/strict-boolean-expressions
     if (!config.Peers || !Array.isArray(config.Peers)) {
       throw new Error('Invalid config: missing or invalid "Peers" array');
     }
@@ -199,8 +201,7 @@ function loadPeerConfig(configPath: string): Peer[] {
   for (const r of out) {
     const statusSymbol = r.state === 'open' ? '✓' : '✗';
     const rttInfo = r.rttNs !== undefined ? ` (${(Number(r.rttNs) / 1_000_000).toFixed(2)}ms)` : '';
-    const errorInfo = r.error !== undefined ? ` - ${r.error}` : '';
-    // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions
+    const errorInfo = r.error !== undefined ? ` - ${errorStack(r.error)}` : '';
     console.log(`${statusSymbol} ${r.host}:${r.port} -> ${r.state}${rttInfo}${errorInfo}`);
   }
   

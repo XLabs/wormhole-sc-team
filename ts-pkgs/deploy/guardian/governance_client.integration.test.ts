@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ethers } from 'ethers';
-import { Connection, Keypair, PublicKey, Transaction } from '@solana/web3.js';
+import { Keypair, PublicKey, Transaction } from '@solana/web3.js';
 import fs from 'fs';
 import { 
   encodeSetShardId, 
@@ -102,19 +102,19 @@ describe('EVM Contract Integration', () => {
           command: 'pull-multisigs' as const,
           data: Buffer.alloc(0),
           expectedOpcode: 2,
-          limit: 10,
+          pullLimit: 10,
         },
       ];
 
       for (const testCase of testCases) {
-        const args: any = {
+        const args = {
           chain: 'evm' as const,
           contractAddress: testContractAddress,
           rpcUrl: testRpcUrl,
-          signer: 'test.key',
-          chainId: 1,
-          limit: testCase.limit || 0,
-          command: testCase.command,
+          signer: {type: "keyfile", path:"test.key"} as const,
+          pullLimit: testCase.pullLimit ?? 0,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+          command: testCase.command as any,
           ...(testCase.command === 'set-shard-id' ? { guardianMessage: 'test.msg' } : {}),
         };
         
@@ -177,11 +177,15 @@ describe('EVM Contract Integration', () => {
       vi.spyOn(contract, 'update').mockResolvedValue(mockTx);
       
       // Execute the transaction
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const tx = await contract.update(updateData);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       const receipt = await tx.wait();
       
       expect(contract.update).toHaveBeenCalledWith(updateData);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect(receipt.status).toBe(1);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect(receipt.blockNumber).toBe(12345);
     });
 
@@ -215,9 +219,12 @@ describe('EVM Contract Integration', () => {
       
       vi.spyOn(contract, 'update').mockResolvedValue(mockTx);
       
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const tx = await contract.update(updateData);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       const receipt = await tx.wait();
       
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect(receipt.status).toBe(0);
     });
   });
@@ -225,7 +232,6 @@ describe('EVM Contract Integration', () => {
 
 describe('Solana Program Integration', () => {
   const testProgramId = new PublicKey('GbFfTqMqKDgAMRH8VmDmoLTdvDd1853TnkkEwpydv3J6');
-  const testRpcUrl = 'http://localhost:8899';
 
   describe('Program Interface Verification', () => {
     it('should derive PDAs correctly for program', () => {
@@ -253,31 +259,31 @@ describe('Solana Program Integration', () => {
   });
 
   describe('Instruction Building (Mocked)', () => {
-    it('should build appendSchnorrKey instruction with correct accounts', async () => {
+    it('should build appendSchnorrKey instruction with correct accounts', () => {
       const keypair = Keypair.generate();
       
       // Mock IDL - we'll use a minimal structure
-      const mockIdl = {
-        version: '0.1.0',
-        name: 'verification_v2',
-        metadata: {
-          address: testProgramId.toBase58(),
-        },
-        instructions: [
-          {
-            name: 'appendSchnorrKey',
-            accounts: [
-              { name: 'payer', isSigner: true, isWritable: true },
-              { name: 'vaa', isSigner: false, isWritable: false },
-              { name: 'signatureSet', isSigner: false, isWritable: false },
-              { name: 'latestSchnorrKey', isSigner: false, isWritable: false },
-              { name: 'newSchnorrKey', isSigner: false, isWritable: true },
-              { name: 'oldSchnorrKey', isSigner: false, isWritable: false, optional: true },
-            ],
-            args: [],
-          },
-        ],
-      };
+      // const mockIdl = {
+      //   version: '0.1.0',
+      //   name: 'verification_v2',
+      //   metadata: {
+      //     address: testProgramId.toBase58(),
+      //   },
+      //   instructions: [
+      //     {
+      //       name: 'appendSchnorrKey',
+      //       accounts: [
+      //         { name: 'payer', isSigner: true, isWritable: true },
+      //         { name: 'vaa', isSigner: false, isWritable: false },
+      //         { name: 'signatureSet', isSigner: false, isWritable: false },
+      //         { name: 'latestSchnorrKey', isSigner: false, isWritable: false },
+      //         { name: 'newSchnorrKey', isSigner: false, isWritable: true },
+      //         { name: 'oldSchnorrKey', isSigner: false, isWritable: false, optional: true },
+      //       ],
+      //       args: [],
+      //     },
+      //   ],
+      // };
       
       // Skip Program creation test - it requires full IDL structure
       // Instead, test that we can build the accounts structure correctly
@@ -306,16 +312,18 @@ describe('Solana Program Integration', () => {
       expect(accounts.signatureSet).toBeInstanceOf(PublicKey);
       expect(accounts.latestSchnorrKey).toBeInstanceOf(PublicKey);
       expect(accounts.newSchnorrKey).toBeInstanceOf(PublicKey);
-      
-      // Mock the program method call
-      const program = { methods: { appendSchnorrKey: vi.fn() } } as any;
-      
+
       // Verify accounts structure matches what would be passed to the program
       expect(accounts).toMatchObject({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         payer: expect.any(PublicKey),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         vaa: expect.any(PublicKey),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         signatureSet: expect.any(PublicKey),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         latestSchnorrKey: expect.any(PublicKey),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         newSchnorrKey: expect.any(PublicKey),
         oldSchnorrKey: null,
       });
@@ -323,7 +331,6 @@ describe('Solana Program Integration', () => {
 
     it('should build transaction with correct structure', () => {
       const keypair = Keypair.generate();
-      const connection = new Connection(testRpcUrl, 'confirmed');
       
       const mockInstruction = {
         keys: [],
@@ -331,11 +338,11 @@ describe('Solana Program Integration', () => {
         data: Buffer.from([0x01, 0x02, 0x03]),
       };
       
-      const tx = new Transaction().add(mockInstruction as any);
+      const tx = new Transaction().add(mockInstruction);
       tx.feePayer = keypair.publicKey;
       
       expect(tx.instructions.length).toBe(1);
-      expect(tx.feePayer?.equals(keypair.publicKey)).toBe(true);
+      expect(tx.feePayer.equals(keypair.publicKey)).toBe(true);
     });
   });
 
