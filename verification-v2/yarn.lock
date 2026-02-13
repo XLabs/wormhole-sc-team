@@ -4316,6 +4316,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@xlabs-xyz/tss-definitions@workspace:ts-pkgs/tss-definitions"
   dependencies:
+    "@solana/web3.js": "npm:^1.98.4"
     "@types/node": "npm:^24.10.13"
     "@wormhole-foundation/sdk-base": "npm:^4.10.0"
     "@wormhole-foundation/sdk-definitions": "npm:^4.10.0"
@@ -5178,6 +5179,7 @@ __metadata:
     "@xlabs-xyz/ledger-signer-ethers-v6": "npm:^0.0.2"
     "@xlabs-xyz/ledger-signer-solana": "npm:^0.0.2"
     "@xlabs-xyz/peer-lib": "workspace:*"
+    "@xlabs-xyz/tss-definitions": "workspace:*"
     ethers: "npm:^6.16.0"
     tsx: "npm:^4.21.0"
     typescript: "npm:^5.9.3"

@@ -4,6 +4,7 @@ import {
   serializeLayout,
 } from "@wormhole-foundation/sdk-base";
 import { v2Layout, VAAV2 } from "./layouts.js";
+import { PublicKey } from "@solana/web3.js";
 
 /**
  * serialize a VAAV2 to a Uint8Array
@@ -26,4 +27,20 @@ export function deserialize(rawData: Uint8Array | string): VAAV2{
   const data: Uint8Array = typeof rawData === "string" ? encoding.hex.decode(rawData) : rawData;
   const [result,] = deserializeLayout(v2Layout, data, false);
   return result satisfies VAAV2;
+}
+
+// Derive the schnorr key PDA from key index
+export function deriveSchnorrKeyPda(programId: PublicKey, schnorrKeyIndex: number): PublicKey {
+  const schnorrKeyIndexBuf = Buffer.alloc(4);
+  schnorrKeyIndexBuf.writeUint32LE(schnorrKeyIndex);
+  const seeds = [Buffer.from("schnorrkey"), schnorrKeyIndexBuf];
+  const [pda] = PublicKey.findProgramAddressSync(seeds, programId);
+  return pda;
+}
+
+// Derive the latest key PDA
+export function deriveLatestKeyPda(programId: PublicKey): PublicKey {
+  const seeds = [Buffer.from("latestkey")];
+  const [pda] = PublicKey.findProgramAddressSync(seeds, programId);
+  return pda;
 }

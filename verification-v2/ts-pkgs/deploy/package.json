@@ -18,6 +18,7 @@
     "@xlabs-xyz/ledger-signer-ethers-v6": "^0.0.2",
     "@xlabs-xyz/ledger-signer-solana": "^0.0.2",
     "@xlabs-xyz/peer-lib": "workspace:*",
+    "@xlabs-xyz/tss-definitions": "workspace:*",
     "ethers": "^6.16.0",
     "viem": "^2.45.3",
     "yargs": "^18.0.0"

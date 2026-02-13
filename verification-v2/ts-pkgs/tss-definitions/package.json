@@ -11,6 +11,7 @@
     "test": "yarn build && vitest --run --dir tests/"
   },
   "dependencies": {
+    "@solana/web3.js": "^1.98.4",
     "@wormhole-foundation/sdk-base": "^4.10.0",
     "@wormhole-foundation/sdk-definitions": "^4.10.0"
   },

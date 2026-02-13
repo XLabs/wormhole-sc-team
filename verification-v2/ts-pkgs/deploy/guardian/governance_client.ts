@@ -5,6 +5,7 @@ import { Program } from "@coral-xyz/anchor";
 import yargs from "yargs";
 import { hideBin } from 'yargs/helpers';
 import { errorStack } from '@xlabs-xyz/peer-lib';
+import { deriveSchnorrKeyPda, deriveLatestKeyPda } from "@xlabs-xyz/tss-definitions"; 
 
 import {idl, VerificationV2} from "../idl/verification_v2.js";
 
@@ -98,23 +99,6 @@ export function encodeUpdate(args: EvmArgs, dataBytes: Buffer): string {
     console.log(`Prepared pull-multisigs with limit ${args.pullLimit}`);
     return encodePullMultisigKeyData(args.pullLimit);
   }
-}
-
-// TODO: move these two derivation functions to tss-definitions package
-// Derive the schnorr key PDA from key index
-function deriveSchnorrKeyPda(programId: PublicKey, schnorrKeyIndex: number): PublicKey {
-  const schnorrKeyIndexBuf = Buffer.alloc(4);
-  schnorrKeyIndexBuf.writeUint32LE(schnorrKeyIndex);
-  const seeds = [Buffer.from("schnorrkey"), schnorrKeyIndexBuf];
-  const [pda] = PublicKey.findProgramAddressSync(seeds, programId);
-  return pda;
-}
-
-// Derive the latest key PDA
-function deriveLatestKeyPda(programId: PublicKey): PublicKey {
-  const seeds = [Buffer.from("latestkey")];
-  const [pda] = PublicKey.findProgramAddressSync(seeds, programId);
-  return pda;
 }
 
 async function createEvmSigner(args: EvmArgs) {
