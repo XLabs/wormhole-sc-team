@@ -12,6 +12,7 @@
     "**/*.test.ts",
   ],
   "references": [
+    { "path": "../tss-definitions" },
     { "path": "../peer-lib" }
   ]
 }
