@@ -14,13 +14,15 @@
   "dependencies": {
     "@coral-xyz/anchor": "^0.32.1",
     "@solana/web3.js": "^1.98.4",
-    "@wormhole-foundation/sdk": "^4.10.0",
-    "@xlabs-xyz/ledger-signer-ethers-v6": "^0.0.2",
-    "@xlabs-xyz/ledger-signer-solana": "^0.0.2",
+    "@wormhole-foundation/sdk": "^4.11.0",
+    "@wormhole-foundation/sdk-evm": "^4.11.0",
+    "@wormhole-foundation/sdk-solana-core": "^4.11.0",
+    "@xlabs-xyz/ledger-signer-ethers-v6": "^0.0.3",
+    "@xlabs-xyz/ledger-signer-solana": "^0.0.3",
     "@xlabs-xyz/peer-lib": "workspace:*",
     "@xlabs-xyz/tss-definitions": "workspace:*",
     "ethers": "^6.16.0",
-    "viem": "^2.45.3",
+    "viem": "^2.46.3",
     "yargs": "^18.0.0"
   },
   "devDependencies": {
