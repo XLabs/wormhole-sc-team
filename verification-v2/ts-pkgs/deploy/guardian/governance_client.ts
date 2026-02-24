@@ -85,7 +85,7 @@ type SvmArgs = BaseArgs & {
 }
 
 // TODO: Use binary-layout for these
-export function encodeSetShardId(guardianMessage: Uint8Array): string {
+function encodeSetShardId(guardianMessage: Uint8Array): string {
   // set_shard_id: opcode (1 byte) + guardian message data
   return ethers.solidityPacked(
     ['uint8', 'bytes'],
@@ -93,7 +93,7 @@ export function encodeSetShardId(guardianMessage: Uint8Array): string {
   );
 }
 
-export function encodeAppendSchnorrKey(vaa: Uint8Array): string {
+function encodeAppendSchnorrKey(vaa: Uint8Array): string {
   // append_schnorr_KEY: opcode (1 byte) + vaa length (2 bytes) + vaa data
   return ethers.solidityPacked(
     ['uint8', 'uint16', 'bytes'],
@@ -101,7 +101,7 @@ export function encodeAppendSchnorrKey(vaa: Uint8Array): string {
   );
 }
 
-export function encodePullMultisigKeyData(limit: number): string {
+function encodePullMultisigKeyData(limit: number): string {
   // PULL_MULTISIG_KEY_DATA: opcode (1 byte) + limit (4 bytes)
   return ethers.solidityPacked(
     ['uint8', 'uint32'],
@@ -109,7 +109,7 @@ export function encodePullMultisigKeyData(limit: number): string {
   );
 }
 
-export function encodeUpdate(args: EvmArgs, dataBytes: Uint8Array): string {
+function encodeUpdate(args: EvmArgs, dataBytes: Uint8Array): string {
   if (args.command === "append-schnorr") {
     const pullData = encodePullMultisigKeyData(args.pullLimit);
     const appendData = encodeAppendSchnorrKey(dataBytes);
