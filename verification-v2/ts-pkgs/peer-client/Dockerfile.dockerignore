@@ -18,7 +18,6 @@ verifiable-evm-build/
 
 ts-pkgs/deploy
 ts-pkgs/peer-e2e
-ts-pkgs/tss-definitions
 ts-pkgs/peer-server
 
 **/ts-build
