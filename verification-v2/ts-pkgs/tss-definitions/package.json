@@ -12,8 +12,11 @@
   },
   "dependencies": {
     "@solana/web3.js": "^1.98.4",
-    "@wormhole-foundation/sdk-base": "^4.10.0",
-    "@wormhole-foundation/sdk-definitions": "^4.10.0"
+    "@wormhole-foundation/sdk-base": "^4.11.0",
+    "@wormhole-foundation/sdk-connect": "^4.11.0",
+    "@wormhole-foundation/sdk-definitions": "^4.11.0",
+    "@wormhole-foundation/sdk-solana": "^4.11.0",
+    "@wormhole-foundation/sdk-solana-core": "^4.11.0"
   },
   "devDependencies": {
     "@types/node": "^24.10.13",
