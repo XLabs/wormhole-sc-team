@@ -10,8 +10,8 @@
     "build": "tsc --build"
   },
   "dependencies": {
-    "@aws-sdk/client-kms": "^3.988.0",
-    "@aws-sdk/credential-provider-node": "^3.972.7",
+    "@aws-sdk/client-kms": "^3.996.0",
+    "@aws-sdk/credential-provider-node": "^3.972.11",
     "@scure/base": "^2.0.0",
     "@wormhole-foundation/sdk-base": "^4.11.0",
     "@wormhole-foundation/sdk-definitions": "^4.11.0",
