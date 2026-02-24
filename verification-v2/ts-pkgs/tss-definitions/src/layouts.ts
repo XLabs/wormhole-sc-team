@@ -135,3 +135,20 @@ export const coreV1AccountDataLayout = {
     [[0x766161, 'vaa'], postedVaaV1Layout],
   ],
 } as const satisfies Layout;
+
+
+
+/** RegisterGuardian EIP712 message */
+
+const guardianSignatureLayout = [
+  { name: "guardianIndex", binary: "uint", size: 1 },
+  { name: "signature", ...layoutItems.signatureItem },
+] as const satisfies Layout;
+
+export const registerGuardianLayout = [
+  {name: "schnorrKeyIndex",  binary: "uint",   size: 4},
+  {name: "nonce",            binary: "uint",   size: 4},
+  {name: "pubKeyX",          binary: "bytes",  size: 32},
+  {name: "pubKeyY",          binary: "bytes",  size: 32},
+  ...guardianSignatureLayout,
+] as const satisfies Layout;

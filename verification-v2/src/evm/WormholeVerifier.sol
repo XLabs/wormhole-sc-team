@@ -110,7 +110,7 @@ contract WormholeVerifier is EIP712Encoding {
   uint256 private constant SLOT_SCHNORR_EXTRA_DATA      = 3 << 64; // 32 bit keyspace (32 bit key index)
   uint256 private constant SLOT_SCHNORR_SHARD_MAP_SHARD = 4 << 64; // 40 bit keyspace (32 bit key index, 8 bit signer index)
   uint256 private constant SLOT_SCHNORR_SHARD_MAP_ID    = 5 << 64; // 40 bit keyspace (32 bit key index, 8 bit signer index)
-  uint256 private constant SLOT_SCHNORR_NONCE_BITMAP    = 6 << 64; // 64 bit keyspace (32 bit key index, 8 bit signer index, 32 bit nonce, -8 for bits per slot)
+  uint256 private constant SLOT_SCHNORR_NONCE_BITMAP    = 6 << 64; // 64 bit keyspace (32 bit key index, 8 bit signer index, 32 bit nonce, -8 bits to address inside slot)
 
   // Schnorr key data information
   uint256 private constant MASK_SCHNORR_KEY_PARITY = 1;
@@ -1165,8 +1165,7 @@ contract WormholeVerifier is EIP712Encoding {
     // Verify the signature
     // We're not doing replay protection with the signature itself so we don't care about
     // verifying only canonical (low s) signatures.
-    bytes32 shardId = keccak256(abi.encode(pubKeyX, pubKeyY));
-    bytes32 digest = getRegisterGuardianDigest(schnorrKeyIndex, nonce, shardId);
+    bytes32 digest = getRegisterGuardianDigest(schnorrKeyIndex, nonce, pubKeyX, pubKeyY);
     address signatory = ecrecover(digest, v, r, s);
     require(signatory == expected, UpdateFailed(baseOffset | MASK_UPDATE_RESULT_SIGNATURE_MISMATCH));
 

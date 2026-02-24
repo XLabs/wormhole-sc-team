@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { deserialize, Layout } from "binary-layout";
 import { base64 } from "@scure/base";
 import { ValidationError } from "./types.js";
@@ -75,4 +76,37 @@ export function parseGuardianKey(input: string) {
   // thus we set consume all to false.
   const [{key}] = deserialize(wormholeKeyLayout, parsed.value.body, false);
   return key;
+}
+
+/**
+ * Extracts EC public key coordinates (X, Y) from an X509 PEM certificate.
+ * Returns 32-byte hex strings (0x-prefixed).
+ */
+export function getEcXYFromCertPem(certPem: string): {
+  pubKeyX: string;
+  pubKeyY: string;
+  curve: string;
+} {
+  const cert = new crypto.X509Certificate(certPem);
+
+  if (cert.publicKey.asymmetricKeyType !== "ec") {
+    throw new Error(`Not an EC key: ${cert.publicKey.asymmetricKeyType}`);
+  }
+
+  const jwk = cert.publicKey.export({ format: "jwk" });
+
+  if (jwk.x === undefined || jwk.y === undefined || jwk.crv === undefined) {
+    throw new Error("Missing EC JWK fields");
+  }
+
+  return {
+    curve: jwk.crv,
+    pubKeyX: base64urlToHex(jwk.x),
+    pubKeyY: base64urlToHex(jwk.y),
+  };
+}
+
+function base64urlToHex(b64url: string): string {
+  const buf = Buffer.from(b64url, "base64url");
+  return `0x${buf.toString("hex")}`;
 }

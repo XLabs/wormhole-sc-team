@@ -22,7 +22,7 @@ export function serialize(vaa: VAAV2): Uint8Array {
  * @throws if the data is not a valid VAAV2
  */
 
-export function deserialize(rawData: Uint8Array | string): VAAV2{
+export function deserialize(rawData: Uint8Array | string): VAAV2 {
   const data: Uint8Array = typeof rawData === "string" ? encoding.hex.decode(rawData) : rawData;
   const [result,] = deserializeLayout(v2Layout, data, false);
   return result satisfies VAAV2;

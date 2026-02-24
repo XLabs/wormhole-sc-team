@@ -3,6 +3,11 @@ import { readFileSync } from 'fs';
 import { checkTlsCertificate, parseGuardianKey } from './parseCrypto.js';
 import { errorMsg } from './error.js';
 
+const uintSchema = (n: bigint) => z.bigint().min(0n, `uint${n} cannot be negative`).max((1n << n) - 1n, `uint${n} cannot be higher than ${(1n << n) - 1n}`);
+export const uint8Schema = uintSchema(8n);
+export const uint24Schema = uintSchema(24n);
+export const uint32Schema = uintSchema(32n);
+
 const portSchema = z.int().min(1, "Port must be between 1 and 65535").max(65535, "Port must be between 1 and 65535");
 
 const thresholdSchema = z.int().min(1, "Threshold must be a positive integer");
@@ -13,6 +18,8 @@ export const BasePeerSchema = z.object({
   port: portSchema,
   tlsX509: z.string().min(1, "TlsX509 certificate cannot be empty"),
 });
+
+export const BasePeerArraySchema = z.array(BasePeerSchema);
 
 const guardianAddressSchema = z.string().startsWith("0x", "Guardian address must be an EVM address hex encoded with 0x prefix").length(42, "Guardian address must be an EVM address hex encoded with 0x prefix");
 
