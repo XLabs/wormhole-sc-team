@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 bytes32 constant REGISTER_TYPE_HASH = keccak256(
-  "GuardianRegister(uint32 guardianSet,uint256 nonce,bytes32 id)"
+  "GuardianRegister(uint32 schnorrKeyIndex,uint32 nonce,bytes32 pubKeyX,bytes32 pubKeyY)"
 );
 
 interface IERC5267 {
@@ -71,7 +71,7 @@ contract EIP712Encoding is IERC5267 {
 
   function getRegisterGuardianDigest(
     uint32 thresholdKeyIndex,
-    uint256 nonce,
+    uint32 nonce,
     bytes32 pubKeyX,
     bytes32 pubKeyY
   ) public view returns (bytes32) {
