@@ -34,7 +34,7 @@ export async function postVaa<N extends Network>(
   client: SolanaWormholeCore<N, "Solana" | "Fogo">,
   payerPublicKey: PublicKey,
   payerSign: SignTransactionFn,
-  vaa: VAA<"Uint8Array">,
+  vaa: VAA | VAA<"Uint8Array">,
   signatureSet = Keypair.generate(),
   priorityFee = 0n,
 ) {

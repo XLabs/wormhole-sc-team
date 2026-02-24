@@ -1,5 +1,5 @@
 import anchor from '@coral-xyz/anchor';
-import { Connection, Keypair, PublicKey, type Signer } from '@solana/web3.js';
+import { Connection, Keypair, PublicKey, type Signer, Transaction, VersionedTransaction } from '@solana/web3.js';
 import {
   type Chain,
   deserializeLayout,
@@ -140,7 +140,13 @@ export class TestingWormholeCore<N extends Network> {
     );
     const vaa = this.guardians.addSignatures(published, [0]);
 
-    return postVaa(this.client, payer, vaa);
+    return postVaa(this.client, payer.publicKey, (tx: Transaction | VersionedTransaction) => {
+      if ("version" in tx) {
+        tx.sign([payer]);
+      } else {
+        tx.partialSign(payer);
+      }
+    }, vaa);
   }
 
   private findPda(...seeds: Array<Buffer | Uint8Array>) {
