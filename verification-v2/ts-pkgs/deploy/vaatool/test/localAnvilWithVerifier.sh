@@ -33,7 +33,7 @@ done
 
 forge create --private-key $PRIVATE_KEY --broadcast test/WormholeVerifier.t.sol:WormholeV1Mock
 forge create WormholeVerifier --private-key $PRIVATE_KEY --broadcast --constructor-args $MOCK_ADDRESS 0 0 0 0x
-cast send --private-key $PRIVATE_KEY $MOCK_ADDRESS "$APPEND_SET_FUNCTION_SIG" "$GUARDIAN_SET" 
-cast send --private-key $PRIVATE_KEY $VERIFIER_ADDRESS "$UPDATE_FUNCTION_SIG" "$PULL_GUARDIAN_SET_MESSAGE" 
-cast send --private-key $PRIVATE_KEY $VERIFIER_ADDRESS "$UPDATE_FUNCTION_SIG" "$APPEND_SCHNORR_KEY_MESSAGE" 
+cast send --private-key $PRIVATE_KEY $MOCK_ADDRESS "$APPEND_SET_FUNCTION_SIG" "$GUARDIAN_SET"
+cast send --private-key $PRIVATE_KEY $VERIFIER_ADDRESS "$UPDATE_FUNCTION_SIG" "$PULL_GUARDIAN_SET_MESSAGE"
+cast send --private-key $PRIVATE_KEY $VERIFIER_ADDRESS "$UPDATE_FUNCTION_SIG" "$APPEND_SCHNORR_KEY_MESSAGE"
 fg

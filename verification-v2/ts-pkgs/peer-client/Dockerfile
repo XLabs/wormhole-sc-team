@@ -19,24 +19,6 @@ COPY ts-pkgs/peer-client/src ts-pkgs/peer-client/src
 WORKDIR /verification-v2/ts-pkgs/peer-client
 RUN yarnpkg build
 
-ARG TLS_HOSTNAME
-ARG TLS_PORT
-ARG PEER_SERVER_URL
-# Provide exactly one of GUARDIAN_KMS_ARN or mount guardian_pk secret
-ARG GUARDIAN_KMS_ARN
-
-RUN test -n "${TLS_HOSTNAME}" && \
-    test -n "${TLS_PORT}" && \
-    test -n "${PEER_SERVER_URL}"
-
-# Generate config: use ARN if provided, otherwise use the secret file path
-# TODO: extract to script invoking this image
-RUN if [ -n "${GUARDIAN_KMS_ARN}" ]; then \
-      echo '{"guardianPrivateKeyArn":"'"${GUARDIAN_KMS_ARN}"'","serverUrl":"'"${PEER_SERVER_URL}"'","peer":{"hostname":"'"${TLS_HOSTNAME}"'","port":'"${TLS_PORT}"',"tlsX509":"/run/secrets/cert.pem"}}' > self_config.json; \
-    else \
-      echo '{"guardianPrivateKeyPath":"/run/secrets/guardian_pk","serverUrl":"'"${PEER_SERVER_URL}"'","peer":{"hostname":"'"${TLS_HOSTNAME}"'","port":'"${TLS_PORT}"',"tlsX509":"/run/secrets/cert.pem"}}' > self_config.json; \
-    fi
-
 # When using AWS KMS, the guardian_pk secret is not required.
 # AWS credentials should be assigned to the IAM role running the container.
 # The client will then query ephemeral credentials and sign with those.

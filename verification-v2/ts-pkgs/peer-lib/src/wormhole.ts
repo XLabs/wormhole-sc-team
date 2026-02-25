@@ -3,7 +3,6 @@ import { ethers } from 'ethers';
 import {
   WormholeGuardianData,
   WormholeConfig,
-  PeerRegistration,
   Guardian,
   ValidationError,
   BasePeer,
@@ -78,7 +77,7 @@ export function hashPeerData(basePeer: BasePeer): string {
 }
 
 export function validateGuardianSignature(
-  {peer, signature}: PeerRegistration,
+  {signature, ...peer}: UncheckedPeer,
   wormholeData: WormholeGuardianData
 ): ValidationError<Guardian> {
   // The message hash that should have been signed by the guardian
@@ -108,8 +107,7 @@ export function validateSomePeers(
 ): (Peer | undefined)[] {
   const sparsePeers = Array<Peer | undefined>(wormholeData.guardians.length);
   for (const peer of initialPeers) {
-    const { signature } = peer;
-    const guardian = validateGuardianSignature({ peer, signature }, wormholeData);
+    const guardian = validateGuardianSignature(peer, wormholeData);
     if (!guardian.success)
       throw new Error(`Invalid guardian signature: ${guardian.error}`);
     const { guardianIndex, guardianAddress } = guardian.value;

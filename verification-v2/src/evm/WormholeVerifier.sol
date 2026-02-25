@@ -128,7 +128,7 @@ contract WormholeVerifier is EIP712Encoding {
   // Multisig key data information
   uint256 private constant MASK_MULTISIG_ENTRY_EXPIRATION_TIME = 0xFFFFFFFF;
   uint256 private constant SHIFT_MULTISIG_ENTRY_ADDRESS = 32;
-  
+
   uint256 private constant OFFSET_MULTISIG_CONTRACT_DATA = 1;
 
   // Verification result information
@@ -907,7 +907,7 @@ contract WormholeVerifier is EIP712Encoding {
         let invalidUsedSigner := 0
         let invalidMessageLength := lt(calldatasize(), LENGTH_BATCH_UNIFORM_MINIMUM)
         let invalidTotal := or(invalidExpirationTime, invalidMessageLength)
-        
+
         let buffer := add(keyDataOffset, keyDataSize)
         let offset := OFFSET_BATCH_UNIFORM_DATA
 
@@ -1138,7 +1138,7 @@ contract WormholeVerifier is EIP712Encoding {
     // ShardId Components
     bytes32 pubKeyX;
     bytes32 pubKeyY;
-    
+
     uint8 signerIndex;
     bytes32 r;
     bytes32 s;
@@ -1175,7 +1175,7 @@ contract WormholeVerifier is EIP712Encoding {
 
     // Store the shard ID
     _setSchnorrShardId(schnorrKeyIndex, signerIndex, pubKeyX, pubKeyY);
-    
+
     emit ShardIdUpdated(schnorrKeyIndex, signerIndex, oldPubKeyX, oldPubKeyY, pubKeyX, pubKeyY);
 
     return offset;

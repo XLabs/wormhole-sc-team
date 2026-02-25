@@ -282,11 +282,11 @@ async function executeSvmTransaction(args: SvmArgs): Promise<void> {
     tx.add(ComputeBudgetProgram.setComputeUnitPrice({microLamports: args.priorityFee}));
   }
   tx.feePayer = publicKey;
-  
+
   console.log('Sending transaction...');
   const blockhash = await connection.getLatestBlockhash();
   tx.recentBlockhash = blockhash.blockhash;
-  
+
   await signTransaction(tx);
   const signature = await connection.sendRawTransaction(tx.serialize());
   const receipt = await connection.confirmTransaction({signature, ...blockhash}, "confirmed",);
@@ -547,7 +547,7 @@ Please provide --network and --chain to retrieve address from the Wormhole SDK.`
 }
 
 // Only run main if this file is executed directly (not imported for tests)
-if (import.meta.url.endsWith(process.argv[1]?.replace(/\\/g, '/')) || 
+if (import.meta.url.endsWith(process.argv[1]?.replace(/\\/g, '/')) ||
     process.argv[1]?.includes('governance_client')) {
   main().catch((error: unknown) => {
     console.error(`[ERROR] Unhandled error: ${errorStack(error)}`);

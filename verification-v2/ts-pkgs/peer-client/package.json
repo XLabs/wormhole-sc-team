@@ -1,10 +1,10 @@
 {
   "name": "@xlabs-xyz/peer-client",
   "version": "1.0.0",
-  "description": "Minimal client for peer management with Ethereum integration",
+  "description": "Minimal client for TSS DKG peer management with Ethereum integration",
   "type": "module",
-  "types": "./ts-build/src/index.d.ts",
-  "main": "./ts-build/src/index.js",
+  "types": "./ts-build/src/client.d.ts",
+  "main": "./ts-build/src/client.js",
   "scripts": {
     "build": "tsc --build",
     "start:client": "tsx src/cli.ts",

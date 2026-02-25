@@ -22,7 +22,7 @@ contract EIP712Encoding is IERC5267 {
   bytes32 constant EIP712_DOMAIN_TYPE_HASH = keccak256(
     "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
   );
-  
+
   string constant EIP712_NAME = "Wormhole VerificationV2";
   string constant EIP712_VERSION = "1";
 
