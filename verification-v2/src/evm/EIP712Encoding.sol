@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 bytes32 constant REGISTER_TYPE_HASH = keccak256(
-  "GuardianRegister(uint32 guardianSet,uint256 nonce,bytes32 id)"
+  "GuardianRegister(uint32 schnorrKeyIndex,uint32 nonce,bytes32 pubKeyX,bytes32 pubKeyY)"
 );
 
 interface IERC5267 {
@@ -22,7 +22,7 @@ contract EIP712Encoding is IERC5267 {
   bytes32 constant EIP712_DOMAIN_TYPE_HASH = keccak256(
     "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
   );
-  
+
   string constant EIP712_NAME = "Wormhole VerificationV2";
   string constant EIP712_VERSION = "1";
 
@@ -71,19 +71,19 @@ contract EIP712Encoding is IERC5267 {
 
   function getRegisterGuardianDigest(
     uint32 thresholdKeyIndex,
-    uint256 nonce,
-    bytes32 guardianId
+    uint32 nonce,
+    bytes32 pubKeyX,
+    bytes32 pubKeyY
   ) public view returns (bytes32) {
     /// forge-lint: disable-start(asm-keccak256)
     bytes32 idHash = keccak256(abi.encode(
       REGISTER_TYPE_HASH,
       thresholdKeyIndex,
       nonce,
-      guardianId
+      pubKeyX,
+      pubKeyY
     ));
-    /// forge-lint: disable-end(asm-keccak256)
 
-    /// forge-lint: disable-start(asm-keccak256)
     return keccak256(abi.encodePacked("\x19\x01", DOMAIN_SEPARATOR(), idHash));
     /// forge-lint: disable-end(asm-keccak256)
   }

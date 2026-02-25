@@ -19,12 +19,15 @@ COPY .yarn verification-v2/.yarn
 COPY package.json yarn.lock .yarnrc.yml verification-v2/
 COPY ts-pkgs/peer-client/package.json verification-v2/ts-pkgs/peer-client/
 COPY ts-pkgs/peer-lib/package.json verification-v2/ts-pkgs/peer-lib/
+COPY ts-pkgs/tss-definitions/package.json verification-v2/ts-pkgs/tss-definitions/
 WORKDIR /verification-v2
 RUN yarnpkg workspaces focus --all
 
 COPY ts-pkgs/config/ ts-pkgs/config/
 COPY ts-pkgs/peer-lib/tsconfig.json ts-pkgs/peer-lib/
 COPY ts-pkgs/peer-lib/src ts-pkgs/peer-lib/src
+COPY ts-pkgs/tss-definitions/tsconfig.json ts-pkgs/tss-definitions/
+COPY ts-pkgs/tss-definitions/src ts-pkgs/tss-definitions/src
 COPY ts-pkgs/peer-client/tsconfig.json ts-pkgs/peer-client/
 COPY ts-pkgs/peer-client/src ts-pkgs/peer-client/src
 WORKDIR /verification-v2/ts-pkgs/peer-client

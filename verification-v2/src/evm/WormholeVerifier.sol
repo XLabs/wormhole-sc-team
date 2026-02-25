@@ -110,7 +110,7 @@ contract WormholeVerifier is EIP712Encoding {
   uint256 private constant SLOT_SCHNORR_EXTRA_DATA      = 3 << 64; // 32 bit keyspace (32 bit key index)
   uint256 private constant SLOT_SCHNORR_SHARD_MAP_SHARD = 4 << 64; // 40 bit keyspace (32 bit key index, 8 bit signer index)
   uint256 private constant SLOT_SCHNORR_SHARD_MAP_ID    = 5 << 64; // 40 bit keyspace (32 bit key index, 8 bit signer index)
-  uint256 private constant SLOT_SCHNORR_NONCE_BITMAP    = 6 << 64; // 64 bit keyspace (32 bit key index, 8 bit signer index, 32 bit nonce, -8 for bits per slot)
+  uint256 private constant SLOT_SCHNORR_NONCE_BITMAP    = 6 << 64; // 64 bit keyspace (32 bit key index, 8 bit signer index, 32 bit nonce, -8 bits to address inside slot)
 
   // Schnorr key data information
   uint256 private constant MASK_SCHNORR_KEY_PARITY = 1;
@@ -128,7 +128,7 @@ contract WormholeVerifier is EIP712Encoding {
   // Multisig key data information
   uint256 private constant MASK_MULTISIG_ENTRY_EXPIRATION_TIME = 0xFFFFFFFF;
   uint256 private constant SHIFT_MULTISIG_ENTRY_ADDRESS = 32;
-  
+
   uint256 private constant OFFSET_MULTISIG_CONTRACT_DATA = 1;
 
   // Verification result information
@@ -907,7 +907,7 @@ contract WormholeVerifier is EIP712Encoding {
         let invalidUsedSigner := 0
         let invalidMessageLength := lt(calldatasize(), LENGTH_BATCH_UNIFORM_MINIMUM)
         let invalidTotal := or(invalidExpirationTime, invalidMessageLength)
-        
+
         let buffer := add(keyDataOffset, keyDataSize)
         let offset := OFFSET_BATCH_UNIFORM_DATA
 
@@ -1138,7 +1138,7 @@ contract WormholeVerifier is EIP712Encoding {
     // ShardId Components
     bytes32 pubKeyX;
     bytes32 pubKeyY;
-    
+
     uint8 signerIndex;
     bytes32 r;
     bytes32 s;
@@ -1165,8 +1165,7 @@ contract WormholeVerifier is EIP712Encoding {
     // Verify the signature
     // We're not doing replay protection with the signature itself so we don't care about
     // verifying only canonical (low s) signatures.
-    bytes32 shardId = keccak256(abi.encode(pubKeyX, pubKeyY));
-    bytes32 digest = getRegisterGuardianDigest(schnorrKeyIndex, nonce, shardId);
+    bytes32 digest = getRegisterGuardianDigest(schnorrKeyIndex, nonce, pubKeyX, pubKeyY);
     address signatory = ecrecover(digest, v, r, s);
     require(signatory == expected, UpdateFailed(baseOffset | MASK_UPDATE_RESULT_SIGNATURE_MISMATCH));
 
@@ -1176,7 +1175,7 @@ contract WormholeVerifier is EIP712Encoding {
 
     // Store the shard ID
     _setSchnorrShardId(schnorrKeyIndex, signerIndex, pubKeyX, pubKeyY);
-    
+
     emit ShardIdUpdated(schnorrKeyIndex, signerIndex, oldPubKeyX, oldPubKeyY, pubKeyX, pubKeyY);
 
     return offset;

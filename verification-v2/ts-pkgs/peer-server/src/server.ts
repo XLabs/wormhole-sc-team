@@ -3,12 +3,12 @@ import cors from 'cors';
 import {
   BaseServerConfig,
   Peer,
-  PeerRegistrationSchema,
   validate,
   validateGuardianSignature,
   WormholeGuardianData,
   validateSomePeers,
-  errorStack
+  errorStack,
+  UncheckedPeerSchema,
 } from '@xlabs-xyz/peer-lib';
 import { createServer, Server } from 'node:http';
 
@@ -58,16 +58,16 @@ export class PeerServer {
     this.app.post('/peers', (req, res) => {
       try {
         const validationResult = validate(
-          PeerRegistrationSchema, req.body, "Invalid peer registration"
+          UncheckedPeerSchema, req.body, "Invalid peer registration"
         );
         if (!validationResult.success) {
           res.status(400).json({ error: validationResult.error });
           return;
         }
-        const peerRegistration = validationResult.value;
+        const uncheckedPeer = validationResult.value;
 
         // Validate guardian signature and get guardian address
-        const guardian = validateGuardianSignature(peerRegistration, this.wormholeData);
+        const guardian = validateGuardianSignature(uncheckedPeer, this.wormholeData);
         if (!guardian.success) {
           this.display.error(`Error validating guardian signature: ${guardian.error}`);
           res.status(401).json({ error: 'Invalid guardian signature' });
@@ -75,16 +75,15 @@ export class PeerServer {
         }
 
         const { guardianAddress, guardianIndex } = guardian.value;
-        const { hostname, port, tlsX509 } = peerRegistration.peer;
-        const signature = peerRegistration.signature;
+        const { hostname, port, tlsX509, signature } = uncheckedPeer;
         this.display.log(`Adding peer ${hostname} from guardian ${guardianAddress}`);
 
         // Store peer data for this guardian
-        const peer: Peer = { 
+        const peer: Peer = {
           guardianAddress,
           guardianIndex,
           signature,
-          hostname, 
+          hostname,
           port,
           tlsX509,
         };

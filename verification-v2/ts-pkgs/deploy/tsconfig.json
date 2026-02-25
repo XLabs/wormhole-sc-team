@@ -1,10 +1,18 @@
 {
   "extends": "../config/tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "./ts-build"
+    "outDir": "./ts-build",
+    "resolveJsonModule": true
   },
-  "include": ["evm", "guardian", "vaatool"],
+  "include": [
+    "evm",
+    "guardian",
+    "vaatool",
+    "idl",
+    "**/*.test.ts",
+  ],
   "references": [
+    { "path": "../tss-definitions" },
     { "path": "../peer-lib" }
   ]
 }

@@ -54,7 +54,7 @@ impl AnchorDeserialize for VAAHeader {
     if !signature.is_valid() {
       return Err(Error::new(ErrorKind::InvalidData, "Invalid signature"));
     }
-    
+
     Ok(Self { schnorr_key_index, signature })
   }
 }

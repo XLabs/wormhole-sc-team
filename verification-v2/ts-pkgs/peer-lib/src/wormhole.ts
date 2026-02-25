@@ -1,5 +1,14 @@
 import { ethers } from 'ethers';
-import { WormholeGuardianData, WormholeConfig, PeerRegistration, Guardian, ValidationError, BasePeer, Peer, UncheckedPeer } from './types.js';
+
+import {
+  WormholeGuardianData,
+  WormholeConfig,
+  Guardian,
+  ValidationError,
+  BasePeer,
+  Peer,
+  UncheckedPeer,
+} from './types.js';
 import { errorMsg } from './error.js';
 
 // Core Bridge ABI based on ICoreBridge interface
@@ -17,7 +26,14 @@ export async function getWormholeGuardianData(
   console.log('Connecting to Wormhole contract...');
 
   const provider = new ethers.JsonRpcProvider(config.ethereum.rpcUrl, undefined, {staticNetwork: true});
-  const contract = new ethers.Contract(config.wormholeContractAddress, CORE_BRIDGE_ABI, provider);
+  return getWormholeGuardianDataFromProvider(provider, config.wormholeContractAddress);
+}
+
+export async function getWormholeGuardianDataFromProvider(
+  provider: ethers.Provider,
+  coreV1Address: string,
+): Promise<WormholeGuardianData> {
+  const contract = new ethers.Contract(coreV1Address, CORE_BRIDGE_ABI, provider);
 
   try {
     // Get current guardian set index
@@ -38,6 +54,18 @@ export async function getWormholeGuardianData(
   }
 }
 
+export async function getGuardianIndex(
+  provider: ethers.Provider,
+  coreV1Address: string,
+  guardianAddress: string,
+) {
+  const guardianSet = await getWormholeGuardianDataFromProvider(provider, coreV1Address);
+  const guardianIndex = guardianSet.guardians.findIndex((address) => addressesAreEqual(address, guardianAddress));
+  if (guardianIndex === -1) throw new Error(`Guardian ${guardianAddress} not found in current guardian set.`);
+
+  return guardianIndex;
+}
+
 // TODO: change this to use EIP712
 export function hashPeerData(basePeer: BasePeer): string {
   return ethers.keccak256(
@@ -49,7 +77,7 @@ export function hashPeerData(basePeer: BasePeer): string {
 }
 
 export function validateGuardianSignature(
-  {peer, signature}: PeerRegistration,
+  {signature, ...peer}: UncheckedPeer,
   wormholeData: WormholeGuardianData
 ): ValidationError<Guardian> {
   // The message hash that should have been signed by the guardian
@@ -79,8 +107,7 @@ export function validateSomePeers(
 ): (Peer | undefined)[] {
   const sparsePeers = Array<Peer | undefined>(wormholeData.guardians.length);
   for (const peer of initialPeers) {
-    const { signature } = peer;
-    const guardian = validateGuardianSignature({ peer, signature }, wormholeData);
+    const guardian = validateGuardianSignature(peer, wormholeData);
     if (!guardian.success)
       throw new Error(`Invalid guardian signature: ${guardian.error}`);
     const { guardianIndex, guardianAddress } = guardian.value;
@@ -97,4 +124,15 @@ export function validateSomePeers(
 
 function addressesAreEqual(a: string, b: string) {
   return a.toLowerCase() === b.toLowerCase();
+}
+
+
+export async function readCurrentSchnorrKeyIndex(
+  provider: ethers.Provider,
+  verificationV2Address: string,
+) {
+  const SLOT_SCHNORR_KEY_COUNT = 1001;
+  const entry = await provider.getStorage(verificationV2Address, SLOT_SCHNORR_KEY_COUNT);
+  const rawUint256 = ethers.getBigInt(entry);
+  return Number(rawUint256 && 0xFFFFn);
 }

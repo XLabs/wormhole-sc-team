@@ -113,7 +113,7 @@ if [ -n "${ETC_HOSTS_OVERRIDE:-}" ]; then
     log_error "Hosts override not found: ${ETC_HOSTS_OVERRIDE}"
     exit 1
   fi
-  run_options+="--volume "${ETC_HOSTS_OVERRIDE}":dst=/etc/hosts:ro "
+  run_options+="--volume "${ETC_HOSTS_OVERRIDE}":/etc/hosts:ro "
 fi
 
 if [ -n "${NON_INTERACTIVE:-}" ]; then
@@ -148,7 +148,7 @@ docker run \
   --name "${TLS_HOSTNAME}" \
   ${run_options} \
   --mount type=bind,src="${TLS_KEYS_DIR}",dst=/keys \
-  --volume ${peer_client_config}:/verification-v2/ts-pkgs/peer-client/self_config.json:ro \
+  --volume ${peer_client_config}:/verification-v2/ts-pkgs/peer-client/client-config.json:ro \
   "dkg-client"
 
 
