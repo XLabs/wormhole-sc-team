@@ -129,7 +129,7 @@ describe('PeerServer', () => {
       expect(response.body.threshold).toBe(13);
       expect(response.body.totalExpectedGuardians).toBe(19);
       expect(response.body.peers).toHaveLength(1);
-      
+
       const submittedPeer = response.body.peers.find((p: Peer) => p.guardianAddress === testGuardianWallet.address);
       if (!submittedPeer) {
         throw new Error('Submitted peer not found');

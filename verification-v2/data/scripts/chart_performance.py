@@ -14,7 +14,7 @@ v1_multisig = GasVsImplementationChart(
     title="Gas Cost per VAA (v1 VAA Multisig) — Relative Reductions from Mainnet Core",
     labels=[
         "mainnet core",            "CoreBridgeLib",    "mod core (calldata)",
-        "mod core (optimized)",    "VerifV2 100B",     "VerifV2 5000B", 
+        "mod core (optimized)",    "VerifV2 100B",     "VerifV2 5000B",
         "VerifV2 header+digest",   "VerifV2 batch x4"
     ],
     costs=[

@@ -79,11 +79,11 @@ export class PeerServer {
         this.display.log(`Adding peer ${hostname} from guardian ${guardianAddress}`);
 
         // Store peer data for this guardian
-        const peer: Peer = { 
+        const peer: Peer = {
           guardianAddress,
           guardianIndex,
           signature,
-          hostname, 
+          hostname,
           port,
           tlsX509,
         };

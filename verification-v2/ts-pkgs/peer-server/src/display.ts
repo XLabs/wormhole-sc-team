@@ -23,7 +23,7 @@ export class Display {
   setProgress(peers: Peer[], total: number, label = 'Guardian Collection Progress'): void {
     // Clear the current line and move cursor to beginning
     process.stdout.write('\r\x1b[K');
-    
+
     if (total === 0) {
       process.stdout.write(`${label}: Waiting for guardian data...`);
       this.hasProgressBar = true;
@@ -34,10 +34,10 @@ export class Display {
     const barLength = 40;
     const filledLength = Math.round((peers.length / total) * barLength);
     const emptyLength = barLength - filledLength;
-    
+
     const bar = '█'.repeat(filledLength) + '░'.repeat(emptyLength);
     const percentage = Math.round((peers.length / total) * 100);
-    
+
     // Display progress
     process.stdout.write(
       `${label}: [${bar}] ${peers.length}/${total} guardians (${percentage}%)`
@@ -57,7 +57,7 @@ export class Display {
     try {
       this.log('\n📋 All peers are now available:');
       this.log('=====================================');
-      
+
       if (peers.length === 0) {
         this.log('No peers found.');
         return;
@@ -69,7 +69,7 @@ export class Display {
         this.log(`   TLS Certificate: ${peer.tlsX509.substring(28, 80)}...`);
         this.log('');
       });
-      
+
       this.log(`Total: ${peers.length} peer${peers.length !== 1 ? 's' : ''} collected from guardians`);
       this.log('Guardian submissions complete. Server will continue running...');
     } catch (error) {

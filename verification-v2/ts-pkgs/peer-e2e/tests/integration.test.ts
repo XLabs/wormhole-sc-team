@@ -169,7 +169,7 @@ describe('Peer Server Integration Tests', () => {
     }
 
     const testFiles: string[] = [];
-    
+
     for (let i = 0; i < 2; i++) {
       // Create guardian key file with proper Wormhole format
       const keyPath = path.join(testDir, `guardian-${i}-key.txt`);
@@ -238,10 +238,10 @@ describe('Peer Server Integration Tests', () => {
       results.forEach((result) => {
         expect(Array.isArray(result.peers)).toBe(true);
         expect(result.peers).toHaveLength(2);
-        
+
         const peer0 = result.peers.find((p: Peer) => p.guardianAddress === testGuardianWallets[0].address);
         const peer1 = result.peers.find((p: Peer) => p.guardianAddress === testGuardianWallets[1].address);
-        
+
         expect(peer0).toBeDefined();
         expect(peer1).toBeDefined();
         expect(peer0?.hostname).toBe(testPeers[0].hostname);

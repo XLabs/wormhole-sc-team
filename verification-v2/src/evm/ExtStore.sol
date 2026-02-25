@@ -186,7 +186,7 @@ library SSTORE2 {
 abstract contract ExtStore {
   uint64 internal _nonce; //see EIP-2681
 
-  function _extWrite(bytes memory data) internal returns (uint64 index) { unchecked {    
+  function _extWrite(bytes memory data) internal returns (uint64 index) { unchecked {
     SSTORE2.write(data);
     return _nonce++;
   }}

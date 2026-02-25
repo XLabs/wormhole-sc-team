@@ -174,7 +174,7 @@ abstract contract VerificationTestAPI is Test, VerificationMessageBuilder {
         let offset := add(add(signatures, 32), mul(i, 66))
         mstore8(offset, i)
         mstore(add(offset, 1), r)
-        mstore(add(offset, 33), s)	
+        mstore(add(offset, 33), s)
         mstore8(add(offset, 65), eq(v, 28))
       }
     }
@@ -492,8 +492,8 @@ contract TestWormholeVerifierBenchmark is VerificationTestAPI {
   bytes public batchSchnorrMessage;
   bytes private batchMultisigUniformMessage;
   bytes private batchSchnorrUniformMessage;
-  bytes public schnorrShardsRaw; 
-  bytes public appendSchnorrKeyVaa2; 
+  bytes public schnorrShardsRaw;
+  bytes public appendSchnorrKeyVaa2;
 
   WormholeV1Mock private immutable _wormholeV1Mock = new WormholeV1Mock();
   WormholeVerifier public immutable _wormholeVerifierV2 = new WormholeVerifier(_wormholeV1Mock, 0, 0, 0, new bytes(0));
@@ -697,12 +697,12 @@ contract TestWormholeVerifierBenchmark is VerificationTestAPI {
     bytes32 pubKeyY = bytes32(vm.randomUint());
     uint8 signerIndex = 0;
     bytes memory signedMessage = signUpdateShardIdMessage(
-      _wormholeVerifierV2, 
-      keyIndex, 
-      nonce, 
+      _wormholeVerifierV2,
+      keyIndex,
+      nonce,
       pubKeyX,
-      pubKeyY, 
-      signerIndex, 
+      pubKeyY,
+      signerIndex,
       guardianPrivateKeys[0]
     );
 
@@ -843,7 +843,7 @@ contract TestWormholeVerifierBenchmark is VerificationTestAPI {
   function test_verifyBatchEmpty() public {
     bool success;
     bytes memory data;
-    
+
     (success, data) = address(_wormholeVerifierV2).call(abi.encodePacked(
       WormholeVerifier.verifyBatch.selector,
       VERIFY_ANY
@@ -1383,8 +1383,8 @@ contract TestWormholeVerifier is VerificationTestAPI {
 
 contract FuzzTest is Test {
   TestWormholeVerifierBenchmark handler;
-  bytes32 id; 
-  bytes signedMessage; 
+  bytes32 id;
+  bytes signedMessage;
   WormholeVerifier verifier;
 
   function setUp() public {
@@ -1395,13 +1395,13 @@ contract FuzzTest is Test {
 
   /// forge-config: default.allow_internal_expect_revert = true
   function verifyBatch(bytes memory data) public returns (bool success, bytes memory returndata) {
-    bytes memory encodedData = abi.encodePacked(verifier.verifyBatch.selector, data); 
+    bytes memory encodedData = abi.encodePacked(verifier.verifyBatch.selector, data);
     (success, returndata) = address(verifier).call(encodedData);
 
   }
 
   function testFuzzVerifySingleSchnorr(bytes calldata data) public{
-    bytes1 version = 0x02; 
+    bytes1 version = 0x02;
     bytes4 keyIndex = 0x00000001;
     bytes memory data_now = abi.encodePacked(version, keyIndex, data);
     vm.expectRevert();
@@ -1409,7 +1409,7 @@ contract FuzzTest is Test {
   }
 
     function testFuzzVerifySingleMultisig(bytes calldata data) public{
-    bytes1 version = 0x01; 
+    bytes1 version = 0x01;
     bytes4 keyIndex = 0x00000000;
     bytes memory data_now = abi.encodePacked(version, keyIndex, data);
     vm.expectRevert();
@@ -1418,8 +1418,8 @@ contract FuzzTest is Test {
 
   // VerifyBatch with the Multisig type
   function testFuzzVerifyBatchMultisig(bytes calldata data) public {
-    bytes1 inputType = 0x00; 
-    bytes1 version = 0x01; 
+    bytes1 inputType = 0x00;
+    bytes1 version = 0x01;
     bytes4 keyIndex = 0x00000000;
 
     bytes memory encodedData = abi.encodePacked(inputType, version, keyIndex, data);
@@ -1429,8 +1429,8 @@ contract FuzzTest is Test {
 
   // VerifyBatch with the Schnorr type
   function testFuzzVerifyBatchSchnorr(bytes calldata data) public {
-    bytes1 inputType = 0x00; 
-    bytes1 version = 0x02; 
+    bytes1 inputType = 0x00;
+    bytes1 version = 0x02;
     bytes4 keyIndex = 0x00000000;
     bytes memory encodedData = abi.encodePacked(inputType, version, keyIndex, data);
     (bool success, bytes memory result) = verifyBatch(encodedData);
@@ -1439,7 +1439,7 @@ contract FuzzTest is Test {
 
   // VerifyBatchMultisig
   function testFuzzVerifyBatchOfMultisig(bytes calldata data) public {
-    bytes1 inputType = 0x01; 
+    bytes1 inputType = 0x01;
     bytes4 keyIndex = 0x00000000;
     bytes memory encodedData = abi.encodePacked(inputType, keyIndex, data);
     (bool success, bytes memory result) = verifyBatch(encodedData);
@@ -1448,7 +1448,7 @@ contract FuzzTest is Test {
 
   // VerifyBatchSchnorr
   function testFuzzVerifyBatchOfSchnorr(bytes calldata data) public {
-    bytes1 inputType = 0x02; 
+    bytes1 inputType = 0x02;
     bytes4 keyIndex = 0x00000001;
     bytes memory encodedData = abi.encodePacked(inputType, keyIndex, data);
     (bool success, bytes memory result) = verifyBatch(encodedData);
@@ -1457,29 +1457,29 @@ contract FuzzTest is Test {
 
   // VerifyBatchSchnorrUniform
   function testFuzzVerifyBatchSchnorrUniform(bytes calldata data) public {
-    bytes1 inputType = 0x04; 
+    bytes1 inputType = 0x04;
     bytes4 keyIndex = 0x00000000;
     bytes memory encodedData = abi.encodePacked(inputType, keyIndex, data);
     (bool success, bytes memory result) = verifyBatch(encodedData);
-    require(!success, string(result));  
+    require(!success, string(result));
   }
 
   // VerifyBatchMultisigUniform
   function testFuzzVerifyBatchMultisigUniform(bytes calldata data) public {
-    bytes1 inputType = 0x03; 
+    bytes1 inputType = 0x03;
     bytes4 keyIndex = 0x00000000;
     bytes memory encodedData = abi.encodePacked(inputType, keyIndex, data);
     (bool success, bytes memory result) = verifyBatch(encodedData);
-    require(!success, string(result));  
+    require(!success, string(result));
   }
 
   // Edit one byte from a legitimate VAA on verifyMultisig
   function testFuzzSmartVerifyMultisig(uint16 index, bytes1 change) public {
-    
+
     bytes memory mutated = handler.smallMultisigVaa();
 
     // Only want to update a single entry if it's possible.
-    index = uint16(bound(index, 0, mutated.length - 1)); 
+    index = uint16(bound(index, 0, mutated.length - 1));
 
     vm.assume(mutated[index] != change);
 
@@ -1494,15 +1494,15 @@ contract FuzzTest is Test {
     bytes memory mutated = handler.bigMultisigVaa();
 
     // Only want to update a single entry if it's possible.
-    index = uint16(bound(index, 0, mutated.length - 1)); 
+    index = uint16(bound(index, 0, mutated.length - 1));
     index2 = uint16(bound(index2, 0, mutated.length - 1));
 
     vm.assume(mutated[index] != change);
     vm.assume(mutated[index2] != change2);
     vm.assume(index != index2);
 
-    mutated[index] = change; 
-    mutated[index2] = change2; 
+    mutated[index] = change;
+    mutated[index2] = change2;
 
     vm.expectRevert();
     verifier.verify(mutated);
@@ -1515,7 +1515,7 @@ contract FuzzTest is Test {
 
     // Only want to update a single entry if it's possible.
     // Add restraint of being larger than 4 so that we don't modify the selector
-    index = uint16(bound(index, 4, mutated.length - 1)); 
+    index = uint16(bound(index, 4, mutated.length - 1));
 
     vm.assume(mutated[index] != change);
 
@@ -1530,15 +1530,15 @@ contract FuzzTest is Test {
     // Already contains full header details
     bytes memory mutated = handler.batchMultisigMessage();
 
-    index = uint16(bound(index, 4, mutated.length - 1)); 
+    index = uint16(bound(index, 4, mutated.length - 1));
     index2 = uint16(bound(index2, 4, mutated.length - 1));
 
     vm.assume(mutated[index] != change);
     vm.assume(mutated[index2] != change2);
     vm.assume(index != index2);
 
-    mutated[index] = change; 
-    mutated[index2] = change2; 
+    mutated[index] = change;
+    mutated[index2] = change2;
 
     (bool success, bytes memory result) = address(verifier).call(mutated);
     require(!success, string(result));
@@ -1549,7 +1549,7 @@ contract FuzzTest is Test {
     bytes memory mutated = handler.bigSchnorrVaa();
 
     // Only want to update a single entry if it's possible.
-    index = uint16(bound(index, 0, mutated.length - 1)); 
+    index = uint16(bound(index, 0, mutated.length - 1));
 
     vm.assume(mutated[index] != change);
 
@@ -1584,7 +1584,7 @@ contract FuzzTest is Test {
     bytes memory mutated = handler.batchSchnorrMessage();
 
     // Add restraint of being larger than 4 so that we don't modify the selector
-    index = uint16(bound(index, 4, mutated.length - 1)); 
+    index = uint16(bound(index, 4, mutated.length - 1));
 
     vm.assume(mutated[index] != change);
 
@@ -1599,7 +1599,7 @@ contract FuzzTest is Test {
     // Already contains full header details
     bytes memory mutated = handler.batchSchnorrMessage();
 
-    index = uint16(bound(index, 4, mutated.length - 1)); 
+    index = uint16(bound(index, 4, mutated.length - 1));
     index2 = uint16(bound(index2, 4, mutated.length - 1));
 
     vm.assume(mutated[index] != change);
@@ -1615,9 +1615,9 @@ contract FuzzTest is Test {
 
   // Fuzz Append Key
   function testFuzzUpdateAppend(bytes calldata data) public{
-    //bytes1 inputType = 0x00; 
+    //bytes1 inputType = 0x00;
     bytes1 callType = 0x01;
-    bytes1 version = 0x01; 
+    bytes1 version = 0x01;
     bytes4 keyIndex = 0x00000000;
     bytes memory data_now = abi.encodePacked(callType, version, keyIndex, data);
     vm.expectRevert();
@@ -1627,7 +1627,7 @@ contract FuzzTest is Test {
   // Edit a single byte of the message and see if it still passes.
   function testFuzzSmartUpdateAppend(uint16 index, bytes1 change) public {
 
-    bytes memory shards = handler.schnorrShardsRaw(); 
+    bytes memory shards = handler.schnorrShardsRaw();
     bytes memory appendVaa = handler.appendSchnorrKeyVaa2();
     bytes memory message = abi.encodePacked(
       UPDATE_APPEND_SCHNORR_KEY,
@@ -1639,7 +1639,7 @@ contract FuzzTest is Test {
     bytes memory mutatedMessage = message;
 
     // Only want to update a single entry if it's possible.
-    index = uint16(bound(index, 0, mutatedMessage.length - 1)); 
+    index = uint16(bound(index, 0, mutatedMessage.length - 1));
 
     vm.assume(mutatedMessage[index] != change);
 
@@ -1652,7 +1652,7 @@ contract FuzzTest is Test {
   // Edit two bytes of the valid message and see if it stills passes.
   function testFuzzSmartUpdateAppendDouble(uint16 index, bytes1 change, uint16 index2, bytes1 change2) public {
 
-    bytes memory shards = handler.schnorrShardsRaw(); 
+    bytes memory shards = handler.schnorrShardsRaw();
     bytes memory appendVaa = handler.appendSchnorrKeyVaa2();
     bytes memory message = abi.encodePacked(
       UPDATE_APPEND_SCHNORR_KEY,
@@ -1664,8 +1664,8 @@ contract FuzzTest is Test {
     bytes memory mutatedMessage = message;
 
     // Only want to update a single entry if it's possible.
-    index = uint16(bound(index, 0, mutatedMessage.length - 1)); 
-    index2 = uint16(bound(index2, 0, mutatedMessage.length - 1)); 
+    index = uint16(bound(index, 0, mutatedMessage.length - 1));
+    index2 = uint16(bound(index2, 0, mutatedMessage.length - 1));
 
     vm.assume(mutatedMessage[index] != change);
     vm.assume(mutatedMessage[index2] != change2);

@@ -122,18 +122,18 @@ function loadPeerConfig(configPath: string): Peer[] {
   try {
     const configData = fs.readFileSync(configPath, 'utf-8');
     const config = JSON.parse(configData) as PeerConfig;
-    
+
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/strict-boolean-expressions
     if (!config.peers) {
       throw new Error('Invalid config: missing "Peers" array');
     }
     validateOrFail(BasePeerArraySchema, config.peers, 'Invalid config: invalid "Peers" array')
-    
+
     const peers: Peer[] = config.peers.map((p: PeerConfigPeer) => ({
       host: p.hostname,
       port: p.port,
     }));
-    
+
     // Optionally include Self peer if present
     if (config.self) {
       validateOrFail(BasePeerSchema, config.self, 'Invalid config: invalid "Self" peer')
@@ -142,7 +142,7 @@ function loadPeerConfig(configPath: string): Peer[] {
         port: config.self.port,
       });
     }
-    
+
     return peers;
   } catch (error) {
     if (error instanceof Error) {
@@ -155,13 +155,13 @@ function loadPeerConfig(configPath: string): Peer[] {
 (async () => {
   const raw = process.argv.slice(2);
   let targets: Peer[];
-  
+
   // Check if --config flag is used or if no arguments provided
   if (raw.length === 0 || (raw.length > 0 && raw[0] === '--config')) {
-    const configPath = raw.length > 1 && raw[0] === '--config' 
-      ? path.resolve(raw[1]) 
+    const configPath = raw.length > 1 && raw[0] === '--config'
+      ? path.resolve(raw[1])
       : path.resolve('peer_config.json');
-    
+
     if (!fs.existsSync(configPath)) {
       console.error(`Error: ${configPath} not found`);
       console.log('\nUsage:');
@@ -170,7 +170,7 @@ function loadPeerConfig(configPath: string): Peer[] {
       console.log('  testPort.ts host:port [host:port] ...  # test specific hosts');
       process.exit(1);
     }
-    
+
     try {
       targets = loadPeerConfig(configPath);
       console.log(`Loaded ${targets.length} peers from ${configPath}`);
@@ -185,28 +185,28 @@ function loadPeerConfig(configPath: string): Peer[] {
       return { host: h, port: Number(p) };
     });
   }
-  
+
   if (targets.length === 0) {
     console.error('Error: No peers to test');
     process.exit(1);
   }
-  
+
   console.log(`Testing ${targets.length} peer(s)...\n`);
   const out = await scanList(targets);
-  
+
   // Print results
   const openPeers = out.filter(r => r.state === 'open');
   const failedPeers = out.filter(r => r.state !== 'open');
-  
+
   for (const r of out) {
     const statusSymbol = r.state === 'open' ? '✓' : '✗';
     const rttInfo = r.rttNs !== undefined ? ` (${(Number(r.rttNs) / 1_000_000).toFixed(2)}ms)` : '';
     const errorInfo = r.error !== undefined ? ` - ${errorStack(r.error)}` : '';
     console.log(`${statusSymbol} ${r.host}:${r.port} -> ${r.state}${rttInfo}${errorInfo}`);
   }
-  
+
   console.log(`\nSummary: ${openPeers.length}/${out.length} peers reachable`);
-  
+
   if (failedPeers.length > 0) {
     console.error(`\n⚠ Warning: ${failedPeers.length} peer(s) failed connection test`);
     process.exit(1);
