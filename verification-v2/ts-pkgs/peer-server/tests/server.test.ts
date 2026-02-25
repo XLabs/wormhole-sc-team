@@ -4,7 +4,7 @@ import {
   hashPeerData,
   WormholeGuardianData,
   ServerConfig,
-  PeerRegistration,
+  UncheckedPeer,
   BasePeer,
   PeersResponse,
   Peer,
@@ -12,6 +12,7 @@ import {
   BaseServerConfig
 } from '@xlabs-xyz/peer-lib';
 import { ethers } from 'ethers';
+import crypto from "node:crypto";
 
 import { PeerServer } from '../src/server.js';
 import { Display } from '../src/display.js';
@@ -44,12 +45,12 @@ for (let i = 0; i < 19; i++) {
 async function createPeerRegistration(
   wallet: ethers.HDNodeWallet,
   peer: BasePeer,
-): Promise<PeerRegistration> {
+): Promise<UncheckedPeer> {
   const messageHash = hashPeerData(peer);
   const signature = await wallet.signMessage(ethers.getBytes(messageHash));
 
   return {
-    peer,
+    ...peer,
     signature,
   };
 }
@@ -177,6 +178,26 @@ describe('PeerServer', () => {
       expect(response.body.error).toContain('Invalid peer registration');
     });
 
+    it('should reject peer registration with malformed signatures', async () => {
+      const peer: BasePeer = {
+        hostname: 'invalid.example.com',
+        port: 1,
+        tlsX509: 'invalid-cert',
+      };
+
+      const invalidRegistration: UncheckedPeer = {
+        ...peer,
+        signature: '0xinvalidsignature',
+      };
+
+      const response = await request(app)
+        .post('/peers')
+        .send(invalidRegistration)
+        .expect(401) as { body: { error: string } };
+
+      expect(response.body.error).toBe('Invalid guardian signature');
+    });
+
     it('should reject peer registration with invalid signatures', async () => {
       const peer: BasePeer = {
         hostname: 'invalid.example.com',
@@ -184,10 +205,16 @@ describe('PeerServer', () => {
         tlsX509: 'invalid-cert',
       };
 
-      const invalidRegistration: PeerRegistration = {
-        peer,
-        signature: '0xinvalidsignature',
-      };
+      const testGuardianWallet = testGuardianWallets[0];
+      const peerRegistration = await createPeerRegistration(testGuardianWallet, peer);
+      const invalidRegistration = {...peerRegistration};
+
+      const signature = ethers.getBytes(peerRegistration.signature);
+
+      const index = crypto.randomInt(0, signature.length);
+      signature[index] ^= 0x01; // flip 1 bit
+
+      invalidRegistration.signature = ethers.hexlify(signature);
 
       const response = await request(app)
         .post('/peers')
