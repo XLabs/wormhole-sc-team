@@ -130,7 +130,7 @@ fi
 docker run ${run_option} \
     --rm \
     --volume "${TLS_CERTIFICATE}:/run/secrets/cert.pem:ro" \
-    --volume "${CONFIG_FILE}:/run/secrets/client-config.json:ro"
+    --volume "${CONFIG_FILE}:/verification-v2/ts-pkgs/peer-client/client-config.json:ro" \
     "register-peer${TSS_E2E_GUARDIAN_ID:-}"
 
 log_info "Registration complete"
