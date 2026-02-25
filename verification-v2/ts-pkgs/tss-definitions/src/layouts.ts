@@ -1,5 +1,5 @@
 import { chainToChainId, enumItem, Layout, LayoutToType } from '@wormhole-foundation/sdk-base';
-import { layoutItems } from '@wormhole-foundation/sdk-definitions';
+import { layoutItems, envelopeLayout } from '@wormhole-foundation/sdk-definitions';
 
 /* VerificationV2 layouts */
 
@@ -12,15 +12,6 @@ export const headerV2Layout = [
   {name: "version",         binary: "uint",  size: 1, custom: 2, omit: true},
   {name: "schnorrKeyIndex", binary: "uint",  size: 4                       },
   {name: "signature",       binary: "bytes", layout: schnorrSignatureLayout},
-] as const satisfies Layout;
-
-export const envelopeLayout = [
-  { name: "timestamp", binary: "uint", size: 4 },
-  { name: "nonce", binary: "uint", size: 4 },
-  { name: "emitterChain", ...layoutItems.chainItem() },
-  { name: "emitterAddress", ...layoutItems.universalAddressItem },
-  { name: "sequence", ...layoutItems.sequenceItem },
-  { name: "consistencyLevel", binary: "uint", size: 1 },
 ] as const satisfies Layout;
 
 export const payloadLayout = [
@@ -57,7 +48,6 @@ export const appendSchnorrKeyMessageLayout = [
   {name: "expirationDelaySeconds", binary: "uint",  size:  4},
   {name: "shardDataHash",          binary: "bytes", size: 32},
 ] as const satisfies Layout;
-
 
 
 /* Solana core program layouts */
@@ -135,7 +125,6 @@ export const coreV1AccountDataLayout = {
     [[0x766161, 'vaa'], postedVaaV1Layout],
   ],
 } as const satisfies Layout;
-
 
 
 /** RegisterGuardian EIP712 message */
