@@ -119,7 +119,7 @@ describe('Peer Server Integration Tests', () => {
       };
       const selfConfig = validateOrFail(PeerClientConfigSchema, clientConfig, "Invalid client config");
       const client = new PeerClient(selfConfig, pollingPeriod);
-      clientPromises.push(client.submitAndWaitForAllPeers(mockWormholeData));
+      clientPromises.push(client.submitAndWaitForAllPeers(mockWormholeData, clientConfig.threshold));
     }
 
     try {
@@ -206,31 +206,32 @@ describe('Peer Server Integration Tests', () => {
 
     try {
       // Create clients but submit with delays
-      const clientConfigs: PeerClientConfig[] = [];
+      const clientConfigs = [];
       for (let i = 0; i < 2; i++) {
         const clientConfig = {
-          guardianPrivateKeyPath: path.join(testDir, `guardian-${i}-key.txt`),
+          guardianKey: { type: "key", key: path.join(testDir, `guardian-${i}-key.txt`) },
           serverUrl: serverUrl,
           peer: testPeers[i],
           threshold: 1,
-        };
+          wormhole: undefined,
+        } satisfies PeerClientConfig;
         const selfConfig = validateOrFail(PeerClientConfigSchema, clientConfig, "Invalid client config");
         clientConfigs.push(selfConfig);
       }
 
       // Submit first client immediately
       const firstClient = new PeerClient(clientConfigs[0], pollingPeriod);
-      const firstClientPromise = firstClient.submitAndWaitForAllPeers(mockWormholeData);
+      const firstClientPromise = firstClient.submitAndWaitForAllPeers(mockWormholeData, clientConfigs[0].threshold!);
 
       // Wait a bit then submit second client
       await new Promise(resolve => setTimeout(resolve, 1000));
       const secondClient = new PeerClient(clientConfigs[1], pollingPeriod);
-      await secondClient.submitAndWaitForAllPeers(mockWormholeData);
+      await secondClient.submitAndWaitForAllPeers(mockWormholeData, clientConfigs[1].threshold!);
 
       // Wait for both to complete
       const results = await Promise.all([
         firstClientPromise,
-        new PeerClient(clientConfigs[1], pollingPeriod).submitAndWaitForAllPeers(mockWormholeData)
+        new PeerClient(clientConfigs[1], pollingPeriod).submitAndWaitForAllPeers(mockWormholeData, clientConfigs[1].threshold!)
       ]);
 
       // Verify results are consistent

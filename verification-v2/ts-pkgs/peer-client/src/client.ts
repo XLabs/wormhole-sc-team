@@ -73,7 +73,7 @@ export class PeerClient {
     return this.uploadPeerData(peerRegistration);
   }
 
-  private async pollForCompletion(totalExpectedGuardians: number): Promise<PeersResponse> {
+  private async pollForCompletion(totalExpectedGuardians: number, threshold: number): Promise<PeersResponse> {
     console.log(`[POLLING] Starting to poll for completion...`);
 
     let lastPeerCount = 0;
@@ -86,12 +86,15 @@ export class PeerClient {
           const uncheckedJsonResponse = await uncheckedResponse.json() as PeersResponse;
 
           // Validate response with Zod
-          const { peers, threshold } = validateOrFail(
+          const { peers, threshold: serverThreshold } = validateOrFail(
             PeersResponseSchema, uncheckedJsonResponse, "Invalid peers response"
           );
 
           if (peers.length > totalExpectedGuardians) {
             throw new Error(`More guardians than expected have submitted their peer data`);
+          }
+          if (serverThreshold !== threshold) {
+            throw new Error(`Server informed that the threshold expected for this ceremony is ${serverThreshold} but this client configured ${threshold}`);
           }
 
           // Check if all expected guardians have submitted
@@ -130,8 +133,8 @@ export class PeerClient {
     return validateSomePeers(uncheckedPeers, wormholeData) as Peer[];
   }
 
-  private async pollAllPeersAndValidate(wormholeData: WormholeGuardianData): Promise<PeersResponse> {
-    const uncheckedResponse = await this.pollForCompletion(wormholeData.guardians.length);
+  private async pollAllPeersAndValidate(wormholeData: WormholeGuardianData, threshold: number): Promise<PeersResponse> {
+    const uncheckedResponse = await this.pollForCompletion(wormholeData.guardians.length, threshold);
     const checkedPeers = this.validatePeers(uncheckedResponse.peers, wormholeData);
     return {...uncheckedResponse, peers: checkedPeers};
   }
@@ -157,13 +160,13 @@ export class PeerClient {
     return this.run(() => this.signAndUploadPeerData(), "Uploading peer data...");
   }
 
-  public async waitForAllPeers(wormholeData: WormholeGuardianData): Promise<PeersResponse> {
-    return this.run(() => this.pollAllPeersAndValidate(wormholeData), "Polling all peers...");
+  public async waitForAllPeers(wormholeData: WormholeGuardianData, threshold: number): Promise<PeersResponse> {
+    return this.run(() => this.pollAllPeersAndValidate(wormholeData, threshold), "Polling all peers...");
   }
 
-  public async submitAndWaitForAllPeers(wormholeData: WormholeGuardianData): Promise<PeersResponse> {
+  public async submitAndWaitForAllPeers(wormholeData: WormholeGuardianData, threshold: number): Promise<PeersResponse> {
     await this.submitPeerData();
-    return this.waitForAllPeers(wormholeData);
+    return this.waitForAllPeers(wormholeData, threshold);
   }
 
   // Test helper method to get current peer data from server

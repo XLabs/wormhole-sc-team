@@ -27,18 +27,18 @@ class ConfigClient {
   }
 
   private loadConfig(): PeerClientConfig {
-    const configPath = path.resolve("self_config.json");
+    const configPath = path.resolve("client-config.json");
 
     if (!fs.existsSync(configPath)) {
-      console.error("[ERROR] self_config.json not found. Please create the file with your peer configuration.");
+      console.error("[ERROR] client-config.json not found. Please create the file with your peer configuration.");
       process.exit(1);
     }
 
     try {
       const configData = fs.readFileSync(configPath, 'utf-8');
-      return validateOrFail(PeerClientConfigSchema, JSON.parse(configData), "Invalid self_config.json");
+      return validateOrFail(PeerClientConfigSchema, JSON.parse(configData), "Invalid client-config.json");
     } catch (error) {
-      console.error(`[ERROR] Invalid JSON in self_config.json: ${errorStack(error)}`);
+      console.error(`[ERROR] Invalid JSON in client-config.json: ${errorStack(error)}`);
       process.exit(1);
     }
   }
@@ -86,7 +86,7 @@ class ConfigClient {
       if (this.config.threshold > wormholeData.guardians.length)
         throw new Error(`Threshold expected exceeds number of guardians! Threshold: ${this.config.threshold}, Guardians: ${wormholeData.guardians.length}`);
 
-      const response = await this.client.waitForAllPeers(wormholeData);
+      const response = await this.client.waitForAllPeers(wormholeData, this.config.threshold);
       console.log(`[INFO] All peers fetched`);
       // Save the final configuration
       this.savePeerConfig(response.peers, response.threshold);
