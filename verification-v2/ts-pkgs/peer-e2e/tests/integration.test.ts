@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   WormholeGuardianData,
-  PeerClientConfig,
   PeersResponse,
   PeerClientConfigSchema,
   validateOrFail,
@@ -209,12 +208,12 @@ describe('Peer Server Integration Tests', () => {
       const clientConfigs = [];
       for (let i = 0; i < 2; i++) {
         const clientConfig = {
-          guardianKey: { type: "key", key: path.join(testDir, `guardian-${i}-key.txt`) },
+          guardianPrivateKeyPath: path.join(testDir, `guardian-${i}-key.txt`),
           serverUrl: serverUrl,
           peer: testPeers[i],
           threshold: 1,
           wormhole: undefined,
-        } satisfies PeerClientConfig;
+        };
         const selfConfig = validateOrFail(PeerClientConfigSchema, clientConfig, "Invalid client config");
         clientConfigs.push(selfConfig);
       }

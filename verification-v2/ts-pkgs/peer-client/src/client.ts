@@ -19,11 +19,9 @@ import {
 } from '@xlabs-xyz/peer-lib';
 
 export class PeerClient {
-  private config: PeerClientConfig;
   private serverUrl: string;
 
-  constructor(config: PeerClientConfig, private readonly pollPeriod = 5000) {
-    this.config = config;
+  constructor(private config: PeerClientConfig, private readonly pollPeriod = 5000) {
     this.serverUrl = this.config.serverUrl;
   }
 
