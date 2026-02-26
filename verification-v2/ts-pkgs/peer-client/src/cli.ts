@@ -8,9 +8,11 @@ import {
   Peer,
   errorStack,
   getWormholeGuardianData,
+  parseTlsCertificate,
 } from "@xlabs-xyz/peer-lib";
 
 import { PeerClient } from "./client.js";
+import { encoding } from "@wormhole-foundation/sdk-base";
 
 type ClientAction = "upload" | "poll";
 
@@ -47,8 +49,16 @@ class ConfigClient {
     const outputPath = path.resolve("peer_config.json");
 
     try {
-      const self = peers.find(({tlsX509}) => { tlsX509 === this.config.peer.tlsX509 });
-      if (self === undefined) throw new Error(`Couldn't find self identity within peer list`);
+      const selfCert = parseTlsCertificate(this.config.peer.tlsX509);
+      if (!selfCert.success) throw new Error(`Failed to parse self TLS certificate`);
+
+      const self = peers.find(({tlsX509}) => {
+        const peerCertParse = parseTlsCertificate(tlsX509);
+        if (!peerCertParse.success) throw new Error(`Failed to parse self TLS certificate`);
+
+        return encoding.bytes.equals(peerCertParse.value.body, selfCert.value.body);
+      });
+      if (self === undefined) throw new Error(`Couldn't find self identity within peer list.`);
 
       // This MUST match the schema for the DKG config
       const outputData = {

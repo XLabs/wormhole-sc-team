@@ -62,6 +62,11 @@ export function checkTlsCertificate(input: string) {
   return parseArmor(input, tlsCertificateArmor).success;
 }
 
+export function parseTlsCertificate(input: string) {
+  return parseArmor(input, tlsCertificateArmor);
+}
+
+
 export const wormholeKeyLayout = [
   { name: "tagKey", binary: "uint",  size: 1, custom: 0x0A, omit: true },
   { name: "key",    binary: "bytes", lengthSize: 1 }
