@@ -4525,6 +4525,7 @@ __metadata:
   resolution: "@xlabs-xyz/peer-client@workspace:ts-pkgs/peer-client"
   dependencies:
     "@types/node": "npm:^24.10.13"
+    "@wormhole-foundation/sdk-base": "npm:^4.11.0"
     "@xlabs-xyz/peer-lib": "workspace:*"
     ethers: "npm:^6.16.0"
     tsx: "npm:^4.21.0"
