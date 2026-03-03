@@ -342,8 +342,8 @@ async function getSigner(
   } else if (chain === "HyperEVM") {
     overrides = {
       type: 2,
-      maxFeePerGas: ethers.utils.parseUnits("150", "gwei"),
-      maxPriorityFeePerGas: ethers.utils.parseUnits("0.22", "gwei"),
+      maxFeePerGas: ethers.utils.parseUnits("2", "gwei"),
+      maxPriorityFeePerGas: ethers.utils.parseUnits("0.62", "gwei"),
     }
   } else if (chain === "Monad") {
     overrides = {
@@ -353,9 +353,9 @@ async function getSigner(
     }
   } else if (chain === "Mezo") {
     overrides = {
-      type: 0,
-      gasPrice: ethers.utils.parseUnits("0", "gwei"),
-      // gasPrice: ethers.utils.parseUnits("0.000000000001755", "gwei"),
+      type: 2,
+      maxFeePerGas: ethers.utils.parseUnits("0.01", "gwei"),
+      maxPriorityFeePerGas: ethers.utils.parseUnits("0", "gwei"),
     }
   } else if (chain === "XRPLEVM") {
     overrides = {

@@ -107,7 +107,7 @@ const Mainnet = {
     key: getEnvVar("SUI_KEY"),
   },
   Pythnet: {
-    rpc: "http://api.pythnet.pyth.network:8899/",
+    rpc: "https://api2.pythnet.pyth.network",
     key: getEnvVar("SOLANA_KEY"),
   },
   Xpla: {
@@ -250,6 +250,11 @@ const Mainnet = {
     rpc: "https://rpc.xrplevm.org",
     key: getEnvVar("ETH_KEY"),
     chain_id: 1440000,
+  },
+  Plume: {
+    rpc: "https://rpc.plume.org",
+    key: getEnvVar("ETH_KEY"),
+    chain_id: 98866,
   },
   Sepolia: {
     rpc: "",
