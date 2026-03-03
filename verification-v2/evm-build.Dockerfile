@@ -10,6 +10,12 @@ USER foundry
 
 WORKDIR /app
 COPY foundry.toml foundry.toml
+
+RUN SOLC_VERSION=$(forge config | grep "^solc =" | sed 's/solc = //' | sed 's/"//g'); \
+    if [ -z "$SOLC_VERSION" ]; then echo "SOLC_VERSION not set"; exit 1; fi; \
+    wget --progress=dot:giga --output-document=solc "https://github.com/ethereum/solidity/releases/download/v$SOLC_VERSION/solc-static-linux" && chmod +x solc
+
+
 COPY lib/wormhole-solidity-sdk lib/wormhole-solidity-sdk
 COPY src/evm src/evm
 
@@ -22,17 +28,11 @@ COPY src/evm src/evm
 # Otherwise solc aborts with duplicated key/newline problems.
 
 RUN forge verify-contract \
-  --show-standard-json-input \
-  0x0000000000000000000000000000000000000000 \
-  src/evm/WormholeVerifier.sol:WormholeVerifier \
-  | sed '1d' \
-  | jq '.' > WormholeVerifier.input.json
-
-# Get compiler according to forge configuration (foundry.toml specified)
-
-RUN SOLC_VERSION=$(forge config | grep "^solc =" | sed 's/solc = //' | sed 's/"//g'); \
-    if [ -z "$SOLC_VERSION" ]; then echo "SOLC_VERSION not set"; exit 1; fi; \
-    wget --progress=dot:giga --output-document=solc "https://github.com/ethereum/solidity/releases/download/v$SOLC_VERSION/solc-static-linux" && chmod +x solc
+    --show-standard-json-input \
+    0x0000000000000000000000000000000000000000 \
+    src/evm/WormholeVerifier.sol:WormholeVerifier \
+    | sed '1d' \
+    | jq '.' > WormholeVerifier.input.json
 
 # Compile contract(s).
 
