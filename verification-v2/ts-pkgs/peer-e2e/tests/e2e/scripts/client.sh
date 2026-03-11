@@ -8,7 +8,7 @@ TLS_PUBLIC_IP="127.0.0.1"
 TLS_BASE_PORT="3001"
 PEER_SERVER_URL="http://peer-server:3000"
 ETHEREUM_RPC_URL="http://anvil-with-verifier:8545"
-WORMHOLE_ADDRESS="0x5FbDB2315678afecb367f032d93F642f64180aa3"
+WORMHOLE_ADDRESS="0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
 
 export TSS_E2E_DOCKER_NETWORK="dkg-test"
 export NON_INTERACTIVE=1
@@ -51,7 +51,7 @@ createGuardianPrivateKeyFile() {
 for i in "${!GUARDIAN_PRIVATE_KEYS[@]}"
 do
   mkdir -p "./out/$i/keys"
-  createGuardianPrivateKeyFile "$i" "./out/$i/guardian.key"
+  createGuardianPrivateKeyFile "$i" "./out/$i/keys/guardian.pem"
 done
 
 until docker logs peer-server 2>/dev/null | grep "Peer server running on"
@@ -66,6 +66,7 @@ docker build \
     ../../../..
 
 docker build \
+    --tag "register-peer" \
     --file ../../../peer-client/Dockerfile \
     --progress=plain \
     ../../../..
@@ -73,7 +74,7 @@ docker build \
 for i in "${!GUARDIAN_PRIVATE_KEYS[@]}"
 do
   TSS_E2E_GUARDIAN_ID="$i" ../../../rollout-scripts/setup-peer.sh \
-    --key="./out/$i/guardian.key" \
+    --key="./out/$i/keys/guardian.pem" \
     --tls-hostname="${TLS_HOSTNAME}$i" \
     --tls-public-ip="${TLS_PUBLIC_IP}" \
     --output-dir="./out/$i/keys" \

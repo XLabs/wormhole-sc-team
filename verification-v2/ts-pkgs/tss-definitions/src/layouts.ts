@@ -42,11 +42,22 @@ export const MODULE_VERIFICATION_V2 = Uint8Array.from([
 export const appendSchnorrKeyMessageLayout = [
   {name: "module",                 binary: "bytes",           custom: MODULE_VERIFICATION_V2, omit: true},
   {name: "action",                 binary: "uint",  size:  1, custom: 1,                      omit: true},
+  {name: "chainId",                binary: "uint",  size:  2, custom: 0,                      omit: true},
   {name: "schnorrKeyIndex",        binary: "uint",  size:  4},
   {name: "expectedMssIndex",       binary: "uint",  size:  4},
   {name: "schnorrKey",             binary: "bytes", size: 32},
   {name: "expirationDelaySeconds", binary: "uint",  size:  4},
   {name: "shardDataHash",          binary: "bytes", size: 32},
+] as const satisfies Layout;
+
+export const shardLayout = [
+  {name: "shard",                  binary: "bytes", size: 32},
+  {name: "pubkeyX",                binary: "bytes", size: 32},
+  {name: "pubkeyY",                binary: "bytes", size: 32},
+] as const satisfies Layout;
+
+export const shardDataLayout = [
+  {name: "shards",                 binary: "array", layout: shardLayout },
 ] as const satisfies Layout;
 
 

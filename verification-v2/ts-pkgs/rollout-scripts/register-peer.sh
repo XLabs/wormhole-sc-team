@@ -101,6 +101,7 @@ fi
 
 export DOCKER_BUILDKIT=1
 
+build_options=""
 run_option=""
 if [ -n "${GUARDIAN_KEY_PATH:-}" ]; then
     run_option+="--volume ${GUARDIAN_KEY_PATH}:/run/secrets/guardian_pk:ro "
@@ -111,10 +112,16 @@ if [ -n "${TSS_E2E_DOCKER_NETWORK:-}" ]; then
     run_option+="--network ${TSS_E2E_DOCKER_NETWORK} "
 fi
 
+if [ -n "${NON_INTERACTIVE:-}" ]; then
+  build_options+="--progress=plain "
+else
+  run_options+="--interactive --tty "
+fi
 
 docker build \
+    ${build_options} \
+    --tag "register-peer" \
     --file "${PROJECT_ROOT}/ts-pkgs/peer-client/Dockerfile" \
-    --tag "register-peer${TSS_E2E_GUARDIAN_ID:-}" \
     "${PROJECT_ROOT}"
 
 CONFIG_DIR=$(dirname "${TLS_CERTIFICATE}")
@@ -131,7 +138,7 @@ docker run ${run_option} \
     --rm \
     --volume "${TLS_CERTIFICATE}:/run/secrets/cert.pem:ro" \
     --volume "${CONFIG_FILE}:/verification-v2/ts-pkgs/peer-client/client-config.json:ro" \
-    "register-peer${TSS_E2E_GUARDIAN_ID:-}"
+    "register-peer"
 
 log_info "Registration complete"
 

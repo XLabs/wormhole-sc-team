@@ -157,6 +157,9 @@ message GovernanceMessage {
 
     // Set message fee
     CoreBridgeSetMessageFee core_bridge_set_message_fee = 30;
+
+    // Threshold signature scheme (TSS)
+    TssAppendSchnorrKey tss_append_schnorr_key = 31;
   }
 }
 
@@ -593,4 +596,31 @@ message CoreBridgeSetMessageFee {
   uint32 chain_id = 1;
   // New message fee.
   string message_fee = 2;
+}
+
+// Append schnorr key is the governance action that sets the accepted public key for VAAv2 verification.
+message TssAppendSchnorrKey {
+  // Schnorr key index. Id of set of signers, analogous to the guardian set index.
+  uint32 schnorr_key_index = 1;
+  // Expected guardian set. This allows conditional execution of the VAA based on the guardian set id.
+  // Useful to sign both guardian set update governance and append schnorr key governance in the same ceremony
+  // without having to worry about the order of execution of the messages.
+  uint32 expected_guardian_set = 2;
+  // Schnorr pubkey. Stored as hex string with 0x prefix for human readability.
+  string schnorr_pubkey = 3;
+  // Expiration delay in seconds. Once the VAA is executed, the previous schnorr key
+  // will expire after this delay.
+  uint32 expiration_delay_seconds = 4;
+
+  // List of shards.
+  message Shard {
+    // Schnorr key public shard hash.
+    string shard_hash = 1;
+    // Optional descriptive name. Not stored on any chain, purely informational.
+    string name = 2;
+    // Id of signer. Must be the compressed TLS public key.
+    // Hex encoded with 0x prefix.
+    string signer_id = 3;
+  };
+  repeated Shard shards = 5
 }

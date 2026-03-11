@@ -100,6 +100,7 @@ if [ ! -f "${TLS_KEYS_DIR}/cert.pem" ]; then
 fi
 
 # TSS_E2E_DOCKER_NETWORK should NOT be used in production
+build_options=""
 run_options=""
 if [ -n "${TSS_E2E_DOCKER_NETWORK:-}" ]; then
   run_options+="--network=${TSS_E2E_DOCKER_NETWORK} "
@@ -115,7 +116,13 @@ if [ -n "${ETC_HOSTS_OVERRIDE:-}" ]; then
   run_options+="--volume "${ETC_HOSTS_OVERRIDE}":/etc/hosts:ro "
 fi
 
-docker build --tag "dkg-client${TSS_E2E_GUARDIAN_ID:-}" --file "${REPO_ROOT}/ts-pkgs/peer-client/dkg.Dockerfile" "${REPO_ROOT}"
+if [ -n "${NON_INTERACTIVE:-}" ]; then
+  build_options+="--progress=plain "
+else
+  run_options+="--interactive --tty "
+fi
+
+docker build ${build_options} --tag "dkg-client" --file "${REPO_ROOT}/ts-pkgs/peer-client/dkg.Dockerfile" "${REPO_ROOT}"
 
 peer_client_config="${TLS_KEYS_DIR}/peer-client-config.json"
 cat > ${peer_client_config} <<EOF
@@ -136,17 +143,13 @@ cat > ${peer_client_config} <<EOF
 }
 EOF
 
-if [ -z "${NON_INTERACTIVE:-}" ]; then
-  run_options+="--interactive --tty "
-fi
-
 docker run \
   --rm \
   --name "${TLS_HOSTNAME}" \
   ${run_options} \
   --mount type=bind,src="${TLS_KEYS_DIR}",dst=/keys \
   --volume ${peer_client_config}:/verification-v2/ts-pkgs/peer-client/client-config.json:ro \
-  "dkg-client${TSS_E2E_GUARDIAN_ID:-}"
+  "dkg-client"
 
 
 echo ""

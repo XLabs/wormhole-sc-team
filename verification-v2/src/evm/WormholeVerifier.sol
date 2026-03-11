@@ -3,7 +3,7 @@
 pragma solidity ^0.8.25;
 
 import {CoreBridgeVM, ICoreBridge, GuardianSet} from "wormhole-solidity-sdk/interfaces/ICoreBridge.sol";
-import {CHAIN_ID_SOLANA} from "wormhole-solidity-sdk/constants/Chains.sol";
+import {CHAIN_ID_SOLANA, CHAIN_ID_UNSET} from "wormhole-solidity-sdk/constants/Chains.sol";
 import {BytesParsing} from "wormhole-solidity-sdk/libraries/BytesParsing.sol";
 import {VaaLib} from "wormhole-solidity-sdk/libraries/VaaLib.sol";
 import {eagerAnd, eagerOr} from "wormhole-solidity-sdk/Utils.sol";
@@ -55,6 +55,7 @@ uint256 constant MASK_UPDATE_RESULT_SHARD_DATA_MISMATCH         = 1 << 30;
 uint256 constant MASK_UPDATE_RESULT_INVALID_OPCODE              = 1 << 31;
 uint256 constant MASK_UPDATE_RESULT_INVALID_DATA_LENGTH         = 1 << 32;
 uint256 constant MASK_UPDATE_RESULT_MULTISIG_KEY_INDEX_MISMATCH = 1 << 33;
+uint256 constant MASK_UPDATE_RESULT_INVALID_CHAIN_ID            = 1 << 34;
 
 // Get opcodes
 uint8 constant GET_CURRENT_SCHNORR_KEY_DATA   = 0;
@@ -1209,6 +1210,7 @@ contract WormholeVerifier is EIP712Encoding {
 
       bytes32 module;
       uint8 action;
+      uint16 chainId;
       uint32 newSchnorrKeyIndex;
       uint32 expectedMultisigKeyIndex;
       uint256 newSchnorrKey;
@@ -1217,6 +1219,8 @@ contract WormholeVerifier is EIP712Encoding {
 
       (module, offset) = data.asBytes32MemUnchecked(envelopeOffset + VaaLib.ENVELOPE_SIZE);
       (action, offset) = data.asUint8MemUnchecked(offset);
+      // We don't really use the chain id field but it's standard for governance VAAs
+      (chainId, offset) = data.asUint16MemUnchecked(offset);
 
       (newSchnorrKeyIndex, offset) = data.asUint32MemUnchecked(offset);
       (expectedMultisigKeyIndex, offset) = data.asUint32MemUnchecked(offset);
@@ -1244,8 +1248,10 @@ contract WormholeVerifier is EIP712Encoding {
       require(emitterChainId == CHAIN_ID_SOLANA,    UpdateFailed(offset | MASK_UPDATE_RESULT_INVALID_GOVERNANCE_CHAIN));
       require(emitterAddress == GOVERNANCE_ADDRESS, UpdateFailed(offset | MASK_UPDATE_RESULT_INVALID_GOVERNANCE_ADDRESS));
 
-      require(module == MODULE_VERIFICATION_V2,     UpdateFailed(offset | MASK_UPDATE_RESULT_INVALID_MODULE));
-      require(action == ACTION_APPEND_SCHNORR_KEY,  UpdateFailed(offset | MASK_UPDATE_RESULT_INVALID_ACTION));
+      // We'll require the governance action chain id to be unset (0)
+      require(module  == MODULE_VERIFICATION_V2,    UpdateFailed(offset | MASK_UPDATE_RESULT_INVALID_MODULE));
+      require(action  == ACTION_APPEND_SCHNORR_KEY, UpdateFailed(offset | MASK_UPDATE_RESULT_INVALID_ACTION));
+      require(chainId == CHAIN_ID_UNSET,            UpdateFailed(offset | MASK_UPDATE_RESULT_INVALID_CHAIN_ID));
 
       require(eagerAnd(newSchnorrKeyIndex == _getSchnorrKeyCount(), newSchnorrKeyIndex < type(uint32).max),
                                                     UpdateFailed(offset | MASK_UPDATE_RESULT_INVALID_KEY_INDEX));

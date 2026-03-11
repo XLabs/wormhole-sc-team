@@ -5,7 +5,7 @@ pragma solidity ^0.8.27;
 // import {console} from "forge-std/console.sol";
 import {Test} from "forge-std/Test.sol";
 
-import {CHAIN_ID_SOLANA, CHAIN_ID_ETHEREUM} from "wormhole-solidity-sdk/constants/Chains.sol";
+import {CHAIN_ID_ETHEREUM, CHAIN_ID_SOLANA, CHAIN_ID_UNSET} from "wormhole-solidity-sdk/constants/Chains.sol";
 import {keccak256Word, keccak256SliceUnchecked} from "wormhole-solidity-sdk/utils/Keccak.sol";
 import {ICoreBridge, CoreBridgeVM, GuardianSet, GuardianSignature} from "wormhole-solidity-sdk/interfaces/ICoreBridge.sol";
 import {VaaLib} from "wormhole-solidity-sdk/libraries/VaaLib.sol";
@@ -81,6 +81,7 @@ abstract contract VerificationMessageBuilder {
     return abi.encodePacked(
       MODULE_VERIFICATION_V2,
       ACTION_APPEND_SCHNORR_KEY,
+      CHAIN_ID_UNSET,
       newSchnorrKeyIndex,
       expectedMultisigKeyIndex,
       newSchnorrPubkey,

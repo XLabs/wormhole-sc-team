@@ -7,7 +7,7 @@ export NON_INTERACTIVE=1
 SERVER_PORT="3000"
 ETHEREUM_RPC_URL="http://anvil-with-verifier:8545"
 OUTPUT_PEERS_FILE=./out/server/guardianPeers.json
-WORMHOLE_ADDRESS="0x5FbDB2315678afecb367f032d93F642f64180aa3"
+WORMHOLE_ADDRESS="0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
 
 # Wait until anvil starts listening
 docker run --rm --network=dkg-test --env "ETHEREUM_RPC_URL=$ETHEREUM_RPC_URL" --env "WORMHOLE_ADDRESS=$WORMHOLE_ADDRESS" ghcr.io/foundry-rs/foundry:v1.5.1@sha256:3a70bfa9bd2c732a767bb60d12c8770b40e8f9b6cca28efc4b12b1be81c7f28e '

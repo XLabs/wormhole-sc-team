@@ -79,6 +79,7 @@ if [ ! -f "${OUTPUT_PEERS_FILE}" ]; then
 fi
 
 # TSS_E2E_DOCKER_NETWORK should NOT be used in production
+build_options=""
 run_options=""
 if [ -n "${TSS_E2E_DOCKER_NETWORK:-}" ]; then
     run_options+="--network=${TSS_E2E_DOCKER_NETWORK} "
@@ -86,14 +87,17 @@ else
     run_options+="--publish ${SERVER_PORT}:${SERVER_PORT} "
 fi
 
+if [ -n "${NON_INTERACTIVE:-}" ]; then
+  build_options+="--progress=plain "
+else
+  run_options+="--interactive --tty "
+fi
+
 docker build \
+    ${build_options} \
     --tag peer-server \
     --file "${REPO_ROOT}/ts-pkgs/peer-server/Dockerfile" \
     "${REPO_ROOT}"
-
-if [ -z "${NON_INTERACTIVE:-}" ]; then
-    run_options+="--interactive --tty "
-fi
 
 cat > "${OUTPUT_PEERS_DIR}/peer-server-config.json" <<EOT
 {
