@@ -65,6 +65,12 @@ var GeneralPurposeGovernanceModule = [32]byte{
 }
 var GeneralPurposeGovernanceModuleStr = string(GeneralPurposeGovernanceModule[:])
 
+var TssModule = [32]byte{
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x54, 0x53, 0x53,
+};
+var TssModuleStr = string(TssModule[:])
+
 type GovernanceAction uint8
 
 var (
@@ -114,6 +120,9 @@ var (
 	// General purpose governance
 	GeneralPurposeGovernanceEvmAction    GovernanceAction = 1
 	GeneralPurposeGovernanceSolanaAction GovernanceAction = 2
+
+	// Threshold signature scheme (TSS)
+	TssAppendSchnorrKey GovernanceAction = 1
 )
 
 type (
@@ -280,6 +289,15 @@ type (
 	BodyCoreBridgeSetMessageFee struct {
 		ChainID    ChainID
 		MessageFee *uint256.Int
+	}
+
+	// BodyTssAppendSchnorrKey is the governance action that sets the accepted public key for VAAv2 verification.
+	BodyTssAppendSchnorrKey struct {
+		SchnorrKeyIndex        uint32
+		ExpectedGuardianSet    uint32
+		SchnorrPubkey          [32]byte
+		ExpirationDelaySeconds uint32
+		ShardDataHash          [32]byte
 	}
 )
 
@@ -536,6 +554,16 @@ func (r BodyGeneralPurposeGovernanceSolana) Serialize() ([]byte, error) {
 	// the relevant dynamic fields.
 	payload.Write(r.Instruction)
 	return serializeBridgeGovernanceVaa(GeneralPurposeGovernanceModuleStr, GeneralPurposeGovernanceSolanaAction, r.ChainID, payload.Bytes())
+}
+
+func (r BodyTssAppendSchnorrKey) Serialize() ([]byte, error) {
+	payload := &bytes.Buffer{}
+	MustWrite(payload, binary.BigEndian, r.SchnorrKeyIndex)
+	MustWrite(payload, binary.BigEndian, r.ExpectedGuardianSet)
+	payload.Write(r.SchnorrPubkey[:])
+	MustWrite(payload, binary.BigEndian, r.ExpirationDelaySeconds)
+	payload.Write(r.ShardDataHash[:])
+	return serializeBridgeGovernanceVaa(TssModuleStr, TssAppendSchnorrKey, 0, payload.Bytes())
 }
 
 func EmptyPayloadVaa(module string, actionId GovernanceAction, chainId ChainID) ([]byte, error) {

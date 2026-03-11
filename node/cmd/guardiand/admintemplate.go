@@ -80,6 +80,18 @@ var governanceCallData *string
 var coreBridgeSetMessageFeeChainId *string
 var coreBridgeSetMessageFeeMessageFee *string
 
+
+var tssSchnorrKeyIndex *string = tssAppendSchnorrKeyFlagSet.String("schnorr-key-index", "", "Index of the new Schnorr key")
+var tssExpectedGuardianSet *string = tssAppendSchnorrKeyFlagSet.String("expected-guardian-set", "", "Minimum guardian set index to execute append action")
+var tssSchnorrPubkey *string = tssAppendSchnorrKeyFlagSet.String("schnorr-pubkey", "", "Schnorr public key")
+var tssExpirationDelaySeconds *string = tssAppendSchnorrKeyFlagSet.String("expiration-delay-seconds", "", "Expiration delay for the previous Schnorr key in seconds")
+var tssShards []string
+type shardArg struct {
+  ShardHash string `json:"shard_hash"`
+  Name      string `json:"name"`
+  SignerId  string `json:"signer_id"`
+}
+
 func init() {
 	governanceFlagSet := pflag.NewFlagSet("governance", pflag.ExitOnError)
 	chainID = governanceFlagSet.String("chain-id", "", "Chain ID")
@@ -226,6 +238,24 @@ func init() {
 	// solana call command
 	AdminClientGeneralPurposeGovernanceSolanaCallCmd.Flags().AddFlagSet(generalPurposeGovernanceFlagSet)
 	TemplateCmd.AddCommand(AdminClientGeneralPurposeGovernanceSolanaCallCmd)
+
+	// flags for append schnorr key command
+	tssAppendSchnorrKeyFlagSet := pflag.NewFlagSet("tss-append-schnorr-key", pflag.ExitOnError)
+	// If another action involving TSS module is added, make these names more specific to avoid collisions
+	tssSchnorrKeyIndex = tssAppendSchnorrKeyFlagSet.String("schnorr-key-index", "", "Index of the new Schnorr key")
+	tssExpectedGuardianSet = tssAppendSchnorrKeyFlagSet.String("expected-guardian-set", "", "Minimum guardian set index to execute append action")
+	tssSchnorrPubkey = tssAppendSchnorrKeyFlagSet.String("schnorr-pubkey", "", "Schnorr public key")
+	tssExpirationDelaySeconds = tssAppendSchnorrKeyFlagSet.String("expiration-delay-seconds", "", "Expiration delay for the previous Schnorr key in seconds")
+	// TODO: actually hash things in this tool
+	tssShardDataHash = tssAppendSchnorrKeyFlagSet.String("shard-data-hash", "", "Hash of the shard data")
+	tssAppendSchnorrKeyFlagSet.StringArrayVar(
+		&tssShards,
+		"shard",
+		nil,
+		"Participant ID (can specify multiple times)",
+	)
+	AdminClientTssAppendSchnorrKeyCmd.Flags().AddFlagSet(tssAppendSchnorrKeyFlagSet)
+	TemplateCmd.AddCommand(AdminClientTssAppendSchnorrKeyCmd)
 }
 
 var TemplateCmd = &cobra.Command{
@@ -369,6 +399,12 @@ var AdminClientGeneralPurposeGovernanceSolanaCallCmd = &cobra.Command{
 	Use:   "governance-solana-call",
 	Short: "Generate a 'general purpose solana governance call' template for specified chain and address",
 	Run:   runGeneralPurposeGovernanceSolanaCallTemplate,
+}
+
+var AdminClientTssAppendSchnorrKeyCmd = &cobra.Command{
+	Use:   "tss-append-schnorr-key",
+	Short: "Generate an 'append Schnorr key' template",
+	Run:   runTssAppendSchnorrKeyTemplate,
 }
 
 func runGuardianSetTemplate(cmd *cobra.Command, args []string) {
@@ -1252,6 +1288,86 @@ func runGeneralPurposeGovernanceSolanaCallTemplate(cmd *cobra.Command, args []st
 		log.Fatal("failed to marshal request: ", err)
 	}
 	fmt.Print(string(b))
+}
+
+func runTssAppendSchnorrKeyTemplate(cmd *cobra.Command, args []string) {
+	seq, nonce := randSeqNonce()
+
+	if len(tssShards) == 0 {
+		tssShards = append(tssShards,
+			`{"shard_hash":"0x1111111111111111111111111111111111111111111111111111111111111111","name":"Example shard 1","signer_id":"0x02aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}`,
+			`{"shard_hash":"0x2222222222222222222222222222222222222222222222222222222222222222","name":"Example shard 2","signer_id":"0x02bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}`,
+		)
+	}
+
+	shardsProto, err := buildProtoShards(tssShards)
+	if err != nil {
+		return nil, err
+	}
+
+	m := &nodev1.InjectGovernanceVAARequest{
+		CurrentSetIndex: uint32(*templateGuardianIndex), // #nosec G115 -- Number of guardians will never overflow here
+		Messages: []*nodev1.GovernanceMessage{
+			{
+				Sequence: seq,
+				Nonce:    nonce,
+				Payload: &nodev1.GovernanceMessage_TssAppendSchnorrKey{
+					SchnorrKeyIndex: tssSchnorrKeyIndex,
+					ExpectedGuardianSet: tssExpectedGuardianSet,
+					SchnorrPubkey: tssSchnorrPubkey,
+					ExpirationDelaySeconds: tssExpirationDelaySeconds,
+					Shards: shardsProto,
+				},
+			},
+		},
+	}
+
+	b, err := prototext.MarshalOptions{Multiline: true}.Marshal(m)
+	if err != nil {
+		log.Fatal("failed to marshal request: ", err)
+	}
+	fmt.Print(string(b))
+}
+
+func buildProtoShards(shardJSONs []string) ([]*nodev1.TssAppendSchnorrKey_Shard, error) {
+	out := make([]*nodev1.TssAppendSchnorrKey_Shard, 0, len(shardJSONs))
+
+	for i, s := range shardJSONs {
+		var shard shardArg
+		if err := json.Unmarshal([]byte(s), &shard); err != nil {
+			return nil, fmt.Errorf("invalid --shard[%d] JSON: %w", i, err)
+		}
+
+		if !strings.HasPrefix(shard.ShardHash, "0x") {
+			return nil, fmt.Errorf("--shard[%d].shard_hash must be a hex string with 0x prefix", i)
+		}
+		if len(shard.ShardHash) != 66 {
+			return nil, fmt.Errorf("--shard[%d].shard_hash must be 32 bytes long", i)
+		}
+		_, err := hex.DecodeString(shard.ShardHash[2:])
+		if err != nil {
+			return nil, fmt.Errorf("--shard[%d].shard_hash must be valid hex: %w", i, err)
+		}
+
+		if !strings.HasPrefix(shard.SignerId, "0x") {
+			return nil, fmt.Errorf("--shard[%d].signer_id must be a hex string with 0x prefix", i)
+		}
+		if len(shard.SignerId) != 68 {
+			return nil, fmt.Errorf("--shard[%d].signer_id must be 33 bytes long", i)
+		}
+		_, err := hex.DecodeString(shard.SignerId[2:])
+		if err != nil {
+			return nil, fmt.Errorf("--shard[%d].signer_id must be valid hex: %w", i, err)
+		}
+
+		out = append(out, &nodev1.TssAppendSchnorrKey_Shard{
+			ShardHash: shard.ShardHash,
+			Name:      shard.Name,
+			SignerId:  shard.SignerId,
+		})
+	}
+
+	return out, nil
 }
 
 // parseAddress parses either a hex-encoded address and returns

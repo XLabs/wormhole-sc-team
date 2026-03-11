@@ -17,6 +17,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"crypto/elliptic"
 
 	"github.com/certusone/wormhole/node/pkg/guardiansigner"
 	"github.com/certusone/wormhole/node/pkg/watchers/evm/connectors"
@@ -30,6 +31,7 @@ import (
 	"github.com/certusone/wormhole/node/pkg/notary"
 	gossipv1 "github.com/certusone/wormhole/node/pkg/proto/gossip/v1"
 	ethcommon "github.com/ethereum/go-ethereum/common"
+	ethcrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/mr-tron/base58"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -763,6 +765,59 @@ func solanaCallToVaa(solanaCall *nodev1.SolanaCall, timestamp time.Time, guardia
 	return v, nil
 }
 
+func tssAppendSchnorrKeyToVAA(req *nodev1.TssAppendSchnorrKey, timestamp time.Time, guardianSetIndex uint32, nonce uint32, sequence uint64) (*vaa.VAA, error) {
+	if len(req.Shards) == 0 {
+		return nil, errors.New("missing shards")
+	}
+
+	schnorrPubkey, err := hex.DecodeString(strings.TrimPrefix(req.SchnorrPubkey, "0x"))
+	if err != nil {
+		return nil, fmt.Errorf("failed to deserialize Schnorr pubkey: %w", err)
+	}
+	if len(schnorrPubkey) != 32 {
+		return nil, errors.New("invalid Schnorr public key (expected 32 bytes)")
+	}
+
+	shardData := &bytes.Buffer{}
+	for _, shard := range req.Shards {
+		shardHashBuf, err := hex.DecodeString(strings.TrimPrefix(shard.ShardHash, "0x"))
+		if err != nil {
+			return nil, fmt.Errorf("failed to deserialize shard : %w", err)
+		}
+		if len(shardHashBuf) != 32 {
+			return nil, errors.New("invalid shard public key hash (expected 32 bytes)")
+		}
+		shardData.Write(shardHashBuf)
+
+		shardSignerId, err := hex.DecodeString(strings.TrimPrefix(shard.SignerId, "0x"))
+		if err != nil {
+			return nil, fmt.Errorf("failed to deserialize shard signer id: %w", err)
+		}
+		x, y := elliptic.UnmarshalCompressed(elliptic.P256(), shardSignerId)
+		if x == nil || y == nil {
+			return nil, errors.New("invalid shard signer id (expected compressed public key)")
+		}
+		uncompressed := elliptic.Marshal(elliptic.P256(), x, y)
+		shardData.Write(uncompressed[1:])
+	}
+	shardDataHash := ethcrypto.Keccak256Hash(shardData.Bytes())
+
+	body, err := vaa.BodyTssAppendSchnorrKey{
+		SchnorrKeyIndex:         req.SchnorrKeyIndex,
+		ExpectedGuardianSet:     req.ExpectedGuardianSet,
+		SchnorrPubkey:           schnorrPubkey,
+		ExpirationDelaySeconds:  req.ExpirationDelaySeconds,
+		ShardDataHash:           shardDataHash,
+	}.Serialize()
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to serialize governance body: %w", err)
+	}
+
+	v := vaa.CreateGovernanceVAA(timestamp, nonce, sequence, guardianSetIndex, body)
+	return v, nil
+}
+
 func GovMsgToVaa(message *nodev1.GovernanceMessage, currentSetIndex uint32, timestamp time.Time) (*vaa.VAA, error) {
 	var (
 		v   *vaa.VAA
@@ -812,6 +867,8 @@ func GovMsgToVaa(message *nodev1.GovernanceMessage, currentSetIndex uint32, time
 		v, err = solanaCallToVaa(payload.SolanaCall, timestamp, currentSetIndex, message.Nonce, message.Sequence)
 	case *nodev1.GovernanceMessage_CoreBridgeSetMessageFee:
 		v, err = coreBridgeSetMessageFeeToVaa(payload.CoreBridgeSetMessageFee, timestamp, currentSetIndex, message.Nonce, message.Sequence)
+	case *nodev1.GovernanceMessage_TssAppendSchnorrKey:
+		v, err = tssAppendSchnorrKeyToVAA(payload.TssAppendSchnorrKey, timestamp, currentSetIndex, message.Nonce, message.Sequence)
 	default:
 		err = fmt.Errorf("unsupported VAA type: %T", payload)
 	}

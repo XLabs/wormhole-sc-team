@@ -20,6 +20,8 @@ pub const MODULE_VERIFICATION_V2: [u8; 32] =
 // Action ID for appending a schnorr key
 pub const ACTION_APPEND_SCHNORR_KEY: u8 = 0x01;
 
+pub const CHAIN_ID_UNSET: u16 = 0;
+
 impl AnchorSerialize for AppendSchnorrKeyMessage {
   fn serialize<W: Write>(&self, _writer: &mut W) -> std::io::Result<()> {
     panic!("Deliberately not implemented, but trait is required by PostedVaa's generic parameter");
@@ -31,6 +33,10 @@ impl AnchorDeserialize for AppendSchnorrKeyMessage {
     let mut module = [0; 32];
     reader.read_exact(&mut module)?;
     let action = reader.read_u8()?;
+    // The chain id is serialized in big endian
+    let chain_id_high: u16 = reader.read_u8()?.into();
+    let chain_id_low: u16 = reader.read_u8()?.into();
+    let chain_id: u16 = (chain_id_high << 8) | chain_id_low;
 
     let schnorr_key_index = reader.read_u32::<BigEndian>()?;
     let expected_mss_index = reader.read_u32::<BigEndian>()?;
@@ -44,6 +50,10 @@ impl AnchorDeserialize for AppendSchnorrKeyMessage {
 
     if action != ACTION_APPEND_SCHNORR_KEY {
       return Err(Error::new(ErrorKind::InvalidData, "Invalid action"));
+    }
+
+    if chain_id != CHAIN_ID_UNSET {
+      return Err(Error::new(ErrorKind::InvalidData, "Invalid chain id"));
     }
 
     // We check that the rest of the VAA is fine but we don't really need the shards here.
