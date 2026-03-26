@@ -42,7 +42,7 @@ export async function query_contract_evm(
     throw Error(`No ${network} rpc defined for ${chain} (see networks.ts)`);
   }
 
-  const provider = new ethers.providers.JsonRpcProvider(rpc);
+  const provider = new ethers.providers.StaticJsonRpcProvider(rpc);
   const result: any = {};
   switch (module) {
     case "Core":
