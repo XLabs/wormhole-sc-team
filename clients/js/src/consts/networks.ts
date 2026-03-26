@@ -256,6 +256,11 @@ const Mainnet = {
     key: getEnvVar("ETH_KEY"),
     chain_id: 98866,
   },
+  Tempo: {
+    rpc: undefined,
+    key: getEnvVar("ETH_KEY"),
+    chain_id: 4217,
+  },
   Sepolia: {
     rpc: "",
     key: undefined,

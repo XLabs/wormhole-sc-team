@@ -116,7 +116,9 @@ export const handler = async (
   const cli_chain = argv.chain ? chainToChain(argv.chain) : argv.chain;
 
   let chain: Chain;
-  if (cli_chain !== undefined) {
+  if (cli_chain === "Tempo") {
+    chain = cli_chain as Chain;
+  } else if (cli_chain !== undefined) {
     assertChain(cli_chain);
     if (vaa_chain && cli_chain !== vaa_chain) {
       throw Error(
@@ -154,7 +156,7 @@ async function executeSubmit(
   rpc: string | undefined,
   contractAddress: string | undefined
 ) {
-  if (chainToPlatform(chain) === "Evm") {
+  if (chainToPlatform(chain) === "Evm" || chain === "Tempo") {
     await execute_evm(
       parsedVaa.payload,
       buf,
