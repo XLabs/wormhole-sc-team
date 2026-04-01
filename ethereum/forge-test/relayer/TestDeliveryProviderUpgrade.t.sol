@@ -114,7 +114,6 @@ contract RelayerZeroQuoteUpgradeForkTest is Test {
 
         uint16 refundChain = ethereumChainId;
         bytes32 refundAddress = toWormholeFormat(address(this));
-        VaaKey;
         uint8 consistencyLevel = 0;
 
         LocalNative quote = relayer.quoteDeliveryPrice(
@@ -159,7 +158,6 @@ contract RelayerZeroQuoteUpgradeForkTest is Test {
 
         uint16 refundChain = ethereumChainId;
         bytes32 refundAddress = toWormholeFormat(address(this));
-        VaaKey;
         uint8 consistencyLevel = 0;
 
         LocalNative quote = relayer.quoteDeliveryPrice(
@@ -190,24 +188,49 @@ contract RelayerZeroQuoteUpgradeForkTest is Test {
     function testFork_QuoteIsZero_ForRepresentativeInputs(uint256 gasLimit) public {
         _upgrade();
 
+        bytes32 targetAddress = toWormholeFormat(address(0xBEEF));
+        bytes memory payload = hex"";
+        TargetNative receiverValue = TargetNative.wrap(0);
+        LocalNative paymentForExtraReceiverValue = LocalNative.wrap(0);
+        uint16 refundChain = ethereumChainId;
+        bytes32 refundAddress = toWormholeFormat(address(this));
+        uint8 consistencyLevel = 0;
+
         uint16[3] memory chains = [uint16(2), uint16(4), uint16(23)];
         uint256[4] memory receiverValues = [uint256(0), 1, 1 gwei, 1 ether];
         bytes memory execParams = _sampleExecutionParams(gasLimit);
 
         for (uint256 i = 0; i < chains.length; i++) {
             for (uint256 j = 0; j < receiverValues.length; j++) {
-                    LocalNative quote = relayer.quoteDeliveryPrice(
-                        chains[i],
-                        TargetNative.wrap(receiverValues[j]),
-                        execParams,
-                        deliveryProvider
-                    );
+                LocalNative quote = relayer.quoteDeliveryPrice(
+                    chains[i],
+                    TargetNative.wrap(receiverValues[j]),
+                    execParams,
+                    deliveryProvider
+                );
 
-                    assertEq(
-                        LocalNative.unwrap(quote),
-                        0,
-                        "quoteDeliveryPrice should always be zero after upgrade"
-                    );
+                assertEq(
+                    LocalNative.unwrap(quote),
+                    0,
+                    "quoteDeliveryPrice should always be zero after upgrade"
+                );
+
+                uint64 sequence = relayer.send{value: 0}(
+                    chains[i],
+                    targetAddress,
+                    payload,
+                    receiverValue,
+                    paymentForExtraReceiverValue,
+                    execParams,
+                    refundChain,
+                    refundAddress,
+                    deliveryProvider,
+                    new VaaKey[](0),
+                    consistencyLevel
+                );
+
+                assertTrue(sequence >= 0, "send should succeed with zero msg.value");
+
             }
         }
     }
