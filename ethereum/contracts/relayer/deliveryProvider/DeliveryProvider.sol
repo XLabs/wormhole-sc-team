@@ -34,25 +34,8 @@ contract DeliveryProvider is DeliveryProviderGovernance, IDeliveryProvider {
         view
         returns (LocalNative nativePriceQuote, GasPrice targetChainRefundPerUnitGasUnused)
     {
-        // Calculates the amount to refund user on the target chain, for each unit of target chain gas unused
-        // by multiplying the price of that amount of gas (in target chain currency)
-        // by a target-chain-specific constant 'denominator'/('denominator' + 'buffer'), which will be close to 1
-
-        (uint16 buffer, uint16 denominator) = assetConversionBuffer(targetChain);
-        targetChainRefundPerUnitGasUnused = GasPrice.wrap(gasPrice(targetChain).unwrap() * (denominator) / (uint256(denominator) + buffer));
-
-        // Calculates the cost of performing a delivery with 'gasLimit' units of gas and 'receiverValue' wei delivered to the target contract
-
-        LocalNative gasLimitCostInSourceCurrency = quoteGasCost(targetChain, gasLimit);
-        LocalNative receiverValueCostInSourceCurrency = quoteAssetCost(targetChain, receiverValue);
-        nativePriceQuote = quoteDeliveryOverhead(targetChain) + gasLimitCostInSourceCurrency + receiverValueCostInSourceCurrency;
-  
-        // Checks that the amount of wei that needs to be sent into the target chain is <= the 'maximum budget' for the target chain
-        
-        TargetNative gasLimitCost = gasLimit.toWei(gasPrice(targetChain)).asTargetNative();
-        if(receiverValue.asNative() + gasLimitCost.asNative() > maximumBudget(targetChain).asNative()) {
-            revert ExceedsMaximumBudget(targetChain, receiverValue.unwrap() + gasLimitCost.unwrap(), maximumBudget(targetChain).unwrap());
-        }
+        targetChainRefundPerUnitGasUnused = GasPrice.wrap(0);
+        nativePriceQuote = LocalNative.wrap(0);
     }
 
     function quoteDeliveryPrice(
