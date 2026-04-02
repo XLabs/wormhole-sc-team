@@ -69,7 +69,7 @@
       "description": "Base",
       "evmNetworkId": 8453,
       "chainId": 30,
-      "rpc": "https://mainnet.base.org",
+      "rpc": "https://base.api.pocket.network",
       "wormholeAddress": "0xbebdb6C8ddC678FfA9f8748f85C815C556Dd8ac6"
     },
     {

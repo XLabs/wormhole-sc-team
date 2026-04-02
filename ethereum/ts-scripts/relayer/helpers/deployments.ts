@@ -315,31 +315,60 @@ export async function buildOverrides(
   const overrides: ethers.Overrides = {
     gasLimit: await overshootEstimationGas(estimate),
   };
-  // If this is Polygon or Fantom, use the legacy tx envelope to avoid bad gas price feeds.
-  if (chain.chainId === 5 || chain.chainId === 10) {
-    overrides.type = 0;
-   } else if (chain.chainId === 4) {
+  if (chain.chainId === 2) {
+    overrides.type = 2;
+    overrides.maxFeePerGas = ethers.utils.parseUnits("0.5", "gwei");
+    overrides.maxPriorityFeePerGas = 0;
+  } else if (chain.chainId === 4) {
      // This is normally autodetected in bsc but we want to set the gas price to a fixed value.
      // We need to ensure we are using the correct tx envelope in that case.
      overrides.type = 0;
 
-     // Use 5 gwei for testnet (chainId 97), 1 otherwise.
-     overrides.gasPrice = ethers.utils.parseUnits(chain.evmNetworkId === 97 ? "5" : "0.05", "gwei");
+     // Use 5 gwei for testnet (chainId 97), 0.1 gwei otherwise.
+     overrides.gasPrice = ethers.utils.parseUnits(chain.evmNetworkId === 97 ? "5" : "0.1", "gwei");
+  } else if (chain.chainId === 5) {
+    // If this is Polygon, use the legacy tx envelope to avoid bad gas price feeds.
+    overrides.type = 0;
+  } else if (chain.chainId === 6) {
+    overrides.type = 2;
+    overrides.maxFeePerGas = ethers.utils.parseUnits("0.2", "gwei");
+    overrides.maxPriorityFeePerGas = 0;
+  } else if (chain.chainId === 13) {
+    overrides.type = 2;
+    overrides.maxFeePerGas = ethers.utils.parseUnits("30", "gwei");
+    overrides.maxPriorityFeePerGas = 0;
+  } else if (chain.chainId === 14) {
+    overrides.type = 2;
+    overrides.maxFeePerGas = ethers.utils.parseUnits("30", "gwei");
+    overrides.maxPriorityFeePerGas = 0;
+  } else if (chain.chainId === 16) {
+    overrides.type = 2;
+    overrides.maxFeePerGas = ethers.utils.parseUnits("36", "gwei");
+    overrides.maxPriorityFeePerGas = 0;
   } else if (chain.chainId === 23) {
     // Arbitrum gas price feeds are excessive on public endpoints too apparently.
     overrides.type = 2;
-    overrides.maxFeePerGas = ethers.utils.parseUnits("0.3", "gwei");
+    overrides.maxFeePerGas = ethers.utils.parseUnits("0.1", "gwei");
     overrides.maxPriorityFeePerGas = 0;
-  } else if (chain.chainId === 34) {
-    overrides.type = 0;
-  } else if (chain.chainId === 35) {
+  } else if (chain.chainId === 24) {
     overrides.type = 2;
     overrides.maxFeePerGas = ethers.utils.parseUnits("0.1", "gwei");
     overrides.maxPriorityFeePerGas = 0;
-  } else if (chain.chainId === 37) {
-    overrides.type = 0;
+  } else if (chain.chainId === 30) {
+    overrides.type = 2;
+    overrides.maxFeePerGas = ethers.utils.parseUnits("0.1", "gwei");
+    overrides.maxPriorityFeePerGas = 0;
+  } else if (chain.chainId === 34) {
+    overrides.type = 2;
+    overrides.maxFeePerGas = ethers.utils.parseUnits("0.1", "gwei");
+    overrides.maxPriorityFeePerGas = 0;
+  } else if (chain.chainId === 38) {
+    overrides.type = 2;
+    overrides.maxFeePerGas = ethers.utils.parseUnits("0.1", "gwei");
+    overrides.maxPriorityFeePerGas = 0;
   } else if (chain.chainId === 39) {
     overrides.type = 2;
+    overrides.maxFeePerGas = ethers.utils.parseUnits("0.11", "gwei");
     overrides.maxPriorityFeePerGas = 0;
   } else if (chain.chainId === 40) {
     overrides.type = 2;
@@ -351,32 +380,32 @@ export async function buildOverrides(
     overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("0.000000001", "gwei");
   } else if (chain.chainId === 45) {
     overrides.type = 2;
-    overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("0.0001", "gwei");
-    overrides.maxFeePerGas = ethers.utils.parseUnits("0.001", "gwei");
+    overrides.maxFeePerGas = ethers.utils.parseUnits("0.0001", "gwei");
+    overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("0.00001", "gwei");
   } else if (chain.chainId === 46) {
     overrides.type = 2;
-    overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("0.0001", "gwei");;
     overrides.maxFeePerGas = ethers.utils.parseUnits("0.001", "gwei");
+    overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("0.0001", "gwei");;
   } else if (chain.chainId === 48) { 
     overrides.type = 2;
     overrides.maxFeePerGas = ethers.utils.parseUnits("100", "gwei");
     overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("0", "gwei");
   }  else if (chain.chainId === 50) {
     overrides.type = 2;
-    overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("0.03", "gwei");
-    overrides.maxFeePerGas = ethers.utils.parseUnits("0.03", "gwei");
+    overrides.maxFeePerGas = ethers.utils.parseUnits("0.005", "gwei");
+    overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("0.0002", "gwei");
   } else if (chain.chainId === 55) {
     overrides.type = 2;
-    overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("0.01", "gwei");
     overrides.maxFeePerGas = ethers.utils.parseUnits("1000", "gwei");
+    overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("0.01", "gwei");
   } else if (chain.chainId === 57) {
     overrides.type = 2;
     overrides.maxFeePerGas = ethers.utils.parseUnits("300", "gwei");
-    overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("300", "gwei");
+    overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("0.001", "gwei");
   } else if (chain.chainId === 10007) {
     overrides.type = 2;
-    overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("25", "gwei");
     overrides.maxFeePerGas = ethers.utils.parseUnits("30", "gwei");
+    overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("25", "gwei");
   }
 
   return overrides;
