@@ -72,14 +72,7 @@ contract DeliveryProvider is DeliveryProviderGovernance, IDeliveryProvider {
         uint16 targetChain,
         LocalNative sourceChainAmount
     ) internal view returns (TargetNative targetChainAmount) {
-        (uint16 buffer, uint16 bufferDenominator) = assetConversionBuffer(targetChain);
-        return sourceChainAmount.asNative().convertAsset(
-            nativeCurrencyPrice(sourceChain),
-            nativeCurrencyPrice(targetChain),
-            (bufferDenominator),
-            (uint32(buffer) + bufferDenominator),
-            false  // round down
-        ).asTargetNative();
+        targetChainAmount = TargetNative.wrap(0);
     }
 
     //Returns the address on this chain that rewards should be sent to
@@ -124,9 +117,7 @@ contract DeliveryProvider is DeliveryProviderGovernance, IDeliveryProvider {
 
     //Returns the price of purchasing gasAmount units of gas on the target chain, denominated in this chain's wei.
     function quoteGasCost(uint16 targetChain, Gas gasAmount) public view returns (LocalNative totalCost) {
-        Wei gasCostInSourceChainCurrency =
-            assetConversion(targetChain, gasAmount.toWei(gasPrice(targetChain)), chainId());
-        totalCost = LocalNative.wrap(gasCostInSourceChainCurrency.unwrap());
+        totalCost = LocalNative.wrap(0);
     }
 
     function quoteGasPrice(uint16 targetChain) public view returns (GasPrice price) {

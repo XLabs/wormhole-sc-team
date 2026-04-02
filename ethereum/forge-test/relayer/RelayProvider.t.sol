@@ -134,50 +134,52 @@ contract TestDeliveryProvider is Test {
     }
 
 
-    function testCannotGetPriceBeforeUpdateSrcPrice(
-        uint16 dstChainId,
-        uint64 dstGasPrice,
-        WeiPrice dstNativeCurrencyPrice
-    )
-        public
-    {
-        vm.assume(dstChainId > 0);
-        vm.assume(dstChainId != TEST_ORACLE_CHAIN_ID);
-        vm.assume(dstGasPrice > 0);
-        vm.assume(dstNativeCurrencyPrice.unwrap() > 0);
+    // Now the gas price quote always returns zero so this test is obsolete
+    // function testCannotGetPriceBeforeUpdateSrcPrice(
+    //     uint16 dstChainId,
+    //     uint64 dstGasPrice,
+    //     WeiPrice dstNativeCurrencyPrice
+    // )
+    //     public
+    // {
+    //     vm.assume(dstChainId > 0);
+    //     vm.assume(dstChainId != TEST_ORACLE_CHAIN_ID);
+    //     vm.assume(dstGasPrice > 0);
+    //     vm.assume(dstNativeCurrencyPrice.unwrap() > 0);
 
-        initializeDeliveryProvider();
+    //     initializeDeliveryProvider();
 
-        // update the price with reasonable values
-        deliveryProvider.updatePrice(dstChainId, GasPrice.wrap(dstGasPrice), dstNativeCurrencyPrice);
+    //     // update the price with reasonable values
+    //     deliveryProvider.updatePrice(dstChainId, GasPrice.wrap(dstGasPrice), dstNativeCurrencyPrice);
 
-        // you shall not pass
-        vm.expectRevert(abi.encodeWithSignature("PriceIsZero(uint16)", TEST_ORACLE_CHAIN_ID));
-        deliveryProvider.quoteDeliveryOverhead(dstChainId);
-    }
+    //     // you shall not pass
+    //     vm.expectRevert(abi.encodeWithSignature("PriceIsZero(uint16)", TEST_ORACLE_CHAIN_ID));
+    //     deliveryProvider.quoteDeliveryOverhead(dstChainId);
+    // }
 
-    function testCannotGetPriceBeforeUpdateDstPrice(
-        uint16 dstChainId,
-        uint64 srcGasPrice,
-        WeiPrice srcNativeCurrencyPrice
-    )
-        public
-    {
-        vm.assume(dstChainId > 0);
-        vm.assume(dstChainId != TEST_ORACLE_CHAIN_ID);
-        vm.assume(srcGasPrice > 0);
-        vm.assume(srcNativeCurrencyPrice.unwrap() > 0);
+    // Now the gas price quote always returns zero so this test is obsolete
+    // function testCannotGetPriceBeforeUpdateDstPrice(
+    //     uint16 dstChainId,
+    //     uint64 srcGasPrice,
+    //     WeiPrice srcNativeCurrencyPrice
+    // )
+    //     public
+    // {
+    //     vm.assume(dstChainId > 0);
+    //     vm.assume(dstChainId != TEST_ORACLE_CHAIN_ID);
+    //     vm.assume(srcGasPrice > 0);
+    //     vm.assume(srcNativeCurrencyPrice.unwrap() > 0);
 
-        initializeDeliveryProvider();
+    //     initializeDeliveryProvider();
 
-        // update the price with reasonable values
-        //vm.prank(deliveryProvider.owner());
-        deliveryProvider.updatePrice(TEST_ORACLE_CHAIN_ID, GasPrice.wrap(srcGasPrice), srcNativeCurrencyPrice);
+    //     // update the price with reasonable values
+    //     //vm.prank(deliveryProvider.owner());
+    //     deliveryProvider.updatePrice(TEST_ORACLE_CHAIN_ID, GasPrice.wrap(srcGasPrice), srcNativeCurrencyPrice);
 
-        // you shall not pass
-        vm.expectRevert(abi.encodeWithSignature("PriceIsZero(uint16)", dstChainId));
-        deliveryProvider.quoteDeliveryOverhead(dstChainId);
-    }
+    //     // you shall not pass
+    //     vm.expectRevert(abi.encodeWithSignature("PriceIsZero(uint16)", dstChainId));
+    //     deliveryProvider.quoteDeliveryOverhead(dstChainId);
+    // }
     
 
     function testUpdatePrice(
@@ -206,13 +208,14 @@ contract TestDeliveryProvider is Test {
             TEST_ORACLE_CHAIN_ID, GasPrice.wrap(srcGasPrice), WeiPrice.wrap(srcNativeCurrencyPrice)
         );
 
-        // verify price
-        uint256 expected = (
-            uint256(dstNativeCurrencyPrice) * (uint256(dstGasPrice)) + (srcNativeCurrencyPrice - 1)
-        ) / srcNativeCurrencyPrice;
+        // we expect it to always return zero now
+        uint256 expected = 0;
         GasPrice readValues = deliveryProvider.quoteGasPrice(dstChainId);
-        console.log(readValues.unwrap(), expected);
-        require(readValues.unwrap() == expected, "deliveryProvider.quotePrices != expected");
+        assertEq(
+            readValues.unwrap(),
+            expected,
+            "deliveryProvider.quotePrices != expected"
+        );
     }
 
     struct UpdatePrice {
@@ -255,10 +258,8 @@ contract TestDeliveryProvider is Test {
         // update the prices with reasonable values
         deliveryProvider.updatePrices(updates);
 
-        // verify price
-        uint256 expected = (
-            uint256(dstNativeCurrencyPrice) * (uint256(dstGasPrice)) + (srcNativeCurrencyPrice - 1)
-        ) / srcNativeCurrencyPrice;
+        // we expect it to always return zero now
+        uint256 expected = 0;
         GasPrice readValues = deliveryProvider.quoteGasPrice(dstChainId);
         require(readValues.unwrap() == expected, "deliveryProvider.quotePrices != expected");
     }
@@ -318,10 +319,8 @@ contract TestDeliveryProvider is Test {
 
         deliveryProvider.updateMaximumBudget(dstChainId, Wei.wrap(uint256(2)**191));
 
-        // verify price
-        uint256 expectedOverhead = (
-            uint256(dstNativeCurrencyPrice) * (uint256(dstGasPrice) * gasOverhead) + (srcNativeCurrencyPrice - 1)
-        ) / srcNativeCurrencyPrice;
+        // we expect it to always return zero now
+        uint256 expectedOverhead = 0;
 
         LocalNative deliveryOverhead = deliveryProvider.quoteDeliveryOverhead(dstChainId);
 
@@ -366,7 +365,7 @@ contract TestDeliveryProvider is Test {
 
         deliveryProvider.updateMaximumBudget(dstChainId, Wei.wrap(uint256(2)**191));
 
-        // verify price
+        // we expect it to always return zero now
         uint256 expectedGasCost = 0;
 
         uint256 expectedOverheadCost = 0;
@@ -376,10 +375,22 @@ contract TestDeliveryProvider is Test {
         (LocalNative nativePriceQuote,) = deliveryProvider.quoteEvmDeliveryPrice(dstChainId, Gas.wrap(gasLimit), TargetNative.wrap(receiverValue));
 
         // These two methods still query storage to quote the cost
-        // require(expectedGasCost == LocalNative.unwrap(deliveryProvider.quoteGasCost(dstChainId, Gas.wrap(gasLimit))), "Gas cost is not what is expected");
-        // require(expectedOverheadCost == LocalNative.unwrap(deliveryProvider.quoteGasCost(dstChainId, Gas.wrap(gasOverhead))), "Overhead cost is not what is expected");
+        assertEq(
+            expectedGasCost,
+            LocalNative.unwrap(deliveryProvider.quoteGasCost(dstChainId, Gas.wrap(gasLimit))),
+            "Gas cost is not what is expected"
+        );
+        assertEq(
+            expectedOverheadCost,
+            LocalNative.unwrap(deliveryProvider.quoteGasCost(dstChainId, Gas.wrap(gasOverhead))),
+            "Overhead cost is not what is expected"
+        );
 
-        require(expectedGasCost + expectedOverheadCost + expectedReceiverValueCost == LocalNative.unwrap(nativePriceQuote), "deliveryProvider price quote is not what is expected");
+        assertEq(
+            expectedGasCost + expectedOverheadCost + expectedReceiverValueCost,
+            LocalNative.unwrap(nativePriceQuote),
+            "deliveryProvider price quote is not what is expected"
+        );
     }
 
     function testIsMessageKeyTypeSupported(uint8 keyType) public {
