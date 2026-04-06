@@ -98,6 +98,7 @@ type Parameters struct {
 	Self           ethcommon.Address             `json:"self"`
 	GST            *common.GuardianSetState      `json:"-"` // no json
 	GuardianSigner guardiansigner.GuardianSigner `json:"-"` // no json
+	UpdateKeysC    <-chan *signer.UpdateKeysRequest `json:"-"` // no json
 }
 
 type Configurations struct {

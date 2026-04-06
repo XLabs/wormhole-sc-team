@@ -8,6 +8,7 @@ import (
 	"github.com/certusone/wormhole/node/pkg/watchers"
 	"github.com/certusone/wormhole/node/pkg/watchers/interfaces"
 	"github.com/wormhole-foundation/wormhole/sdk/vaa"
+	"github.com/xlabs/tss-common/service/signer"
 )
 
 type WatcherConfig struct {
@@ -33,6 +34,7 @@ func (wc *WatcherConfig) Create(
 	_ chan<- *query.PerChainQueryResponseInternal,
 	_ chan<- *common.GuardianSet,
 	env common.Environment,
+	_ chan<- *signer.UpdateKeysRequest,
 ) (supervisor.Runnable, interfaces.Reobserver, error) {
 	var mainnet = (env == common.MainNet)
 	return NewWatcher(wc.Rpc, wc.Contract, msgC, obsvReqC, mainnet).Run, nil, nil

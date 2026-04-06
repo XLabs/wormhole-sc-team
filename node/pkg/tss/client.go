@@ -44,6 +44,8 @@ type SignerClient struct {
 	connected atomic.Int64 // 0 is not connected, 1 is connected.
 
 	configurations Configurations
+
+	updateKeyC <-chan *signer.UpdateKeysRequest
 }
 
 type unaryResult struct {
@@ -294,6 +296,7 @@ func (s *SignerClient) connect(ctx context.Context, logger *zap.Logger) error {
 	go s.sendingStream(ctx, stream, errchan)
 	go s.unaryRequestsHandler(ctx, client, logger, errchan)
 	go s.gossipListener(ctx, logger)
+	go s.updateKeysHandler(ctx, client, logger, errchan)
 
 	supervisor.Signal(ctx, supervisor.SignalHealthy)
 
@@ -379,6 +382,25 @@ func (s *SignerClient) unaryRequestsHandler(ctx context.Context, client signer.S
 				errchan <- errResponse
 
 				return
+			}
+		}
+	}
+}
+
+
+func (s *SignerClient) updateKeysHandler(ctx context.Context, client signer.SignerClient, logger *zap.Logger, errchan chan<- error) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case req := <-s.updateKeyC:
+			_, err := client.UpdateKeys(ctx, req)
+			if err != nil {
+				logger.Error("failed to update keys", zap.Error(err))
+				if isFatalError(err) {
+					errchan <- err
+					return
+				}
 			}
 		}
 	}

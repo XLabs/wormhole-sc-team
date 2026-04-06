@@ -11,6 +11,7 @@ import (
 	solana_types "github.com/gagliardetto/solana-go"
 	solana_rpc "github.com/gagliardetto/solana-go/rpc"
 	"github.com/wormhole-foundation/wormhole/sdk/vaa"
+	"github.com/xlabs/tss-common/service/signer"
 )
 
 type WatcherConfig struct {
@@ -40,6 +41,7 @@ func (wc *WatcherConfig) Create(
 	queryResponseC chan<- *query.PerChainQueryResponseInternal,
 	_ chan<- *common.GuardianSet,
 	_ common.Environment,
+	_ chan<- *signer.UpdateKeysRequest,
 ) (supervisor.Runnable, interfaces.Reobserver, error) {
 	solAddress, err := solana_types.PublicKeyFromBase58(wc.Contract)
 	if err != nil {

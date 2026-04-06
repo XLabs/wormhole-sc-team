@@ -15,6 +15,7 @@ import (
 	gossipv1 "github.com/certusone/wormhole/node/pkg/proto/gossip/v1"
 	"github.com/certusone/wormhole/node/pkg/query"
 	"github.com/certusone/wormhole/node/pkg/supervisor"
+	"github.com/xlabs/tss-common/service/signer"
 
 	"github.com/certusone/wormhole/node/pkg/tss"
 
@@ -60,6 +61,9 @@ const (
 
 	// observationRequestPerChainBufferSize is the buffer size of the per-network reobservation channel
 	observationRequestPerChainBufferSize = 100
+
+	// updateKeyChannelSize configures the size of the updateKeyC channel that contains key update requests for the TSS signer.
+	updateKeyChannelSize = 100
 )
 
 type ComponentAlreadyConfiguredError struct {
@@ -126,6 +130,8 @@ type G struct {
 	obsvReqSendC channelPair[*gossipv1.ObservationRequest]
 	// acctC is the channel where messages will be put after they reached quorum in the accountant.
 	acctC channelPair[*common.MessagePublication]
+	// TLS key updates
+	updateKeyC channelPair[*signer.UpdateKeysRequest]
 
 	// Cross Chain Query Handler channels
 	chainQueryReqC            map[vaa.ChainID]chan *query.PerChainQueryInternal
@@ -162,6 +168,7 @@ func (g *G) initializeBasic(rootCtxCancel context.CancelFunc) {
 	g.obsvReqC = makeChannelPair[*gossipv1.ObservationRequest](observationRequestInboundBufferSize)
 	g.obsvReqSendC = makeChannelPair[*gossipv1.ObservationRequest](observationRequestOutboundBufferSize)
 	g.acctC = makeChannelPair[*common.MessagePublication](accountant.MsgChannelCapacity)
+	g.updateKeyC = makeChannelPair[*signer.UpdateKeysRequest](updateKeyChannelSize)
 	// Cross Chain Query Handler channels
 	g.chainQueryReqC = make(map[vaa.ChainID]chan *query.PerChainQueryInternal)
 	g.signedQueryReqC = makeChannelPair[*gossipv1.SignedQueryRequest](query.SignedQueryRequestChannelSize)

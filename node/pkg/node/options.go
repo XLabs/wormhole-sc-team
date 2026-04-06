@@ -471,7 +471,7 @@ func GuardianOptionWatchers(watcherConfigs []watchers.WatcherConfig, ibcWatcherC
 					g.chainQueryReqC[wc.GetChainID()] = make(chan *query.PerChainQueryInternal, query.QueryRequestBufferSize)
 				}
 
-				runnable, reobserver, err := wc.Create(chainMsgC[wc.GetChainID()], chainObsvReqC[wc.GetChainID()], g.chainQueryReqC[wc.GetChainID()], chainQueryResponseC[wc.GetChainID()], g.setC.writeC, g.env)
+				runnable, reobserver, err := wc.Create(chainMsgC[wc.GetChainID()], chainObsvReqC[wc.GetChainID()], g.chainQueryReqC[wc.GetChainID()], chainQueryResponseC[wc.GetChainID()], g.setC.writeC, g.env, g.updateKeyC.writeC)
 
 				if err != nil {
 					return fmt.Errorf("error creating watcher: %w", err)
@@ -727,6 +727,7 @@ func GuardianOptionTSS(selfAddr, leaderAddr ethcommon.Address, configurationsPat
 				GST:            g.gst,
 				GuardianSigner: g.guardianSigner,
 				Configurations: configurations,
+				UpdateKeysC: 		g.updateKeyC.readC,	
 			})
 
 			if err != nil {
